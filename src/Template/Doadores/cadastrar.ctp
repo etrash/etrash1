@@ -13,7 +13,7 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 		<?php
 			echo $this->Form->input('doador_nome', ['required' => true,
 												    'label' => [
-												        'text' => 'Nomess'
+												        'text' => 'Nomes'
 												    ]]);
 			echo $this->Form->label('Tipo');
 			echo $this->Form->radio(
