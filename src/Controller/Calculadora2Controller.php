@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 
-class CalculadoraController extends AppController
+class Calculadora2Controller extends AppController
 {
 
 	public function index()
