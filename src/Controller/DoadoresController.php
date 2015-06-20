@@ -10,7 +10,6 @@ use App\Controller\AppController;
 
 	    public function cadastrar()
 		{
-
 	        $doador = $this->Doadores->newEntity();
 	        if ($this->request->is('post')) {
 	            $doador = $this->Doadores->patchEntity($doador, $this->request->data);
@@ -36,14 +35,7 @@ use App\Controller\AppController;
 		{
 			$doador = $this->Doadores->get($id);
 	        $this->set('doador', $doador);
-
 	        if ($this->request->is(['patch', 'post', 'put'])) {
-	            //CHECA A SENHA
-	            if($this->request->data['doador_senha'] == "")
-	            {
-	            	unset($this->request->data['doador_senha']);
-	            	//$this->request->data['doador_senha'] = null;
-	            }
 
 	            $doador = $this->Doadores->patchEntity($doador, $this->request->data);
 
@@ -59,7 +51,6 @@ use App\Controller\AppController;
 
 	    public function delete($id = null)
 	    {
-	        $this->request->allowMethod(['post', 'delete']);
 	        $doador = $this->Doadores->get($id);
 	        if ($this->Doadores->delete($doador)) {
 	            $this->Flash->success('O cadastro foi excluído com sucesso.');
