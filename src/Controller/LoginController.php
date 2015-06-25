@@ -21,7 +21,14 @@ class LoginController extends AppController
             $this->Auth->config('authenticate', [
                                             'Form' => ['userModel' => 'Doadores', 'fields' => ['username' => 'doador_email', 'password' => 'doador_senha']]
                                             
-                                ]);             
+                                ]); 
+
+            // Pass settings in
+            $this->Auth->config('authorize', [
+                'Actions' => ['editar','visualizar','delete'],
+                'Controller' => ['Doadores']
+            ]);   
+
         }
         elseif($this->_perfil == 2)
         {

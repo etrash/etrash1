@@ -6,8 +6,10 @@
 	use Cake\ORM\RulesChecker;
 	use Cake\ORM\Rule\IsUnique;
 
-	class DoadoresTable extends Table
+	class CooperativasTable extends Table
 	{
+
+
 		public function validationDefault(Validator $validator)
 	    {
 	       $validator
@@ -17,7 +19,7 @@
 		            'provider' => 'table',
 		            'message' => 'Este e-mail já está cadastrado.',
 		       	    ]])
-		    ->add('cooperativa_cpfcnpj', [
+		    ->add('cooperativa_cnpj', [
 		    		'unique' => [
 		            'rule' => 'validateUnique',
 		            'provider' => 'table',

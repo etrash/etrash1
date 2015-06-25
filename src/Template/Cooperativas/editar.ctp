@@ -1,49 +1,35 @@
 <?php  
 
-echo $this->Html->script('http://code.jquery.com/jquery.min.js', ['block' => true]);
 echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 
 
 ?>
 
- <div class="cooperativas form">
+ <div class="cooperativa form">
 	<?= $this->Form->create($cooperativa, ['id' => 'formCooperativaCadastro', 'name' => 'formCooperativaCadastro']); ?>
 	<fieldset>
-		<legend>Cadastrar</legend>
+		<legend>Editar</legend>
 		<?php
 			echo $this->Form->input('cooperativa_nome', ['required' => true,
 												    'label' => [
-												        'text' => 'Nome'
+												        'text' => 'Nome Fantasia'
 												    ]]);
-			echo $this->Form->label('Tipo');
-			echo $this->Form->radio(
-									    'cooperativa_tipo',
-									    [
-									        ['value' => '1', 'text' => 'Pessoa Física', 'onchange' => 'mostraTipo(1);', 'checked' => 'true'],
-									        ['value' => '2', 'text' => 'Pessoa Jurídica', 'onchange' => 'mostraTipo(2);'],
-									    ]
-									);
-			echo $this->Form->input('cooperativa_cpfcnpj', [
+			echo $this->Form->input('cooperativa_razaosocial', [
 													    'label' => [
-													    'text' => 'CPF/CNPJ'
+													    'text' => 'Razão Social'
+													   ]]);
+			echo $this->Form->input('cooperativa_inscricaoestadual', [
+													    'label' => [
+													    'text' => 'Inscrição Estadual'													   ]]);
+			echo $this->Form->input('cooperativa_cnpj', [
+													    'label' => [
+													    'text' => 'CNPJ'
 													    ]
 
 													   ]);
 			echo $this->Form->input('cooperativa_cep', [
 													    'label' => [
 													    'text' => 'CEP'
-													   ]]);
-			echo $this->Form->input('cooperativa_complemento', [
-													    'label' => [
-													    'text' => 'Complemento'
-													   ]]);
-			echo $this->Form->input('cooperativa_numero', [
-													    'label' => [
-													    'text' => 'Número'
-													   ]]);
-			echo $this->Form->input('cooperativa_bairro', [
-													    'label' => [
-													    'text' => 'Bairro'
 													   ]]);
 			echo $this->Form->input('cooperativa_estado', [
 													    'label' => [
@@ -53,22 +39,31 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 													    'label' => [
 													    'text' => 'Cidade'
 													   ]]);
+			echo $this->Form->input('cooperativa_bairro', [
+													    'label' => [
+													    'text' => 'Bairro'
+													   ]]);
+			echo $this->Form->input('cooperativa_endereco', [
+													    'label' => [
+													    'text' => 'Endereço'
+													   ]]);
+			echo $this->Form->input('cooperativa_numero', [
+													    'label' => [
+													    'text' => 'Número'
+													   ]]);
+			echo $this->Form->input('cooperativa_complemento', [
+													    'label' => [
+													    'text' => 'Complemento'
+													   ]]);
 			echo $this->Form->input('cooperativa_telefone', [
 													    'label' => [
 													    'text' => 'Telefone'
 													   ]]);
-			echo $this->Form->input('cooperativa_razaosocial', [
-													    'label' => [
-													    'text' => 'Razão Social'
-													   ]]);
-			echo $this->Form->input('cooperativa_inscricaoestadual', [
-													    'label' => [
-													    'text' => 'Inscrição Estadual'													   ]]);
 			echo $this->Form->input('cooperativa_email', ['required' => true,'type' => 'email',
 													    'label' => [
 													    'text' => 'E-mail'
 													   ]]);
-			echo $this->Form->input('cooperativa_senha', ['type' => 'password', 'value' => '',
+			echo $this->Form->input('cooperativa_senha', ['required' => true,'type' => 'password','value' => '',
 													    'label' => [
 													    'text' => 'Senha'
 													   ]]);
@@ -93,9 +88,13 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 													    'label' => [
 													    'text' => 'Telefone do Responsável'
 													   ]]);
+			echo $this->Form->input('responsavel_celular', [
+													    'label' => [
+													    'text' => 'Celular do Responsável'
+													   ]]);
 		?>
 	</fieldset>
-    <?= $this->Form->button('Alterar cadastro', ['type' => 'button', 'onclick' => 'sendForm();']) ?>
+    <?= $this->Form->button('Alterar Conta', ['type' => 'button', 'onclick' => 'sendForm();']) ?>
     <?= $this->Form->end() ?>
 </div>
 <div class="actions">
@@ -112,65 +111,9 @@ echo $this->Html->scriptBlock(
 		   $('#cooperativa-cep').mask('99999-999');
 		   $('#cooperativa-telefone').mask('(99) 9999-9999?9');
 		   $('#responsavel-telefone').mask('(99) 9999-9999?9');
-		   $('#responsavel-cpf').mask('999.999.999-99');
+		   $('#responsavel-celular').mask('(99) 9999-9999?9');
+		   $('#cooperativa-cnpj').mask('99.999.999/9999-99');
 		});
-
-		
-		function mostraTipo(tipo)
-		{
-			if(tipo == 1)
-			{
-				$('#cooperativa-cpfcnpj').mask('999.999.999-99');
-				$('#cooperativa-razaosocial, label[for=\"cooperativa-razaosocial\"]').hide();
-				$('#cooperativa-inscricaoestadual, label[for=\"cooperativa-inscricaoestadual\"]').hide();
-			}
-			else if(tipo == 2)
-			{
-
-				$('#cooperativa-cpfcnpj').mask('99.999.999/9999-99');
-				$('#cooperativa-razaosocial, label[for=\"cooperativa-razaosocial\"]').show();
-				$('#cooperativa-inscricaoestadual, label[for=\"cooperativa-inscricaoestadual\"]').show();
-			}
-		}
-
-		mostraTipo(1);
-
-		function validarCPF(cpf) {  
-		    cpf = cpf.replace(/[^\d]+/g,'');    
-		    if(cpf == '') return false; 
-		    // Elimina CPFs invalidos conhecidos    
-		    if (cpf.length != 11 || 
-		        cpf == \"00000000000\" || 
-		        cpf == \"11111111111\" || 
-		        cpf == \"22222222222\" || 
-		        cpf == \"33333333333\" || 
-		        cpf == \"44444444444\" || 
-		        cpf == \"55555555555\" || 
-		        cpf == \"66666666666\" || 
-		        cpf == \"77777777777\" || 
-		        cpf == \"88888888888\" || 
-		        cpf == \"99999999999\")
-		            return false;       
-		    // Valida 1o digito 
-		    add = 0;    
-		    for (i=0; i < 9; i ++)       
-		        add += parseInt(cpf.charAt(i)) * (10 - i);  
-		        rev = 11 - (add % 11);  
-		        if (rev == 10 || rev == 11)     
-		            rev = 0;    
-		        if (rev != parseInt(cpf.charAt(9)))     
-		            return false;       
-		    // Valida 2o digito 
-		    add = 0;    
-		    for (i = 0; i < 10; i ++)        
-		        add += parseInt(cpf.charAt(i)) * (11 - i);  
-		    rev = 11 - (add % 11);  
-		    if (rev == 10 || rev == 11) 
-		        rev = 0;    
-		    if (rev != parseInt(cpf.charAt(10)))
-		        return false;       
-		    return true;   
-		}
 
 		function validarCNPJ(cnpj) {
 
@@ -226,36 +169,26 @@ echo $this->Html->scriptBlock(
 
 		}
 
-        function validaDoc(data, tipo)
+        function validaDoc(data)
         {
-			if(tipo == 1)
-			{
-				if(validarCPF(data))
-					return true; //alert('O CPF é válido');
-				else
-					return false;//alert('O CPF é inválido');
-			}
-			else if(tipo == 2)
-			{
 
-				if(validarCNPJ(data))
-					return true; //alert('O CNPJ é válido');
-				else
-					return false;//alert('O CNPJ é inválido');
-			}
+			if(validarCNPJ(data))
+				return true; //alert('O CNPJ é válido');
+			else
+				return false;//alert('O CNPJ é inválido');
+			
 
         }
 
-
         function sendForm()
         {
-           if (validaDoc($(\"#cooperativa-cpfcnpj\").val(), $(\"input:radio[name=cooperativa_tipo]:checked\").val()))
+           if (validaDoc($(\"#cooperativa-cnpj\").val()))
            {
               document.getElementById(\"formCooperativaCadastro\").submit();
            } 
            else
            {
-              alert(\"CPF/CNPJ Inválido\");
+              alert(\"CNPJ Inválido\");
               return false;
            }
         }

@@ -4,22 +4,20 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 
-   class CooperativasController extends AppController {
-
-      public $uses = 'Cooperativa';
-      public $name = 'Cooperativas';
-
+   class CooperativasController extends AppController 
+   {
       
-      public function index()
-    {
+	    public function index()
+	    {
 
-    }
+	    }
 
 	    public function cadastrar()
 		{
 
 	        $cooperativa = $this->Cooperativas->newEntity();
 	        if ($this->request->is('post')) {
+
 	            $cooperativa = $this->Cooperativas->patchEntity($cooperativa, $this->request->data);
 
 	            if ($this->Cooperativas->save($cooperativa, ['checkRules' => true])) 
@@ -33,26 +31,26 @@ use App\Controller\AppController;
         	$this->set(compact('cooperativa'));
 		}
 
-		public function visualizar($id = NULL)
+		public function visualizar()
 		{
+	    	$id = $this->Auth->user('cooperativa_id');
 	        $cooperativa = $this->Cooperativas->get($id);
 	        $this->set('cooperativa', $cooperativa);
 		}
 
-		public function editar($id = NULL)
+		public function editar()
 		{
+	    	$id = $this->Auth->user('cooperativa_id');
+
 			$cooperativa = $this->Cooperativas->get($id);
 	        $this->set('cooperativa', $cooperativa);
 
 	        if ($this->request->is(['patch', 'post', 'put'])) {
-	        	
-	            //CHECA A SENHA
-	            if($this->request->data['cooperativa_senha'] == "")
-	            {
-	            	unset($this->request->data['cooperativa_senha']);
-	            	//$this->request->data['cooperativa_senha'] = null;
-	            }
 
+	        	//CHECA A SENHA
+	            if($this->request->data['cooperativa_senha'] == "")
+	            	unset($this->request->data['cooperativa_senha']);
+	        	
 	            $cooperativa = $this->Cooperativas->patchEntity($cooperativa, $this->request->data);
 
 	            if ($this->Cooperativas->save($cooperativa)) {
@@ -65,8 +63,9 @@ use App\Controller\AppController;
         	$this->set(compact('cooperativa'));
 		}
 
-	    public function delete($id = null)
+	    public function delete()
 	    {
+	    	$id = $this->Auth->user('cooperativa_id');
 	        $this->request->allowMethod(['post', 'delete']);
 	        $cooperativa = $this->Cooperativas->get($id);
 	        if ($this->Cooperativas->delete($cooperativa)) {
@@ -76,6 +75,16 @@ use App\Controller\AppController;
 	        }
 	        return $this->redirect(['action' => 'visualizar']);
 	    }
+
+		public function isAuthorized($user)
+		{
+		    // All registered users can add articles
+		    if ($this->request->action === 'cadastrar') {
+		        return true;
+		    }
+
+		    return parent::isAuthorized($user);
+		}
 
    }
 
