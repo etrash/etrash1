@@ -1,7 +1,7 @@
 <?= $this->Html->script('funcoes', ['block' => true]);?>
 
 <div class="doadores form">
-	<?= $this->Form->create(); ?>
+	<?= $this->Form->create($pedidoColeta); ?>
 	<fieldset>
 		<legend>Novo Pedido de Coleta</legend>
 			<fieldset>
@@ -59,7 +59,8 @@
 															'minute' => [
 														        'id' => 'horario_minuto',
 														    ],
-															 'label' => ['text' => 'Horário de Preferência'] ]);			
+															 'label' => ['text' => 'Horário de Preferência'] ]);
+						
 						echo $this->Form->button('Adcionar', [
 														    'name' => 'horario_adicionar',
 														    'type' => 'button',
@@ -75,11 +76,12 @@
 				<ul id='lista-dias'>
 				</ul>
 			</fieldset>	
-		
+
 		</fieldset>
-		
+
 	<?= $this->Form->label('Observações'); ?>
 	<?= $this->Form->textarea('pedido_observacoes'); ?>
+
 
 	</fieldset>
 
@@ -92,3 +94,9 @@
 
     <?= $this->Form->end() ?>
 </div>
+
+<script type="text/javascript">
+	<?php echo $addMateriais; ?>
+	<?php echo $addHorarios; ?>
+
+</script>

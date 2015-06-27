@@ -54,7 +54,7 @@ class AppController extends Controller
             ]
         ]);
 
-        $this->Auth->allow(['index']);   
+        $this->Auth->allow(['index','cadastrar']);   
 
     }
 

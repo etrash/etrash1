@@ -67,14 +67,14 @@ use App\Controller\AppController;
 	    }
 
 
-		public function isAuthorized($user)
-		{
-		    // All registered users can add articles
-		    if ($this->request->action === 'cadastrar') {
-		        return true;
-		    }
+		// public function isAuthorized($user)
+		// {
+		//     // All registered users can add articles
+		//     if ($this->request->action === 'cadastrar') {
+		//         return true;
+		//     }
 
-		    return parent::isAuthorized($user);
-		}
+		//     return parent::isAuthorized($user);
+		// }
    }
 ?>

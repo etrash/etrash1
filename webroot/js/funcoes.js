@@ -21,16 +21,23 @@ function addMaterial(material, quantidade)
 	}
 	else
 	{
-		alert('√â ness√°rio informar o material e a quantidade!');
+		alert('… ness·rio informar o material e a quantidade!');
 	}
 }
 
-function addDias()
+function addDia()
 {
-	hora = $('#horario_hora option:selected').text();
-	minuto = $('#horario_minuto option:selected').text();
-	
-	dia = $("input[name=dia_semana]:checked").val();
+ 	hora = $('#horario_hora option:selected').text();
+ 	minuto = $('#horario_minuto option:selected').text();
+
+ 	dia = $("input[name=dia_semana]:checked").val();
+
+ 	addDias(hora, minuto, dia);
+
+}
+
+function addDias(hora, minuto, dia)
+{
 
 	if(hora !='' && minuto != '')
 		horario_todo = hora + ":" + minuto;
@@ -47,7 +54,7 @@ function addDias()
 				"	</div> \n"+
 				"	<div style='align:center;'> \n"+
 				"		<input type='hidden' name='horario[]' value='"+horario_todo+"'> \n"+
-				"		Hor√°rio: "+horario_todo+"\n"+
+				"		Hor·rio: "+horario_todo+"\n"+
 				"	</div> \n"+
 				"	<div style='align:center;'> \n"+
 				"		<input type='button' value='excluir' onclick='$(\"#item-dia_"+indice+"\").remove();'> \n"+
@@ -58,6 +65,6 @@ function addDias()
 	}
 	else
 	{
-		alert('√â ness√°rio informar o dia e hor√°rio!');
+		alert('… ness·rio informar o dia e hor·rio!');
 	}
 }
