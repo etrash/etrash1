@@ -5,7 +5,7 @@ use App\Controller\AppController;
 
    class ConsultarPontoDeColetaController extends AppController {
    	
-		public function ConsultarPontoDeColeta(){
+		public function ConsultarPontoDeColeta1(){
 
 		}
    }
