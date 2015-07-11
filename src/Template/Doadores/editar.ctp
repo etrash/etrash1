@@ -133,7 +133,7 @@ echo $this->Html->scriptBlock(
 			}
 		}
 
-		mostraTipo(1);
+		mostraTipo($(\"[name='doador_tipo']:checked\").val());
 
 		function validarCPF(cpf) {  
 		    cpf = cpf.replace(/[^\d]+/g,'');    

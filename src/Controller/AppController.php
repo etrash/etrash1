@@ -41,22 +41,25 @@ class AppController extends Controller
         $this->loadComponent('Flash');
 
         $this->loadComponent('Auth', [
-            'loginRedirect' => [
-                'controller' => 'Doadores',
-                'action' => 'visualizar'
-            ],
-            'logoutRedirect' => [
-                'home'
-            ],
+            'loginRedirect' => '/',
+            'logoutRedirect' => '/',
             'loginAction' => [
                 'controller' => 'Login',
                 'action' => 'index'
-            ]
+            ],
+                'authorize' => 'Controller',
+                'unauthorizedRedirect' => '/'
+
         ]);
 
-        $this->Auth->allow(['index','cadastrar']);   
-
+         $this->Auth->allow();   
+        // // Deny one action
+        $this->Auth->deny(['editar','deletar']);
     }
+
+
+
+
 
 
 }

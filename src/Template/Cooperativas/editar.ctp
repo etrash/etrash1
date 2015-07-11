@@ -15,47 +15,58 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 												        'text' => 'Nome Fantasia'
 												    ]]);
 			echo $this->Form->input('cooperativa_razaosocial', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Razão Social'
 													   ]]);
 			echo $this->Form->input('cooperativa_inscricaoestadual', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Inscrição Estadual'													   ]]);
 			echo $this->Form->input('cooperativa_cnpj', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'CNPJ'
 													    ]
 
 													   ]);
 			echo $this->Form->input('cooperativa_cep', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'CEP'
 													   ]]);
 			echo $this->Form->input('cooperativa_estado', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Estado'
 													   ]]);
 			echo $this->Form->input('cooperativa_cidade', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Cidade'
 													   ]]);
 			echo $this->Form->input('cooperativa_bairro', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Bairro'
 													   ]]);
 			echo $this->Form->input('cooperativa_endereco', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Endereço'
 													   ]]);
 			echo $this->Form->input('cooperativa_numero', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Número'
 													   ]]);
 			echo $this->Form->input('cooperativa_complemento', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Complemento'
 													   ]]);
 			echo $this->Form->input('cooperativa_telefone', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Telefone'
 													   ]]);
@@ -68,27 +79,34 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 													    'text' => 'Senha'
 													   ]]);
 			echo $this->Form->input('responsavel_nome', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Nome do Responsável'
 													   ]]);
 			echo $this->Form->input('responsavel_rg', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'RG do Responsável'
 													   ]]);
 			echo $this->Form->input('responsavel_cpf', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'CPF do Responsável'
 													   ]
 													    ]);
-			echo $this->Form->input('responsavel_email', ['type' => 'email',
+			echo $this->Form->input('responsavel_email', [
+														'required' => true,
+														'type' => 'email',
 													    'label' => [
 													    'text' => 'E-mail do Responsável'
 													   ]]);
 			echo $this->Form->input('responsavel_telefone', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Telefone do Responsável'
 													   ]]);
 			echo $this->Form->input('responsavel_celular', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Celular do Responsável'
 													   ]]);

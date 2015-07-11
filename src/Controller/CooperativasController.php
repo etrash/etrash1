@@ -76,15 +76,31 @@ use App\Controller\AppController;
 	        return $this->redirect(['action' => 'visualizar']);
 	    }
 
-		public function isAuthorized($user)
-		{
-		    // All registered users can add articles
-		    if ($this->request->action === 'cadastrar') {
-		        return true;
-		    }
 
-		    return parent::isAuthorized($user);
-		}
+	    // public function initialize()
+	    // {
+	    //     $this->loadComponent('Auth', [
+	    //         'authorize' => 'Controller',
+     //        	'unauthorizedRedirect' => '/doadores'
+	    //     ]);
+	    // }
+
+        public function isAuthorized($user)
+        {
+            // All registered users can add articles
+            if ($this->request->action === 'cadastrar') {
+                return true;
+            }
+            elseif ($this->Auth->user('cooperativa_id') == null)
+            {
+                return false;
+            }
+            else
+            	return true;
+
+            return false;
+        }
+
 
    }
 

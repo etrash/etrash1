@@ -23,12 +23,6 @@ class LoginController extends AppController
                                             
                                 ]); 
 
-            // Pass settings in
-            $this->Auth->config('authorize', [
-                'Actions' => ['editar','visualizar','delete'],
-                'Controller' => ['Doadores']
-            ]);   
-
         }
         elseif($this->_perfil == 2)
         {

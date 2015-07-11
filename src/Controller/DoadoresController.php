@@ -67,14 +67,35 @@ use App\Controller\AppController;
 	    }
 
 
-		// public function isAuthorized($user)
-		// {
-		//     // All registered users can add articles
-		//     if ($this->request->action === 'cadastrar') {
-		//         return true;
-		//     }
+	    // public function initialize()
+	    // {
+	    //     $this->loadComponent('Auth', [
+	    //         'authorize' => 'Controller',
+     //        	'unauthorizedRedirect' => 'cooperativas',
+     //            'loginAction' => [
+     //            'controller' => 'Login',
+     //            'action' => 'index'
+     //        ]
+	    //     ]);
 
-		//     return parent::isAuthorized($user);
-		// }
+     //    	$this->Auth->allow('cadastrar');   
+	    // }
+
+
+        public function isAuthorized($user)
+        {
+            // All registered users can add articles
+            if ($this->request->action === 'cadastrar') {
+                return true;
+            }
+            elseif($this->Auth->user('doador_id') == null)
+            {
+                return false;
+            }
+            else
+            	return true;
+
+            return false;
+        }
    }
 ?>

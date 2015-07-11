@@ -4,9 +4,24 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 use Cake\Event\Event;
+use Cake\Network\Email\Email;
 
 class PedidoscoletaController extends AppController
 {
+
+
+	public function enviaEmail($id)
+	{
+		$email = new Email('default');
+		$email->from(['me@example.com' => 'My Site'])
+			->template('teste')
+			->emailFormat('html')
+		    ->to('ueak21@gmail.com')
+		    ->subject('About')
+		    ->send('My message');
+
+	}
+
 	public function index()
 	{
 		$query = $this->Pedidoscoleta->find('all')
@@ -36,7 +51,6 @@ class PedidoscoletaController extends AppController
 			$pedidos_coleta = "Não há pedidos de coleta cadastrado para sua conta.";
 
 		$this->set('pedidos_coleta',$pedidos_coleta);
-
 	}	
 
 	public function cancelar($id = 0)
@@ -117,7 +131,6 @@ class PedidoscoletaController extends AppController
                 $this->Flash->error('Ocorram os seguintes erros abaixo. Por favor, tente novamente!');
             }
         }
-
 	}
 
 	public function alterar($id = 0)
@@ -177,10 +190,10 @@ class PedidoscoletaController extends AppController
 	        	//CHECA A SENHA
 	            $pedidoColeta = $this->Pedidoscoleta->patchEntity($pedidoColeta, $this->request->data);
 
-			 	$pedidocoleta->set('pedido_periodicidade', $this->request->data('pedido_periodicidade'));
-			 	$pedidocoleta->set('pedido_frequencia' , $this->request->data('pedido_frequencia'));
-			 	$pedidocoleta->set('pedido_obs'		   , $this->request->data('pedido_observacoes'));
-			 	$pedidocoleta->set('pedido_datahoraalteracao'		   , date("Y-m-d H:i:s"));
+			 	$pedidoColeta->set('pedido_periodicidade', $this->request->data('pedido_periodicidade'));
+			 	$pedidoColeta->set('pedido_frequencia' , $this->request->data('pedido_frequencia'));
+			 	$pedidoColeta->set('pedido_obs'		   , $this->request->data('pedido_observacoes'));
+			 	$pedidoColeta->set('pedido_datahoraalteracao'		   , date("Y-m-d H:i:s"));
 
 	            if ($this->Pedidoscoleta->save($pedidoColeta)) 
 	            {
@@ -212,6 +225,7 @@ class PedidoscoletaController extends AppController
 			 			$this->Pedidos_coleta_horarios->save($dia);
 	            	}
 				
+					//$this->enviaEmail($pedidoColeta->get('pedido_id'));
 
 	                $this->Flash->success('O pedido foi alterado com sucesso.');
 	                return $this->redirect(['action' => 'index']);
@@ -219,6 +233,5 @@ class PedidoscoletaController extends AppController
 	                $this->Flash->error('Ocorreu um erro. Por favor, tente novamente.');
 	            }
 	        }
-
 	}
 }
