@@ -8,18 +8,16 @@ use Cake\Network\Email\Email;
 
 class PedidoscoletaController extends AppController
 {
-
-
-	public function enviaEmail($id)
+	public function enviaEmail($id,$text)
 	{
 		$email = new Email('default');
 		$email->from(['me@example.com' => 'My Site'])
 			->template('teste')
+			->viewVars(['text' => $text])
 			->emailFormat('html')
 		    ->to('ueak21@gmail.com')
 		    ->subject('About')
 		    ->send('My message');
-
 	}
 
 	public function index()
@@ -34,12 +32,22 @@ class PedidoscoletaController extends AppController
 		// Iteration will execute the query.
 		foreach ($dataPC as $row) 
 		{
+			if($row['status_id'] != 4)
+			{
+				$alterar  = "<div style='float:right'><a href='pedidoscoleta/alterar/".$row['pedido_id']."'>Alterar</a></div><br/>";
+				$cancelar =  "<div style='float:right'><a href='pedidoscoleta/cancelar/".$row['pedido_id']."'>Cancelar</a></div>";
+			}
+			else
+			{
+				$alterar  = "";
+				$cancelar = "";
+			}
+
 			$pedidos_coleta .= 
 							"<fieldset>
 								<legend>Pedido nº ".$row['pedido_id']."</legend>
 								
-								<div style='float:right'><a href='alterar/".$row['pedido_id']."'>Alterar</a></div><br/>
-								<div style='float:right'><a href='cancelar/".$row['pedido_id']."'>Cancelar</a></div>
+								".$alterar.$cancelar."
 								<div>Pedido realizado em ".$row['pedido_datahorainclusao']."</div><br />
 								<div>Cooperativa: </div><br />
 								<div>Status: ".$row['status_id']."</div><br/>
@@ -56,17 +64,25 @@ class PedidoscoletaController extends AppController
 	public function cancelar($id = 0)
 	{
 		$pedidoColeta = $this->Pedidoscoleta->get($id);
-		$pedidoColeta->set('status_id',4);
-		
-		if ($this->Pedidoscoleta->save($pedidoColeta)) 
-	    {
-	        $this->Flash->success('O pedido foi alterado com sucesso.');
-	        return $this->redirect(['action' => 'index']);
+		$this->set('pedidoColeta', $pedidoColeta);
+		$this->set('id', $id);
+
+		if ($this->request->is(['patch', 'post', 'put']))
+		{
+			$pedidoColeta->set('status_id',4);
+			$pedidoColeta->set('pedido_motivo',$this->request->data('pedido_motivo'));
+			
+			if ($this->Pedidoscoleta->save($pedidoColeta)) 
+		    {
+		        $this->Flash->success('O pedido foi cancelado com sucesso.');
+		        return $this->redirect(['action' => 'index']);
+		    }
+	        else 
+	        {
+	            $this->Flash->error('Ocorreu um erro. Por favor, tente novamente.');
+		        return $this->redirect(['action' => 'index']);
+	        }
 	    }
-        else 
-        {
-            $this->Flash->error('Ocorreu um erro. Por favor, tente novamente.');
-        }
 	}
 
 	public function cadastrar()
@@ -125,9 +141,11 @@ class PedidoscoletaController extends AppController
 		 			$this->Pedidos_coleta_horarios->save($dia);
             	}
 
-                $this->Flash->success('O pedido foi cadastrado com sucesso! O número do pedido é '. $pedidocoleta->get('pedido_id'));
+                $this->Flash->success('O pedido foi cadastrado com sucesso! Você será notificado sobre o interesse das cooperativas sobre este pedido. O número do pedido é '. $pedidocoleta->get('pedido_id'));
                 return $this->redirect(['action' => 'index']);
-            } else {
+            }
+            else 
+            {
                 $this->Flash->error('Ocorram os seguintes erros abaixo. Por favor, tente novamente!');
             }
         }

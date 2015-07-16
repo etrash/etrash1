@@ -19,7 +19,9 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
 <html>
 <head>
     <?= $this->Html->charset('ISO-8859-1'); ?>
-    <?= $this->Html->script('http://code.jquery.com/jquery.min.js', ['block' => true]); ?>
+
+    <?= $this->Html->script('http://code.jquery.com/jquery.min.js'); ?>
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
         <?= $cakeDescription ?>:

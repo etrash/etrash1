@@ -23,14 +23,19 @@ class LoginController extends AppController
                                             
                                 ]); 
 
+            $this->Auth->config(['loginRedirect' => '/doadores/editar']);
+
         }
         elseif($this->_perfil == 2)
         {
             $this->Auth->config('authenticate', [
                                             'Form' => ['userModel' => 'Cooperativas', 'fields' => ['username' => 'cooperativa_email', 'password' => 'cooperativa_senha']]
                                             
-                                ]);             
+                                ]);  
+
+            $this->Auth->config(['loginRedirect' => '/cooperativas/editar']);
         }
+
 
     }
 
@@ -42,7 +47,7 @@ class LoginController extends AppController
 	            $this->Auth->setUser($user);
                 return $this->redirect($this->Auth->redirectUrl());
 	        }
-	        $this->Flash->error(__('Invalid username or password, try again'));
+	        $this->Flash->error(__('E-mail ou senha inválidos, por favor, tente novamente.'));
 	    }
 	}
 

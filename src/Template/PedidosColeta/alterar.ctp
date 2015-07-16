@@ -3,7 +3,7 @@
 <div class="doadores form">
 	<?= $this->Form->create($pedidoColeta); ?>
 	<fieldset>
-		<legend>Novo Pedido de Coleta</legend>
+		<legend>Pedido de Coleta</legend>
 			<fieldset>
 				<legend>Informações dos materiais</legend>
 					<?php

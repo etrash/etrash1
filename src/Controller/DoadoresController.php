@@ -6,6 +6,14 @@ use App\Controller\AppController;
    class DoadoresController extends AppController 
    {
 
+        public function initialize()
+    	{
+        	parent::initialize();
+
+            $this->Auth->config(['unauthorizedRedirect' => '/cooperativas/editar']);
+        
+        }
+
 	    public function cadastrar()
 		{
 	        $doador = $this->Doadores->newEntity();
@@ -13,9 +21,14 @@ use App\Controller\AppController;
 
 
 	            $doador = $this->Doadores->patchEntity($doador, $this->request->data);
+			 	$doador->set('doador_datahorainclussao'		   , date("Y-m-d H:i:s"));
 
 	            if ($this->Doadores->save($doador, ['checkRules' => true])) 
 	            {
+					
+	            	//LOGA O USUÁRIO RECÉM-CADASTRADO
+					$this->Auth->setUser($doador->toArray());
+
 	                $this->Flash->success('O cadastro foi efetuado com sucesso!');
 	                return $this->redirect(['action' => 'index']);
 	            } else {
@@ -43,6 +56,7 @@ use App\Controller\AppController;
 	            	unset($this->request->data['doador_senha']);
 
 	            $doador = $this->Doadores->patchEntity($doador, $this->request->data);
+			 	$doador->set('doador_dahoraalteracao'		   , date("Y-m-d H:i:s"));
 
 	            if ($this->Doadores->save($doador)) {
 	                $this->Flash->success('O cadastro foi alterado com sucesso.');
@@ -62,25 +76,11 @@ use App\Controller\AppController;
 	            $this->Flash->success('O cadastro foi excluído com sucesso.');
 	        } else {
 	            $this->Flash->error('O cadastro não pôde ser excluído. Por favor, tente novamente.');
+	        	
+	        	return $this->redirect(['action' => 'visualizar']);
 	        }
-	        return $this->redirect(['action' => 'visualizar']);
+	        return $this->redirect($this->Auth->logout());
 	    }
-
-
-	    // public function initialize()
-	    // {
-	    //     $this->loadComponent('Auth', [
-	    //         'authorize' => 'Controller',
-     //        	'unauthorizedRedirect' => 'cooperativas',
-     //            'loginAction' => [
-     //            'controller' => 'Login',
-     //            'action' => 'index'
-     //        ]
-	    //     ]);
-
-     //    	$this->Auth->allow('cadastrar');   
-	    // }
-
 
         public function isAuthorized($user)
         {

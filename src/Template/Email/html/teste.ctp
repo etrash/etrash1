@@ -145,14 +145,7 @@
                               <div class="contentEditableContainer contentTextEditable">
                                 <div class="contentEditable" align='center'>
                                   <p  style='text-align:left;color:#999999;font-size:14px;font-weight:normal;line-height:19px;'>
-                                    Here’s what you can say: Thanks again for signing up to the newsletter! You’re all set up, and will be getting the emails once per week. Meanwhile, you can check out our <a target='_blank' class='link1'  href='#'>Getting Started</a> section to get the most out of your new account. 
-                                    <br>
-                                    <br>
-                                    Have questions? Get in touch with us via Facebook or Twitter, or email our support team.
-                                    <br>
-                                    <br>
-                                    Cheers,
-                                    <br>
+                                    <?= $text; ?>
                                     <span style='color:#222222;'>Peter Parker</span>
                                   </p>
                                 </div>

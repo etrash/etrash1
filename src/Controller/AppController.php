@@ -41,18 +41,18 @@ class AppController extends Controller
         $this->loadComponent('Flash');
 
         $this->loadComponent('Auth', [
-            'loginRedirect' => '/',
             'logoutRedirect' => '/',
             'loginAction' => [
                 'controller' => 'Login',
                 'action' => 'index'
             ],
-                'authorize' => 'Controller',
-                'unauthorizedRedirect' => '/'
+                'authorize' => 'Controller'
 
         ]);
 
-         $this->Auth->allow();   
+        $this->Auth->config('authError', "Ops! Você não está logado para acessar esta parte do site.");
+
+        $this->Auth->allow();   
         // // Deny one action
         $this->Auth->deny(['editar','deletar']);
     }

@@ -119,6 +119,15 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 	<h3>Ações</h3>
 	<ul>
 		<li><?php echo $this->Html->link('Listar', array('action' => 'index')); ?></li>
+		<li>
+			<?php 
+				echo $this->Html->link(
+				    'Excluir cadastro',
+				    ['action' => 'delete'],
+				    ['confirm' => 'Você tem certeza que deseja excluir seu cadastro?']
+				);
+			 ?>
+		</li>
 	</ul>
 </div>
 <?php 

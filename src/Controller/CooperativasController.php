@@ -6,7 +6,14 @@ use App\Controller\AppController;
 
    class CooperativasController extends AppController 
    {
-      
+        public function initialize()
+    	{
+        	parent::initialize();
+
+            $this->Auth->config(['unauthorizedRedirect' => '/doadores/editar']);
+        
+        }
+
 	    public function index()
 	    {
 
@@ -19,10 +26,15 @@ use App\Controller\AppController;
 	        if ($this->request->is('post')) {
 
 	            $cooperativa = $this->Cooperativas->patchEntity($cooperativa, $this->request->data);
+			 	$cooperativa->set('cooperativa_datahorainclussao'		   , date("Y-m-d H:i:s"));
 
 	            if ($this->Cooperativas->save($cooperativa, ['checkRules' => true])) 
 	            {
+	            	//LOGA O USUÁRIO RECÉM-CADASTRADO
+					$this->Auth->setUser($cooperativa->toArray());
+
 	                $this->Flash->success('O cadastro foi efetuado com sucesso!');
+
 	                return $this->redirect(['action' => 'index']);
 	            } else {
 	                $this->Flash->error('Ocorram os seguintes erros abaixo. Por favor, tente novamente!');
@@ -52,6 +64,7 @@ use App\Controller\AppController;
 	            	unset($this->request->data['cooperativa_senha']);
 	        	
 	            $cooperativa = $this->Cooperativas->patchEntity($cooperativa, $this->request->data);
+			 	$cooperativa->set('cooperativa_dahoraalteracao'		   , date("Y-m-d H:i:s"));
 
 	            if ($this->Cooperativas->save($cooperativa)) {
 	                $this->Flash->success('O cadastro foi alterado com sucesso.');
@@ -66,24 +79,16 @@ use App\Controller\AppController;
 	    public function delete()
 	    {
 	    	$id = $this->Auth->user('cooperativa_id');
-	        $this->request->allowMethod(['post', 'delete']);
+	    	
 	        $cooperativa = $this->Cooperativas->get($id);
 	        if ($this->Cooperativas->delete($cooperativa)) {
 	            $this->Flash->success('O cadastro foi excluído com sucesso.');
 	        } else {
 	            $this->Flash->error('O cadastro não pôde ser excluído. Por favor, tente novamente.');
+	        	return $this->redirect(['action' => 'visualizar']);
 	        }
-	        return $this->redirect(['action' => 'visualizar']);
+	        return $this->redirect($this->Auth->logout());
 	    }
-
-
-	    // public function initialize()
-	    // {
-	    //     $this->loadComponent('Auth', [
-	    //         'authorize' => 'Controller',
-     //        	'unauthorizedRedirect' => '/doadores'
-	    //     ]);
-	    // }
 
         public function isAuthorized($user)
         {
