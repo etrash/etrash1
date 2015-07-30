@@ -12,8 +12,9 @@ use App\Controller\AppController;
 
 			if($regiao = "todas" && $materialDeColeta = "todos"  && $tipoDeColeta = "todos")
 			{
-				$query = $this->Cooperativa->find('all')
-			} elseif($regiao != "todas" && $materialDeColeta != "todos"  && $tipoDeColeta != "todos")
+				$query = $this->Cooperativa->find('all');
+			}
+			elseif($regiao != "todas" && $materialDeColeta != "todos"  && $tipoDeColeta != "todos")
 			{
 				$query = $this->Cooperativa->find('all')
 				->where(['Cooperativa.regiao = ' => $regiao]);
@@ -23,9 +24,10 @@ use App\Controller\AppController;
 	    $consulta = $query->all();
 	    $dadosConsulta = $consulta->toArray();
 
-			foreach ($dadosConsulta as $row) 
-			{
+		foreach ($dadosConsulta as $row) 
+		{
 
-			}
+		}
    }
+ }
  ?>

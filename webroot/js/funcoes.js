@@ -1,11 +1,11 @@
-function addMaterial(material, quantidade)
+function addMaterial(material_id, material, quantidade)
 {
 	if(material != '' && quantidade > 0)
 	{
-		indice = $("#lista-materiais").size();
+		indice = $("#lista-materiais li").size();
 		item = "<li id='item-material_"+indice+"'>	\n"+		
 				"	<div style='align:left;'> \n"+
-				"		<input type='hidden' name='material[]' value='"+material+"'> \n"+
+				"		<input type='hidden' name='material_id[]' value='"+material_id+"'> \n"+
 				"		Material: "+material+" \n"+
 				"	</div> \n"+
 				"	<div style='align:center;'> \n"+
@@ -21,7 +21,7 @@ function addMaterial(material, quantidade)
 	}
 	else
 	{
-		alert('… ness·rio informar o material e a quantidade!');
+		alert('√â ness√°rio informar o material e a quantidade!');
 	}
 }
 
@@ -54,7 +54,7 @@ function addDias(hora, minuto, dia)
 				"	</div> \n"+
 				"	<div style='align:center;'> \n"+
 				"		<input type='hidden' name='horario[]' value='"+horario_todo+"'> \n"+
-				"		Hor·rio: "+horario_todo+"\n"+
+				"		Hor√°rio: "+horario_todo+"\n"+
 				"	</div> \n"+
 				"	<div style='align:center;'> \n"+
 				"		<input type='button' value='excluir' onclick='$(\"#item-dia_"+indice+"\").remove();'> \n"+
@@ -65,6 +65,6 @@ function addDias(hora, minuto, dia)
 	}
 	else
 	{
-		alert('… ness·rio informar o dia e hor·rio!');
+		alert('√â ness√°rio informar o dia e hor√°rio!');
 	}
 }

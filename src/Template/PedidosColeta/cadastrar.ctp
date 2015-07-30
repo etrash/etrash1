@@ -24,7 +24,7 @@
 						<?= $this->Form->button('Adcionar', [
 														    'name' => 'material_adicionar',
 														    'type' => 'button',
-														    'onclick' => 'addMaterial($(\'#material_nome\').val(), $(\'#material-quantidade\').val());'
+														    'onclick' => 'addMaterial($(\'#material_nome\').val(), $(\'#material_nome option:selected\').text(), $(\'#material-quantidade\').val());'
 														    ]); ?>
 					<fieldset>
 						<legend>Materiais inseridos</legend>

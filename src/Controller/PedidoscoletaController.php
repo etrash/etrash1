@@ -23,7 +23,7 @@ class PedidoscoletaController extends AppController
 	public function index()
 	{
 		$query = $this->Pedidoscoleta->find('all')
-	    ->where(['pedidoscoleta.doador_id = ' => $this->Auth->user('doador_id')]);
+	    ->where(['doador_id = ' => $this->Auth->user('doador_id')]);
 
 	    $PCs = $query->all();
 	    $dataPC = $PCs->toArray();
@@ -99,7 +99,8 @@ class PedidoscoletaController extends AppController
 		foreach ($materiais as $row) 
 		{
 			$material_nome = $row['material_nome'];
-			$materiais_options[$material_nome] = $material_nome;
+			$material_id = $row['material_id'];
+			$materiais_options[$material_id] = $material_nome;
 		}
 
 		 $this->set('materiais_options',$materiais_options);
@@ -112,10 +113,9 @@ class PedidoscoletaController extends AppController
 		 	$pedidocoleta->set('status_id'         , 1);
 		 	$pedidocoleta->set('pedido_periodicidade', $this->request->data('pedido_periodicidade'));
 		 	$pedidocoleta->set('pedido_frequencia' , $this->request->data('pedido_frequencia'));
-		 	$pedidocoleta->set('pedido_obs'		   , $this->request->data('pedido_observacoes'));
 		 	$pedidocoleta->set('pedido_datahorainclusao'		   , date("Y-m-d H:i:s"));
 
-		 	$materiais   = $this->request->data('material');
+		 	$materiais   = $this->request->data('material_id');
 		 	$quantidades = $this->request->data('quantidade');
 
 		 	$dias 	  = $this->request->data('dia');
@@ -127,7 +127,7 @@ class PedidoscoletaController extends AppController
             	{ 
             		$material = $this->Pedidos_coleta_materiais->newEntity();
 		 			$material->set('pedido_id', $pedidocoleta->get('pedido_id'));
-		 			$material->set('nome_material', $this->request->data('material')[$i]);
+		 			$material->set('material_id', $this->request->data('material_id')[$i]);
 		 			$material->set('quantidade_material', $this->request->data('quantidade')[$i]);
 		 			$this->Pedidos_coleta_materiais->save($material);
             	}
@@ -163,13 +163,13 @@ class PedidoscoletaController extends AppController
 		$materiais = $this->Materiais->find('all');
 
 		$queryPCM = $this->Pedidos_coleta_materiais->find('all')
-	    ->where(['pedidos_coleta_materiais.pedido_id = ' => $id]);
+	    ->where(['Pedidos_coleta_materiais.pedido_id = ' => $id]);
 
 	    $PCMs = $queryPCM->all();
 	    $dataPCM = $PCMs->toArray();
 
 		$queryPCH = $this->Pedidos_coleta_horarios->find('all')
-	    ->where(['pedidos_coleta_horarios.pedido_id = ' => $id]);
+	    ->where(['Pedidos_coleta_horarios.pedido_id = ' => $id]);
 
 	    $PCHs = $queryPCH->all();
 	    $dataPCH = $PCHs->toArray();
@@ -181,20 +181,21 @@ class PedidoscoletaController extends AppController
 		foreach ($materiais as $row) 
 		{
 			$material_nome = $row['material_nome'];
-			$materiais_options[$material_nome] = $material_nome;
+			$material_id = $row['material_id'];
+			$materiais_options[$material_id] = $material_nome;
 		}
 
 		// Iteration will execute the query.
-		 foreach ($dataPCM as $row) 
-		 {
-		 	$addMateriais .= "addMaterial('".$row['nome_material']."', ".$row['quantidade_material'].");\n";
-		 }
+		foreach ($dataPCM as $row) 
+		{
+			$addMateriais .= "addMaterial(".$row['material_id'].", '".$materiais_options[$row['material_id']]."', ".$row['quantidade_material'].");\n";
+		}
 
 		// Iteration will execute the query.
 		 foreach ($dataPCH as $row) 
 		 {
 		 	$date = strtotime($row['horario']);
-		 	$addHorarios .= "addDias(".date('H', $date).", ".date('i', $date).", '".$row['dia_semana']."');\n";
+		 	$addHorarios .= "addDias('".date('H', $date)."', '".date('i', $date)."', '".$row['dia_semana']."');\n";
 		 }
 
 		$this->set('materiais_options',$materiais_options);
@@ -210,7 +211,6 @@ class PedidoscoletaController extends AppController
 
 			 	$pedidoColeta->set('pedido_periodicidade', $this->request->data('pedido_periodicidade'));
 			 	$pedidoColeta->set('pedido_frequencia' , $this->request->data('pedido_frequencia'));
-			 	$pedidoColeta->set('pedido_obs'		   , $this->request->data('pedido_observacoes'));
 			 	$pedidoColeta->set('pedido_datahoraalteracao'		   , date("Y-m-d H:i:s"));
 
 	            if ($this->Pedidoscoleta->save($pedidoColeta)) 
@@ -219,7 +219,7 @@ class PedidoscoletaController extends AppController
 					$this->Pedidos_coleta_materiais->deleteAll(['pedido_id' => $id]);
 					$this->Pedidos_coleta_horarios->deleteAll(['pedido_id' => $id]);
 
-				 	$materiais   = $this->request->data('material');
+				 	$materiais   = $this->request->data('material_id');
 				 	$quantidades = $this->request->data('quantidade');
 
 				 	$dias 	  = $this->request->data('dia');
@@ -229,7 +229,7 @@ class PedidoscoletaController extends AppController
 	            	{ 
 	            		$material = $this->Pedidos_coleta_materiais->newEntity();
 			 			$material->set('pedido_id', $pedidoColeta->get('pedido_id'));
-			 			$material->set('nome_material', $this->request->data('material')[$i]);
+			 			$material->set('material_id', $this->request->data('material_id')[$i]);
 			 			$material->set('quantidade_material', $this->request->data('quantidade')[$i]);
 			 			$this->Pedidos_coleta_materiais->save($material);
 	            	}
