@@ -68,3 +68,17 @@ function addDias(hora, minuto, dia)
 		alert('É nessário informar o dia e horário!');
 	}
 }
+
+function limpaPedido()
+{
+	$("#material_nome").val('');
+	$("input[name=material_quantidade]").val("");
+	$('#lista-materiais').empty();
+	$("select[name=pedido_periodicidade]").val("");
+	$("select[name=pedido_frequencia]").val("");
+	$("#horario_hora").val('');
+	$("#horario_minuto").val('');
+	$('#lista-dias').empty();
+	$("textarea[name=pedido_obs]").val("");
+	$('input[name=dia_semana]').removeAttr('checked'); 
+}

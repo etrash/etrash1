@@ -87,7 +87,8 @@
 
 		<?= $this->Form->button('Limpar', [
 										    'name' => 'limpar',
-										    'type' => 'button'
+										    'type' => 'button',
+										    'onclick' => 'limpaPedido();'
 										    ]); ?>
 
 		<?= $this->Form->Submit('Publicar Pedido'); ?>

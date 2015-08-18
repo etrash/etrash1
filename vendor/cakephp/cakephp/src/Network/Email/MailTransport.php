@@ -68,6 +68,9 @@ class MailTransport extends AbstractTransport
      */
     protected function _mail($to, $subject, $message, $headers, $params = null)
     {
+        print_r($message);
+        die;
+        
         //@codingStandardsIgnoreStart
         if (!@mail($to, $subject, $message, $headers, $params)) {
             $error = error_get_last();

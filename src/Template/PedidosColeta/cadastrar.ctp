@@ -79,13 +79,14 @@
 		</fieldset>
 		
 	<?= $this->Form->label('Observações'); ?>
-	<?= $this->Form->textarea('pedido_observacoes'); ?>
+	<?= $this->Form->textarea('pedido_obs'); ?>
 
 	</fieldset>
 
 		<?= $this->Form->button('Limpar', [
 										    'name' => 'limpar',
-										    'type' => 'button'
+										    'type' => 'button',
+										    'onclick' => 'limpaPedido();'
 										    ]); ?>
 
 		<?= $this->Form->Submit('Publicar Pedido'); ?>
