@@ -18,6 +18,7 @@
 			->notEmpty('cooperativa_inscricaoestadual', "Campo obrigatório")
 			->notEmpty('cooperativa_cnpj', "Campo obrigatório")
 			->notEmpty('cooperativa_cep', "Campo obrigatório")
+			->notEmpty('cooperativa_regiao', "Campo obrigatório")
 			->notEmpty('cooperativa_estado', "Campo obrigatório")
 			->notEmpty('cooperativa_cidade', "Campo obrigatório")
 			->notEmpty('cooperativa_bairro', "Campo obrigatório")

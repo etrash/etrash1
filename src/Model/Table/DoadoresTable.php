@@ -14,6 +14,7 @@
 	        ->notEmpty('doador_nome', "Campo obrigatório")
 			->notEmpty('doador_cpfcnpj', "Campo obrigatório")
 			->notEmpty('doador_cep', "Campo obrigatório")
+			->notEmpty('doador_regiao', "Campo obrigatório")
 			->allowEmpty('doador_complemento', "Campo obrigatório")
 			->notEmpty('doador_numero', "Campo obrigatório")
 			->notEmpty('doador_bairro', "Campo obrigatório")

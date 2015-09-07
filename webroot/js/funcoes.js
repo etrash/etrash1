@@ -1,28 +1,56 @@
 function addMaterial(material_id, material, quantidade)
 {
-	if(material != '' && quantidade > 0)
-	{
-		indice = $("#lista-materiais li").size();
-		item = "<li id='item-material_"+indice+"'>	\n"+		
-				"	<div style='align:left;'> \n"+
-				"		<input type='hidden' name='material_id[]' value='"+material_id+"'> \n"+
-				"		Material: "+material+" \n"+
-				"	</div> \n"+
-				"	<div style='align:center;'> \n"+
-				"		<input type='hidden' name='quantidade[]' value='"+quantidade+"'> \n"+
-				"		Quantidade: "+quantidade+" KG\n"+
-				"	</div> \n"+
-				"	<div style='align:center;'> \n"+
-				"		<input type='button' value='excluir' onclick='$(\"#item-material_"+indice+"\").remove();'> \n"+
-				"	</div> \n"+
-				"</li>";
+	
+	var values = $("input[name='material_id[]']")
+              .map(function(){return $(this).val();}).get();
 
-		$("#lista-materiais").append(item);
-	}
+	var teste = values.indexOf('1');
+
+	if(values.indexOf(material_id) > -1)
+		alert('Material já cadastrado!');
 	else
 	{
-		alert('É nessário informar o material e a quantidade!');
+		if(material_id > 0 && quantidade > 0)
+		{
+			indice = $("#lista-materiais li").size();
+			item = "<li id='item-material_"+indice+"'>	\n"+		
+					"	<div style='align:left;'> \n"+
+					"		<input type='hidden' name='material_id[]' value='"+material_id+"'> \n"+
+					"		Material: "+material+" \n"+
+					"	</div> \n"+
+					"	<div style='align:center;'> \n"+
+					"		<input type='hidden' name='quantidade[]' value='"+quantidade+"'> \n"+
+					"		Quantidade: "+quantidade+" KG\n"+
+					"	</div> \n"+
+					"	<div style='align:center;'> \n"+
+					"		<input type='button' value='excluir' onclick='$(\"#item-material_"+indice+"\").remove();'> \n"+
+					"	</div> \n"+
+					"</li>";
+
+			$("#lista-materiais").append(item);
+		}
+		else if(material_id > 0 && quantidade == -1)
+		{
+			indice = $("#lista-materiais li").size();
+			item = "<li id='item-material_"+indice+"'>	\n"+		
+					"	<div style='align:left;'> \n"+
+					"		<input type='hidden' name='material_id[]' value='"+material_id+"'> \n"+
+					"		Material: "+material+" \n"+
+					"	</div> \n"+
+					"	<div style='align:center;'> \n"+
+					"		<input type='button' value='excluir' onclick='$(\"#item-material_"+indice+"\").remove();'> \n"+
+					"	</div> \n"+
+					"</li>";
+
+			$("#lista-materiais").append(item);
+
+		}
+		else
+		{
+			alert('É nessário informar o material e a quantidade!');
+		}
 	}
+
 }
 
 function addDia()

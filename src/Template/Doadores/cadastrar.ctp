@@ -35,6 +35,20 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 													    'label' => [
 													    'text' => 'CEP'
 													   ]]);
+
+
+			echo "<div class='input select required'>";
+
+			echo $this->Form->label('doador_regiao', 'Região');
+
+			echo  $this->Form->select(
+							    'doador_regiao',
+							    ['Centro' => 'Centro','Norte' => 'Norte','Leste' => 'Leste','Sul' => 'Sul','Oeste' => 'Oeste'],
+							    ['empty' => '(Escolha a região)','required' => true]
+							);
+
+			echo "</div>";
+			
 			echo $this->Form->input('doador_complemento', [
 													    'label' => [
 													    'text' => 'Complemento'

@@ -1,7 +1,7 @@
 <?php  
 
-echo $this->Html->script('http://code.jquery.com/jquery.min.js', ['block' => true]);
 echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
+echo $this->Html->script('funcoes', ['block' => true]);
 
 
 ?>
@@ -35,6 +35,17 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 													    'label' => [
 													    'text' => 'CEP'
 													   ]]);
+			echo "<div class='input select required'>";
+
+			echo $this->Form->label('cooperativa_regiao', 'Região');
+
+			echo  $this->Form->select(
+							    'cooperativa_regiao',
+							    ['Centro' => 'Centro','Norte' => 'Norte','Leste' => 'Leste','Sul' => 'Sul','Oeste' => 'Oeste'],
+							    ['empty' => '(Escolha a região)', 'id' => 'cooperativa-regiao','required' => true]
+							);
+			echo "</div>";
+
 			echo $this->Form->input('cooperativa_estado', [
 														'required' => true,
 													    'label' => [
@@ -68,6 +79,11 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 														'required' => true,
 													    'label' => [
 													    'text' => 'Telefone'
+													   ]]);
+			echo $this->Form->input('cooperativa_horario', [
+														'required' => true,
+													    'label' => [
+													    'text' => 'Horário de funcionamento (com os dias da semana)'
 													   ]]);
 			echo $this->Form->input('cooperativa_email', ['required' => true,'type' => 'email',
 													    'label' => [
@@ -110,6 +126,36 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 													    'text' => 'Celular do Responsável'
 													   ]]);
 		?>
+
+		<fieldset>
+				<legend>Materiais aceitos</legend>
+					<?php
+						echo  $this->Form->select(
+										    'material_nome',
+										    $materiais_options,
+										    ['empty' => '(Escolha o tipo de material)', 'id' => 'material_nome']
+										);
+
+					?>
+						<?= $this->Form->button('Adcionar', [
+														    'name' => 'material_adicionar',
+														    'type' => 'button',
+														     'onclick' => 'addMaterial($(\'#material_nome\').val(), $(\'#material_nome option:selected\').text(), -1);'
+														    ]); ?>
+					<fieldset>
+						<legend>Materiais inseridos</legend>
+						<div style='overflow:auto; height:100px;'>
+								<ul id='lista-materiais'>
+								</ul>
+						</div>
+					</fieldset>	
+
+			<?= $this->Form->input('cooperativa_material_outros', [
+													    'label' => [
+													    'text' => 'Outros materiais (separe por vírgulas)'
+													   ]]);	?>	
+			</fieldset>		
+
 	</fieldset>
     <?= $this->Form->button('Criar Conta', ['type' => 'button', 'onclick' => 'sendForm();']) ?>
     <?= $this->Form->end() ?>
