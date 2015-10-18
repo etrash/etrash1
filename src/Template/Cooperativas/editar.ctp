@@ -35,6 +35,19 @@ echo $this->Html->script('funcoes', ['block' => true]);
 													    'label' => [
 													    'text' => 'CEP'
 													   ]]);
+					
+			echo "<div class='input select required'>";
+			echo $this->Form->label('cooperativa_estado', 'Estado');
+			echo $this->Form->select('cooperativa_estado', $estados_options,
+										    ['empty' => '(Selecione o estado)']
+									);
+			echo "</div>";
+
+			echo $this->Form->input('cooperativa_cidade', [
+														'required' => true,
+													    'label' => [
+													    'text' => 'Cidade'
+													   ]]);
 
 			echo "<div class='input select required'>";
 
@@ -46,17 +59,7 @@ echo $this->Html->script('funcoes', ['block' => true]);
 							    ['empty' => '(Escolha a região)', 'id' => 'cooperativa-regiao','required' => true]
 							);
 			echo "</div>";
-
-			echo $this->Form->input('cooperativa_estado', [
-														'required' => true,
-													    'label' => [
-													    'text' => 'Estado'
-													   ]]);
-			echo $this->Form->input('cooperativa_cidade', [
-														'required' => true,
-													    'label' => [
-													    'text' => 'Cidade'
-													   ]]);
+			
 			echo $this->Form->input('cooperativa_bairro', [
 														'required' => true,
 													    'label' => [
@@ -65,7 +68,7 @@ echo $this->Html->script('funcoes', ['block' => true]);
 			echo $this->Form->input('cooperativa_endereco', [
 														'required' => true,
 													    'label' => [
-													    'text' => 'Endereço'
+													    'text' => 'Logradouro'
 													   ]]);
 			echo $this->Form->input('cooperativa_numero', [
 														'required' => true,
@@ -130,6 +133,13 @@ echo $this->Html->script('funcoes', ['block' => true]);
 		?>
 
 		<fieldset>
+				<legend>Informações sobre a coleta</legend>
+				<?= $this->Form->label('cooperativa_doacao', 'A cooperativa realiza coletas por:') ?>
+				<?= $this->Form->radio('cooperativa_doacao', [true => 'Doação',false => 'Compra'],['hiddenField' => false]);?>
+
+		</fieldset>
+
+		<fieldset>
 				<legend>Materiais aceitos</legend>
 					<?php
 						echo  $this->Form->select(
@@ -137,12 +147,17 @@ echo $this->Html->script('funcoes', ['block' => true]);
 										    $materiais_options,
 										    ['empty' => '(Escolha o tipo de material)', 'id' => 'material_nome']
 										);
+						echo $this->Form->input('material_valor', [
+																	'id' => 'material_valor',
+																    'label' => [
+																    'text' => 'Valor'
+																   ]]);
 
 					?>
 						<?= $this->Form->button('Adcionar', [
 														    'name' => 'material_adicionar',
 														    'type' => 'button',
-														     'onclick' => 'addMaterial($(\'#material_nome\').val(), $(\'#material_nome option:selected\').text(), -1);'
+														     'onclick' => 'addMaterialValor($(\'#material_nome\').val(), $(\'#material_nome option:selected\').text(), $(\'#material_valor\').val());'
 														    ]); ?>
 					<fieldset>
 						<legend>Materiais inseridos</legend>
@@ -151,31 +166,11 @@ echo $this->Html->script('funcoes', ['block' => true]);
 								</ul>
 						</div>
 					</fieldset>	
-
-			<?= $this->Form->input('cooperativa_material_outros', [
-													    'label' => [
-													    'text' => 'Outros materiais (separe por vírgulas)'
-													   ]]);	?>
 			</fieldset>		
 
 	</fieldset>
-    <?= $this->Form->button('Alterar Conta', ['type' => 'button', 'onclick' => 'sendForm();']) ?>
+    <?= $this->Form->button('Gravar', ['type' => 'button', 'onclick' => 'sendForm();']) ?>
     <?= $this->Form->end() ?>
-</div>
-<div class="actions">
-	<h3>Ações</h3>
-	<ul>
-		<li><?php echo $this->Html->link('Listar', array('action' => 'index')); ?></li>
-		<li>
-			<?php 
-				echo $this->Html->link(
-				    'Excluir cadastro',
-				    ['action' => 'delete'],
-				    ['confirm' => 'Você tem certeza que deseja excluir seu cadastro?']
-				);
-			 ?>
-		</li>
-	</ul>
 </div>
 
 <script type="text/javascript">
@@ -192,6 +187,7 @@ echo $this->Html->scriptBlock(
 		   $('#responsavel-telefone').mask('(99) 9999-9999?9');
 		   $('#responsavel-celular').mask('(99) 9999-9999?9');
 		   $('#cooperativa-cnpj').mask('99.999.999/9999-99');
+		   $('#material_valor').mask('99.99');
 		});
 
 		function validarCNPJ(cnpj) {

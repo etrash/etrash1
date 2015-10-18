@@ -35,157 +35,200 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
         <?= $cakeDescription ?>
     </title>
     <?= $this->Html->meta('icon') ?>
-    <?= $this->Html->css('base.css') ?>
-    <?= $this->Html->css('cake.css') ?>
+    <?= $this->Html->css('bootstrap.min.css') ?>
+    <?= $this->Html->css('custom.css') ?>
 </head>
-<body class="home">
-    <header>
-        <div class="header-image">
-            <?= $this->Html->image('http://cakephp.org/img/cake-logo.png') ?>
-            <h1>Get the Ovens Ready</h1>
-        </div>
-    </header>
-    <div id="content">
-        <?php
-        if (Configure::read('debug')):
-            Debugger::checkSecurityKeys();
-        endif;
-        ?>
-        <p id="url-rewriting-warning" style="background-color:#e32; color:#fff;display:none">
-            URL rewriting is not properly configured on your server.
-            1) <a target="_blank" href="http://book.cakephp.org/3.0/en/installation/url-rewriting.html" style="color:#fff;">Help me configure it</a>
-            2) <a target="_blank" href="http://book.cakephp.org/3.0/en/development/configuration.html#general-configuration" style="color:#fff;">I don't / can't use URL rewriting</a>
-        </p>
+<body>
 
-        <div class="row">
-            <div class="columns large-5 platform checks">
-                <?php if (version_compare(PHP_VERSION, '5.4.16', '>=')): ?>
-                    <p class="success">Your version of PHP is 5.4.16 or higher.</p>
-                <?php else: ?>
-                    <p class="problem">Your version of PHP is too low. You need PHP 5.4.16 or higher to use CakePHP.</p>
-                <?php endif; ?>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
 
-                <?php if (extension_loaded('mbstring')): ?>
-                    <p class="success">Your version of PHP has the mbstring extension loaded.</p>
-                <?php else: ?>
-                    <p class="problem">Your version of PHP does NOT have the mbstring extension loaded.</p>;
-                <?php endif; ?>
-
-                <?php if (extension_loaded('openssl')): ?>
-                    <p class="success">Your version of PHP has the openssl extension loaded.</p>
-                <?php elseif (extension_loaded('mcrypt')): ?>
-                    <p class="success">Your version of PHP has the mcrypt extension loaded.</p>
-                <?php else: ?>
-                    <p class="problem">Your version of PHP does NOT have the openssl or mcrypt extension loaded.</p>
-                <?php endif; ?>
-
-                <?php if (extension_loaded('intl')): ?>
-                    <p class="success">Your version of PHP has the intl extension loaded.</p>
-                <?php else: ?>
-                    <p class="problem">Your version of PHP does NOT have the intl extension loaded.</p>
-                <?php endif; ?>
+                <?= $this->Html->image('logo-e-trash-portal.png', ['alt' => 'Portal E-Trash', 'url' => '/', 'class' => 'navbar-brand']); ?>
+                
             </div>
-            <div class="columns large-6 filesystem checks">
-                <?php if (is_writable(TMP)): ?>
-                    <p class="success">Your tmp directory is writable.</p>
-                <?php else: ?>
-                    <p class="problem">Your tmp directory is NOT writable.</p>
-                <?php endif; ?>
-
-                <?php if (is_writable(LOGS)): ?>
-                    <p class="success">Your logs directory is writable.</p>
-                <?php else: ?>
-                    <p class="problem">Your logs directory is NOT writable.</p>
-                <?php endif; ?>
-
-                <?php $settings = Cache::config('_cake_core_'); ?>
-                <?php if (!empty($settings)): ?>
-                    <p class="success">The <em><?= $settings['className'] ?>Engine</em> is being used for core caching. To change the config edit config/app.php</p>
-                <?php else: ?>
-                    <p class="problem">Your cache is NOT working. Please check the settings in config/app.php</p>
-                <?php endif; ?>
-            </div>
-        </div>
-        <div class="row">
-            <div class="columns large-12  database checks">
-                <?php
-                    try {
-                        $connection = ConnectionManager::get('default');
-                        $connected = $connection->connect();
-                    } catch (Exception $connectionError) {
-                        $connected = false;
-                        $errorMsg = $connectionError->getMessage();
-                        if (method_exists($connectionError, 'getAttributes')):
-                            $attributes = $connectionError->getAttributes();
-                            if (isset($errorMsg['message'])):
-                                $errorMsg .= '<br />' . $attributes['message'];
-                            endif;
-                        endif;
-                    }
-                ?>
-                <?php if ($connected): ?>
-                    <p class="success">CakePHP is able to connect to the database.</p>
-                <?php else: ?>
-                    <p class="problem">CakePHP is NOT able to connect to the database.<br /><br /><?= $errorMsg ?></p>
-                <?php endif; ?>
-            </div>
-        </div>
-        <div class="row">
-            <div class="columns large-6">
-                <h3>Editing this Page</h3>
-                <ul>
-                    <li>To change the content of this page, edit: src/Template/Pages/home.ctp.</li>
-                    <li>You can also add some CSS styles for your pages at: webroot/css/.</li>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <?php 
+                        echo $this->Html->link(
+                            'Página Inicial',
+                            '/'
+                            );
+                        ?>
+                    </li>
+                    <li>
+                        <?php 
+                        echo $this->Html->link(
+                            'Anúncios',
+                            ['controller' => 'pedidoscoleta', 'action' => 'consultar']
+                            );
+                        ?>
+                    </li>
+                    <li>
+                        <?php 
+                        echo $this->Html->link(
+                            'Pontos de Coleta',
+                            ['controller' => 'cooperativas', 'action' => 'consultar']
+                            );
+                        ?>
+                    </li>
                 </ul>
-            </div>
-            <div class="columns large-6">
-                <h3>Getting Started</h3>
-                <ul>
-                    <li><a target="_blank" href="http://book.cakephp.org/3.0/en/">CakePHP 3.0 Docs</a></li>
-                    <li><a target="_blank" href="http://book.cakephp.org/3.0/en/tutorials-and-examples/bookmarks/intro.html">The 15 min Bookmarker Tutorial</a></li>
-                    <li><a target="_blank" href="http://book.cakephp.org/3.0/en/tutorials-and-examples/blog/blog.html">The 15 min Blog Tutorial</a></li>
+                <ul class="nav navbar-nav navbar-right">
+                    <?php echo $menu_superior_itens; ?>
                 </ul>
-                <p>
+            </div><!--/.nav-collapse -->
+        </div>
+    </nav>
+
+    <div id="carousel-example-generic" class="carousel slide background-banner" data-ride="carousel">
+
+        <!-- Indicators -->
+        <ol class="carousel-indicators">
+            <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+            <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+        </ol>
+
+        <!-- Wrapper for slides -->
+        <div class="carousel-inner" role="listbox">
+            <div class="item active">
+                <img src="images/banner-01.png" alt="">
+            </div>
+            <div class="item">
+                <img src="images/banner-02.png" alt="">
             </div>
         </div>
 
-        <hr/>
-        <div class="row">
-            <div class="columns large-12">
-                <h3 class="">More about Cake</h3>
-                <p>
-                    CakePHP is a rapid development framework for PHP which uses commonly known design patterns like Front Controller and MVC.
-                </p>
-                <p>
-                    Our primary goal is to provide a structured framework that enables PHP users at all levels to rapidly develop robust web applications, without any loss to flexibility.
-                </p>
+    </div>
 
-                <ul>
-                    <li><a href="http://cakefoundation.org/">Cake Software Foundation</a>
-                    <ul><li>Promoting development related to CakePHP</li></ul></li>
-                    <li><a href="http://www.cakephp.org">CakePHP</a>
-                    <ul><li>The Rapid Development Framework</li></ul></li>
-                    <li><a href="http://book.cakephp.org/3.0/en/">CakePHP Documentation</a>
-                    <ul><li>Your Rapid Development Cookbook</li></ul></li>
-                    <li><a href="http://api.cakephp.org/3.0/">CakePHP API</a>
-                    <ul><li>Quick Reference</li></ul></li>
-                    <li><a href="http://bakery.cakephp.org">The Bakery</a>
-                    <ul><li>Everything CakePHP</li></ul></li>
-                    <li><a href="http://plugins.cakephp.org">CakePHP plugins repo</a>
-                    <ul><li>A comprehensive list of all CakePHP plugins created by the community</li></ul></li>
-                    <li><a href="https://groups.google.com/group/cake-php">CakePHP Google Group</a>
-                    <ul><li>Community mailing list</li></ul></li>
-                    <li><a href="irc://irc.freenode.net/cakephp">irc.freenode.net #cakephp</a>
-                    <ul><li>Live chat about CakePHP</li></ul></li>
-                    <li><a href="https://github.com/cakephp/">CakePHP Code</a>
-                    <ul><li>For the Development of CakePHP Git repository, Downloads</li></ul></li>
-                    <li><a href="https://github.com/cakephp/cakephp/issues">CakePHP Issues</a>
-                    <ul><li>CakePHP issues and pull requests</li></ul></li>
-                </ul>
+    <div class="section-search">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
+                    <h1>Encontre um ponto de coleta perto de você dentre os 19.844 pontos cadastrados</h1>
+                    <p>
+                        procure por <a href="#">Zona Leste</a>, <a href="#">Zona Sul</a>, <a href="#">Zona Norte</a>, <a href="#">Zona Oeste</a><br>ou digite o nome do bairro no campo abaixo
+                    </p>
+                    <form id="form-search" action="">
+                        <div class="input-group input-group-lg">
+                            <input type="text" class="form-control" placeholder="Ex.: Mooca" aria-describedby="basic-addon2">
+                            <span class="input-group-addon" id="basic-addon2" onclick="document.getElementById('form-search').submit();"><span class="glyphicon glyphicon-search"></span></span>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+
+    <div class="section-list">
+        <div class="container">
+            <h2 class="text-center col-xs-12 col-sm-8 col-sm-offset-2">Cooperativa, localize coletas que encaixem em sua rotina e aumente seu faturamento!</h2>
+            <div class="row">
+                <div class="col-xs-12 col-sm-10 col-sm-offset-1">
+                    <ul class="list-unstyled">
+                        <li><a href="">Alto de Pinheiros</a></li>
+                        <li><a href="">Butantã</a></li>
+                        <li><a href="">Freguesia do Ó</a></li>
+                        <li><a href="">Mandaqui</a></li>
+                        <li><a href="">República</a></li>
+                        <li><a href="">Tatuapé</a></li>
+                        <li><a href="">Vila Madalena</a></li>
+                    </ul>
+                    <ul class="list-unstyled">
+                        <li><a href="">Barra Funda</a></li>
+                        <li><a href="">Campo Belo</a></li>
+                        <li><a href="">Ipiranga</a></li>
+                        <li><a href="">Mooca</a></li>
+                        <li><a href="">Santa Cecília</a></li>
+                        <li><a href="">Tucuruvi</a></li>
+                        <li><a href="">Vila Mariana</a></li>
+                    </ul>
+                    <ul class="list-unstyled">
+                        <li><a href="">Bela Vista</a></li>
+                        <li><a href="">Campo Grande</a></li>
+                        <li><a href="">Itaim Bibi</a></li>
+                        <li><a href="">Morumbi</a></li>
+                        <li><a href="">Santana</a></li>
+                        <li><a href="">Vila Andrade</a></li>
+                        <li><a href="">Vila Olímpia</a></li>
+                    </ul>
+                    <ul class="list-unstyled">
+                        <li><a href="">Belém</a></li>
+                        <li><a href="">Cerqueira Cesar</a></li>
+                        <li><a href="">Jabaquara</a></li>
+                        <li><a href="">Paraíso</a></li>
+                        <li><a href="">Santo Amaro</a></li>
+                        <li><a href="">Vila Formosa</a></li>
+                        <li><a href="">Vila Prudente</a></li>
+                    </ul>
+                    <ul class="list-unstyled">
+                        <li><a href="">Bom Retiro</a></li>
+                        <li><a href="">Consolação</a></li>
+                        <li><a href="">Lapa</a></li>
+                        <li><a href="">Penha</a></li>
+                        <li><a href="">Saúde</a></li>
+                        <li><a href="">Vila Guilherme</a></li>
+                        <li><a href="">Brás</a></li>
+                    </ul>
+                    <ul class="list-unstyled">
+                        <li><a href="">Cursino</a></li>
+                        <li><a href="">Liberdade</a></li>
+                        <li><a href="">Perdizes</a></li>
+                        <li><a href="">Sé</a></li>
+                        <li><a href="">Vila Leopoldina</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-media text-center">
+        <div class="container">
+            <h2><span>E-Trash na mídia</span></h2>
+            <div class="list-media">
+                <a href="#" title="News"></a>
+                <a href="#" title="Valor"></a>
+                <a href="#" title="Forbes"></a>
+                <a href="#" title="Tech Crunch"></a>
+                <a href="#" title="PME"></a>
+                <a href="#" title="Negócios"></a>
+            </div>
+        </div>
+    </div>
+
     <footer>
+        <div class="top">
+            <div class="container text-center">
+                <ul class="list-inline">
+                    <li>Copyright © 2015 etrash.com.br</li>
+                    <li><a href="#">Termos e condiçõe</a></li>
+                    <li><a href="#">Política de privacidade</a></li>
+                    <li><a href="#">Contato</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="bottom">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-2">
+                    <?= $this->Html->image('logo-e-trash-portal.png', ['alt' => 'Portal E-Trash', 'height' => '30', 'url' => '/', 'class' => 'navbar-brand']); ?>
+                    </div>
+                    <div class="col-xs-12 col-sm-10">
+                        <p>Apoiamos causas contra a divulgação de materiais ilegais, agressivos, caluniosos, abusivos, danosos, invasivos da privacidade de terceiros, terroristas, vulgares, obscenos ou ainda condenáveis de qualquer tipo ou natureza que sejam prejudiciais a menores e à preservação do meio ambiente. Anuncie com segurança: conheça seus Direitos de Consumidor.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </footer>
+
+
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
 </body>
 </html>

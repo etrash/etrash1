@@ -17,31 +17,26 @@ use Cake\Routing\Router;
 
 	    public function index()
 	    {
-
 	    }
 
 	    public function cadastrar()
 		{
 	        $cooperativa = $this->Cooperativas->newEntity();
 
+	        //MONTA OPTIONS DO SELECT DE MATERIAIS
 			$this->loadModel('Materiais');
-			$materiais = $this->Materiais->find('all');
-
-			// Iteration will execute the query.
-			foreach ($materiais as $row) 
-			{
-				$material_nome = $row['material_nome'];
-				$material_id = $row['material_id'];
-				$materiais_options[$material_id] = $material_nome;
-			}
-
+			$materiais_options = $this->Materiais->montaSelect();
 		 	$this->set('materiais_options',$materiais_options);
+
+	        //MONTA OPTIONS DO SELECT DE ESTADOS
+			$this->loadModel('Estados');
+			$estados_options = $this->Estados->montaSelect();
+        	$this->set('estados_options', $estados_options);
 
 	        if ($this->request->is('post')) 
 	        {
 
 	            $cooperativa = $this->Cooperativas->patchEntity($cooperativa, $this->request->data);
-			 	$cooperativa->set('cooperativa_datahorainclussao'		   , date("Y-m-d H:i:s"));
 
 	            if ($this->Cooperativas->save($cooperativa, ['checkRules' => true])) 
 	            {
@@ -51,15 +46,9 @@ use Cake\Routing\Router;
 	                $this->Flash->success('O cadastro foi efetuado com sucesso!');
 
 	                //SALVA OS MATERIAIS
-	                $materiais   = $this->request->data('material_id');
-	                for ($i=0; $i < count($materiais); $i++) 
-	            	{ 
-	            		$material = $this->Cooperativas_materiais->newEntity();
-			 			$material->set('cooperativa_id', $cooperativa->get('cooperativa_id'));
-			 			$material->set('material_id', $this->request->data('material_id')[$i]);
-			 			$this->Cooperativas_materiais->save($material);
-	            	}
-	            	
+					$this->loadModel('Cooperativas_materiais');
+	                $this->Cooperativas_materiais->saveMateriais($cooperativa->get('cooperativa_id'), $this->request->data());
+           	
 	                return $this->redirect(['action' => 'index']);
 	            } else {
 	                $this->Flash->error('Ocorram os seguintes erros abaixo. Por favor, tente novamente!');
@@ -77,30 +66,14 @@ use Cake\Routing\Router;
 
 		public function ver($id)
 		{
-	    	$id = $this->Auth->user('cooperativa_id');
 	        $cooperativa = $this->Cooperativas->get($id);
 
 	        //MATERIAIS DA COOPERATIVA
 	    	$this->loadModel('Materiais');
-			$queryM = $this->Materiais->find()
-		    ->hydrate(false)
-		    ->select(['material_nome'])
-		    ->join(['cm' => [
-				            'table' => 'cooperativas_materiais',
-				            'type' => 'INNER',
-				            'conditions' => 'materiais.material_id = cm.material_id'
-				         ]])
-		    ->where(['cooperativa_id' => $id])
-		    ->group('materiais.material_id');
-
-			$materiais = $queryM->all();
-    		
-    		$materiais_cooperativa = "";
-
-	    		foreach ($materiais as $rowM) 
-					$materiais_cooperativa .= "<li>".$rowM['material_nome'] . "</li>";
+			$materiais_cooperativa = $this->Materiais->listaMateriaisCoop($id);
 				
 	        $this->set('cooperativa', $cooperativa);
+	        $this->set('materiais_cooperativa', $materiais_cooperativa);
 		}
 
 		public function editar()
@@ -110,36 +83,19 @@ use Cake\Routing\Router;
 			$cooperativa = $this->Cooperativas->get($id);
 	        $this->set('cooperativa', $cooperativa);
 
+	        //CARREGA ESTADOS
+			$this->loadModel('Estados');
+			$estados_options = $this->Estados->montaSelect();
+        	$this->set('estados_options', $estados_options);
+        	
+	        //MONTA OPTIONS DO SELECT DE MATERIAIS
 			$this->loadModel('Materiais');
-			$materiais = $this->Materiais->find('all');
-
-			// Iteration will execute the query.
-			foreach ($materiais as $row) 
-			{
-				$material_nome = $row['material_nome'];
-				$material_id = $row['material_id'];
-				$materiais_options[$material_id] = $material_nome;
-			}
-
+			$materiais_options = $this->Materiais->montaSelect();
 		 	$this->set('materiais_options',$materiais_options);
 
 		 	//CARREGA OS MATERIAIS
 			$this->loadModel('Cooperativas_materiais');
-
-			$queryCM = $this->Cooperativas_materiais->find('all')
-		    ->where(['Cooperativas_materiais.cooperativa_id = ' => $id]);
-
-		    $CMs = $queryCM->all();
-		    $dataCM = $CMs->toArray();
-
-		    $addMateriais = "";
-
-		    // Iteration will execute the query.
-			foreach ($dataCM as $row) 
-			{
-				$addMateriais .= "addMaterial(".$row['material_id'].", '".$materiais_options[$row['material_id']]."', -1);\n";
-			}
-
+			$addMateriais = $this->Cooperativas_materiais->addMateriais($id);
 			$this->set('addMateriais',$addMateriais);
 
 	        if ($this->request->is(['patch', 'post', 'put']))
@@ -152,22 +108,15 @@ use Cake\Routing\Router;
 	            	unset($this->request->data['cooperativa_senha']);
 	        	
 	            $cooperativa = $this->Cooperativas->patchEntity($cooperativa, $this->request->data);
-			 	$cooperativa->set('cooperativa_dahoraalteracao', date("Y-m-d H:i:s"));
 
 	            if ($this->Cooperativas->save($cooperativa)) 
 	            {
 	                $this->Flash->success('O cadastro foi alterado com sucesso.');
 	                
 	                //SALVA OS MATERIAIS
-	                $materiais   = $this->request->data('material_id');
-	                for ($i=0; $i < count($materiais); $i++) 
-	            	{ 
-	            		$material = $this->Cooperativas_materiais->newEntity();
-			 			$material->set('cooperativa_id', $cooperativa->get('cooperativa_id'));
-			 			$material->set('material_id', $this->request->data('material_id')[$i]);
-			 			$this->Cooperativas_materiais->save($material);
-	            	}
-
+					$this->loadModel('Cooperativas_materiais');
+	                $this->Cooperativas_materiais->saveMateriais($id, $this->request->data());
+           	
 	                return $this->redirect(['action' => 'index']);
 	            } else {
 	                $this->Flash->error('Ocorreu um erro. Por favor, tente novamente.');
@@ -176,7 +125,7 @@ use Cake\Routing\Router;
         	$this->set(compact('cooperativa'));
 		}
 
-	    public function delete()
+	    public function excluir()
 	    {
 	    	$id = $this->Auth->user('cooperativa_id');
 	    	
@@ -192,32 +141,10 @@ use Cake\Routing\Router;
 
 	    public function consultar()
 	    {
+
+	    	//MONTA OPÇÕES DE MATERIAIS
 	    	$this->loadModel('Materiais');
-
-			$materiais = $this->Materiais->find('all');
-
-			$materiais_options = "";
-
-			// Iteration will execute the query.
-			foreach ($materiais as $row) 
-			{
-				$material_nome = $row['material_nome'];
-				$material_id = $row['material_id'];
-
-
-				//VERIFICA MATERIAIS SELECIONADOS
-				$material_checked = "";
-				if($this->request->data('material') != null)
-				{
-					if(in_array($material_id, $this->request->data('material')))
-						$material_checked = "checked='checked'";
-					else
-						$material_checked = "";
-				}
-
-				$materiais_options .= "<label><input type='checkbox' name='material[]' value='$material_id' $material_checked >$material_nome</label>\n";
-			}
-			
+			$materiais_options = $this->Materiais->montaCheck($this->request->data());			
 			$this->set('materiais_options', $materiais_options);
 
 			$cooperativas = "";
@@ -228,93 +155,7 @@ use Cake\Routing\Router;
 		    		$this->Flash->error('É necessário preencher um filtro.');
 		    	else
 		    	{
-		    		$join = array();
-		    		$where = array();
-
-		    		$where['cooperativas.cooperativa_id > '] = 0;
-
-		    		if($this->request->data('regiao') != null)
-		    			$where['cooperativa_regiao LIKE '] = $this->request->data('regiao');
-
-		    		if($this->request->data('material') != null)
-		    		{
-		    			$whereM = array();
-
-		    			$join['m'] = [
-							            'table' => 'cooperativas_materiais',
-							            'type' => 'INNER',
-							            'conditions' => 'cooperativas.cooperativa_id = m.cooperativa_id'
-							         ];
-
-						//print_r($this->request->data('material'));
-
-						foreach ($this->request->data('material') as $material_id) {
-							$whereM[] = array('material_id' => $material_id);
-						}
-
-						$where['OR'] = $whereM;
-		    		}
-
-					$query = $this->Cooperativas->find()
-				    ->hydrate(false)
-				    ->join($join)
-				    ->where($where)
-				    ->group('cooperativas.cooperativa_id');
-
-					$Coops = $query->all();
-		    		$dataC = $Coops->toArray();
-
-		    		$cooperativas ="";
-
-					// Iteration will execute the query.
-					foreach ($dataC as $row) 
-					{
-						$ver_url  =  Router::url(array('controller'=>'Cooperativas', 'action'=>'ver')) . "/".$row['cooperativa_id'];
-
-						//MATERIAIS DA COOPERATIVA
-						$queryM = $this->Materiais->find()
-					    ->hydrate(false)
-					    ->select(['material_nome'])
-					    ->join(['cm' => [
-							            'table' => 'cooperativas_materiais',
-							            'type' => 'INNER',
-							            'conditions' => 'materiais.material_id = cm.material_id'
-							         ]])
-					    ->where(['cooperativa_id' => $row['cooperativa_id']])
-					    ->group('materiais.material_id');
-
-						$materiais = $queryM->all();
-			    		
-			    		$materiais_cooperativa = "";
-
-			    		foreach ($materiais as $rowM) 
-							$materiais_cooperativa .= "<li>".$rowM['material_nome'] . "</li>";
-
-						$cooperativas .= 
-										"<fieldset>
-											<legend>Cooperativa ".$row['cooperativa_nome']."</legend>
-											<div><b>Locãlização:</b></div><br />
-											<div>".$row['cooperativa_cidade']." - ".$row['cooperativa_estado']."</div><br />
-											<div>Região: ".$row['cooperativa_regiao']."</div><br/>
-											<div>Endereço: ".$row['cooperativa_endereco'].", Número: ".$row['cooperativa_numero']."</div><br/>
-											<div>".$row['cooperativa_complemento']."</div><br />
-											<div>Materiais aceitos:<br/><ul>".$materiais_cooperativa."</ul></div><br/>
-											<div>Outros materiais aceitos:".$row['cooperativa_material_outros']."</div><br/>
-											<div>Horário de funcionamento:".$row['cooperativa_horario']."</div><br/>
-											<a href='".$ver_url."'>Ver mais informações</a>
-										</fieldset>";
-					}
-
-					if(count($dataC) == 0)
-						$cooperativas = "Não foi encontrado nenhum ponto de coleta com os filtros selecionados.";
-					else
-						$cooperativas = "
-											<fieldset>
-												<legend>Pontos de Coleta encontrados</legend>
-												$cooperativas
-											</fieldset>
-											";
-
+		    		$cooperativas = $this->Cooperativas->listaCooperativas($this->request->data());
 					$this->set('cooperativas',$cooperativas);
 		    	}
 
@@ -323,7 +164,9 @@ use Cake\Routing\Router;
 
         public function isAuthorized($user)
         {
-            // All registered users can add articles
+            // APENAS COOPERATIVAS LOGADAS PODEM TER ACESSO AO CONTROLLER 
+            // EXCETO O MÉTODO CADASTRAR QUE É LIBERADO PARA TODOS
+            
             if ($this->request->action === 'cadastrar') {
                 return true;
             }

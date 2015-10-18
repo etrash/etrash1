@@ -140,7 +140,7 @@ return [
      *   `'skipLog' => ['Cake\Network\Exception\NotFoundException', 'Cake\Network\Exception\UnauthorizedException']`
      */
     'Error' => [
-        'errorLevel' => E_ALL & ~E_DEPRECATED,
+        'errorLevel' => E_ALL & ~E_DEPRECATED & ~E_NOTICE,
         'exceptionRenderer' => 'Cake\Error\ExceptionRenderer',
         'skipLog' => [],
         'log' => true,
@@ -219,8 +219,8 @@ return [
              * the following line and set the port accordingly
              */
             //'port' => 'nonstandard_port_number',
-            'username' => 'alunos',
-            'password' => 'alunos',
+            'username' => 'root',
+            'password' => '',
             'database' => 'jckinfo06',
             'encoding' => 'utf8',
             'timezone' => 'UTC',

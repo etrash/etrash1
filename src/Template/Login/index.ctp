@@ -4,7 +4,7 @@
 	<fieldset>
 		<legend>Login</legend>
 		<?php
-			echo $this->Form->label('Tipo');
+			echo $this->Form->label('tipo', 'Perfil de Usuário');
 			echo $this->Form->radio(
 									    'tipo',
 									    [

@@ -6,9 +6,9 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 ?>
 
  <div class="doadores form">
-	<?= $this->Form->create($doador, ['id' => 'formDoadorCadastro', 'name' => 'formDoadorCadastro']); ?>
+	<?= $this->Form->create($doador, ['id' => 'formDoadorCadastro', 'name' => 'formDoadorCadastro', 'autocomplete' => 'false']); ?>
 	<fieldset>
-		<legend>Cadastrar</legend>
+		<legend>Editar</legend>
 		<?php
 			echo $this->Form->input('doador_nome', ['required' => true,
 												    'label' => [
@@ -33,6 +33,19 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 													    'text' => 'CEP'
 													   ]]);
 
+			
+			echo "<div class='input select required'>";
+			echo $this->Form->label('doador_estado', 'Estado');
+			echo $this->Form->select('doador_estado', $estados_options,
+										    ['empty' => '(Selecione o estado)']
+									);
+			echo "</div>";
+
+			echo $this->Form->input('doador_cidade', [
+													    'label' => [
+													    'text' => 'Cidade'
+													   ]]);
+
 			echo "<div class='input select required'>";
 
 			echo $this->Form->label('doador_regiao', 'Região');
@@ -44,27 +57,28 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 							);
 
 			echo "</div>";
+
+			echo $this->Form->input('doador_bairro', [
+													    'label' => [
+													    'text' => 'Bairro'
+													   ]]);
+
+			echo $this->Form->input('doador_endereco', [
+														'required' => true,
+													    'label' => [
+													    'text' => 'Logradouro'
+													   ]]);
+
+			echo $this->Form->input('doador_numero', [
+													    'label' => [
+													    'text' => 'Número'
+													   ]]);
 			
 			echo $this->Form->input('doador_complemento', [
 													    'label' => [
 													    'text' => 'Complemento'
 													   ]]);
-			echo $this->Form->input('doador_numero', [
-													    'label' => [
-													    'text' => 'Número'
-													   ]]);
-			echo $this->Form->input('doador_bairro', [
-													    'label' => [
-													    'text' => 'Bairro'
-													   ]]);
-			echo $this->Form->input('doador_estado', [
-													    'label' => [
-													    'text' => 'Estado'
-													   ]]);
-			echo $this->Form->input('doador_cidade', [
-													    'label' => [
-													    'text' => 'Cidade'
-													   ]]);
+			
 			echo $this->Form->input('doador_telefone', [
 													    'label' => [
 													    'text' => 'Telefone'
@@ -80,7 +94,12 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 													    'label' => [
 													    'text' => 'E-mail'
 													   ]]);
-			echo $this->Form->input('doador_senha', ['type' => 'password', 'value' => '',
+
+			//GAMBIARRA PARA QUESTÃO DO AUTO-PREENCHIMENTO :)
+			echo "<input type='text' name='prevent_autofill' id='prevent_autofill' value='' style='display:none;' />
+				<input type='password' name='password_fake' id='password_fake' value='' style='display:none;' />";
+
+			echo $this->Form->input('doador_senha', ['type' => 'password', 'value' => '', 'autocomplete' => 'false',
 													    'label' => [
 													    'text' => 'Senha'
 													   ]]);
@@ -107,10 +126,10 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 													   ]]);
 		?>
 	</fieldset>
-    <?= $this->Form->button('Alterar cadastro', ['type' => 'button', 'onclick' => 'sendForm();']) ?>
+    <?= $this->Form->button('Gravar', ['type' => 'button', 'onclick' => 'sendForm();']) ?>
     <?= $this->Form->end() ?>
 </div>
-<div class="actions">
+<!--<div class="actions">
 	<h3>Ações</h3>
 	<ul>
 		<li><?php echo $this->Html->link('Listar', array('action' => 'index')); ?></li>
@@ -124,7 +143,7 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 			 ?>
 		</li>
 	</ul>
-</div>
+</div>-->
 <?php 
 
 echo $this->Html->scriptBlock(

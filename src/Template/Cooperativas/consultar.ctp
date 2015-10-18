@@ -1,5 +1,5 @@
 <fieldset>
-	<legend>Consulta de Pedido de Coleta</legend>
+	<legend>Consulta de Pontos de Coleta</legend>
 	<fieldset> 
 		<legend>Região</legend>
 		<?= $this->Form->create(null); ?>

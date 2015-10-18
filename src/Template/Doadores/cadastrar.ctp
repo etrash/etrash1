@@ -36,6 +36,20 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 													    'text' => 'CEP'
 													   ]]);
 
+			
+			
+			echo "<div class='input select required'>";
+			echo $this->Form->label('doador_estado', 'Estado');
+			echo $this->Form->select('doador_estado', $estados_options,
+										    ['empty' => '(Selecione o estado)']
+									);
+			echo "</div>";
+			
+			echo $this->Form->input('doador_cidade', [
+														'required' => true,
+													    'label' => [
+													    'text' => 'Cidade'
+													   ]]);
 
 			echo "<div class='input select required'>";
 
@@ -48,30 +62,28 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 							);
 
 			echo "</div>";
-			
-			echo $this->Form->input('doador_complemento', [
-													    'label' => [
-													    'text' => 'Complemento'
-													   ]]);
-			echo $this->Form->input('doador_numero', [
-														'required' => true,
-													    'label' => [
-													    'text' => 'Número'
-													   ]]);
+
 			echo $this->Form->input('doador_bairro', [
 														'required' => true,
 													    'label' => [
 													    'text' => 'Bairro'
 													   ]]);
-			echo $this->Form->input('doador_estado', [
+			
+			echo $this->Form->input('doador_endereco', [
 														'required' => true,
 													    'label' => [
-													    'text' => 'Estado'
+													    'text' => 'Logradouro'
 													   ]]);
-			echo $this->Form->input('doador_cidade', [
+
+			echo $this->Form->input('doador_numero', [
 														'required' => true,
 													    'label' => [
-													    'text' => 'Cidade'
+													    'text' => 'Número'
+													   ]]);
+			
+			echo $this->Form->input('doador_complemento', [
+													    'label' => [
+													    'text' => 'Complemento'
 													   ]]);
 			echo $this->Form->input('doador_telefone', [
 														'required' => true,
@@ -124,14 +136,8 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 													   ]]);
 		?>
 	</fieldset>
-    <?= $this->Form->button('Criar Conta', ['type' => 'button', 'onclick' => 'sendForm();']) ?>
+    <?= $this->Form->button('Criar Cadastro', ['type' => 'button', 'onclick' => 'sendForm();']) ?>
     <?= $this->Form->end() ?>
-</div>
-<div class="actions">
-	<h3>Ações</h3>
-	<ul>
-		<li><?php echo $this->Html->link('Listar', array('action' => 'index')); ?></li>
-	</ul>
 </div>
 <?php 
 

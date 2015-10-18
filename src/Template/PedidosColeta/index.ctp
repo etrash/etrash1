@@ -1,7 +1,7 @@
+<?= $this->Html->link('Novo pedido de coleta', ['action' => 'cadastrar']);?>
 <fieldset>
 	<legend>Meus pedidos de coleta</legend>
 	
-	<?= $this->Html->link('Anunciar um pedido', ['action' => 'cadastrar']);?>
 	
 	<?= $pedidos_coleta; ?>
 	

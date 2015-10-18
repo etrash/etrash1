@@ -14,14 +14,23 @@ use App\Controller\AppController;
         
         }
 
+	    public function index()
+	    {
+	    }
+	    
 	    public function cadastrar()
 		{
 	        $doador = $this->Doadores->newEntity();
+
+	        //CARREGA ESTADOS
+			$this->loadModel('Estados');
+			$estados_options = $this->Estados->montaSelect();
+        	$this->set('estados_options', $estados_options);
+        	
 	        if ($this->request->is('post')) {
 
 
 	            $doador = $this->Doadores->patchEntity($doador, $this->request->data);
-			 	$doador->set('doador_datahorainclussao'		   , date("Y-m-d H:i:s"));
 
 	            if ($this->Doadores->save($doador, ['checkRules' => true])) 
 	            {
@@ -50,13 +59,18 @@ use App\Controller\AppController;
 			$id = $this->Auth->user('doador_id');
 			$doador = $this->Doadores->get($id);
 	        $this->set('doador', $doador);
+
+	        //CARREGA ESTADOS
+			$this->loadModel('Estados');
+			$estados_options = $this->Estados->montaSelect();
+        	$this->set('estados_options', $estados_options);
+
 	        if ($this->request->is(['patch', 'post', 'put'])) {
 	        	//CHECA A SENHA
 	            if($this->request->data['doador_senha'] == "")
 	            	unset($this->request->data['doador_senha']);
 
 	            $doador = $this->Doadores->patchEntity($doador, $this->request->data);
-			 	$doador->set('doador_dahoraalteracao'		   , date("Y-m-d H:i:s"));
 
 	            if ($this->Doadores->save($doador)) {
 	                $this->Flash->success('O cadastro foi alterado com sucesso.');

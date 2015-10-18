@@ -17,6 +17,7 @@ namespace App\Controller;
 use Cake\Controller\Controller;
 
 use Cake\Event\Event;
+use Cake\Routing\Router;
 /**
  * Application Controller
  *
@@ -54,7 +55,27 @@ class AppController extends Controller
 
         $this->Auth->allow();   
         // // Deny one action
-        $this->Auth->deny(['editar','deletar']);
+        $this->Auth->deny(['editar','deletar', 'index', 'excluir']);
+
+        //MENU SUPERIOR
+        if(is_null($this->Auth->user()))
+        {
+            $cadastrar_url =  Router::url('/pages/cadastro');
+            $login_url =  Router::url(['controller' => 'login']);
+
+            $menu_superior_itens = "<li class='active'><a href='$cadastrar_url'>Cadastre-se</a></li>
+                                    <li><a href='$login_url'>Login</a></li>";
+        }
+        elseif($this->Auth->user('doador_id') == null)
+        {
+            $menu_superior_itens = "<li class='active'><a href='".Router::url(['controller' => 'cooperativas'])."'>Meu Cadastro</a></li>";
+        }
+        else
+        {
+            $menu_superior_itens = "<li class='active'><a href='".Router::url(['controller' => 'doadores'])."'>Meu Cadastro</a></li>";
+        }
+
+        $this->set('menu_superior_itens', $menu_superior_itens);
     }
 
 

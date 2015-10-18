@@ -7,30 +7,30 @@ else
 ?>
 <div>
 	<h1>Informações da coleta</h1><br/>
-	Pedido realizado em <?= $datahora_inclusao; ?><br/>
-	Status: <?= $status; ?><br/>
+	Pedido realizado em <?= $pedido_div['datahora_inclusao']; ?><br/>
+	Status: <?= $pedido_div['status']; ?><br/>
 	<fieldset>
 		<legend>Informações do Doador</legend>
-		Região do Doador: <?= $doador_endereco['doador_regiao']; ?><br/>
-		CEP do Doador: <?= $doador_endereco['doador_cep']; ?><br/>
+		Cidade/Estado: <?= $doador_endereco['doador_cidade']; ?> - <?= $doador_endereco['doador_estado']; ?><br/>
+		Região: <?= $doador_endereco['doador_regiao']; ?><br/>
+		CEP: <?= $doador_endereco['doador_cep']; ?><br/>
 		Mapa do endereço aproximado: <br/>
 <iframe
   width="600"
   height="450"
   frameborder="0" style="border:0"
-  src="https://www.google.com/maps/embed/v1/place?key=AIzaSyBfyrDLCLUT4J1gI0DUseA9QiAKwycwmnw
-    &q=<?= $doador_endereco['doador_cep']; ?>" allowfullscreen>
+  src="<?=$google_maps; ?>" allowfullscreen>
 </iframe>
 	</fieldset>
 	<fieldset>
 		<legend>Materiais do pedido</legend>
-		<?= $materiais_div; ?>
+		<?= $pedido_div['materiais_div']; ?>
 	</fieldset>
-	Periodicidade: <?= $periodicidade; ?><br/>
-	Frequência: <?= $frequencia; ?><br/>
+	Periodicidade: <?= $pedido_div['periodicidade']; ?><br/>
+	Frequência: <?= $pedido_div['frequencia']; ?><br/>
 	<fieldset>
 		<legend>Dias e horários de preferência</legend>
-		<?= $horarios_div; ?>
+		<?= $pedido_div['horarios_div']; ?>
 	</fieldset>
 </div>
 <?= $this->Form->end() ?>

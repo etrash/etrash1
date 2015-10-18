@@ -1,7 +1,7 @@
 <?= $this->Html->script('funcoes', ['block' => true]);?>
 
 <div class="doadores form">
-	<?= $this->Form->create($pedidoColeta); ?>
+	<?= $this->Form->create($pedidoColeta, ['id' => 'pedidoForm']); ?>
 	<fieldset>
 		<legend>Pedido de Coleta</legend>
 			<fieldset>
@@ -79,7 +79,7 @@
 
 		</fieldset>
 
-	<?= $this->Form->label('Observações'); ?>
+	<?= $this->Form->label('pedido_obs', 'Observações'); ?>
 	<?= $this->Form->textarea('pedido_obs'); ?>
 
 
@@ -91,7 +91,7 @@
 										    'onclick' => 'limpaPedido();'
 										    ]); ?>
 
-		<?= $this->Form->Submit('Publicar Pedido'); ?>
+		<?= $this->Form->button('Gravar', ['onclick' => "if(confirm('Após esta etapa as alterações serão gravadas e as cooperativas interessadas serão notificadas. Você confirma esta operação?')){document.getElementById('pedidoForm').submit();}", 'type' => 'button']); ?>
 
     <?= $this->Form->end() ?>
 </div>

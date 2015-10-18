@@ -23,7 +23,7 @@ class LoginController extends AppController
                                             
                                 ]); 
 
-            $this->Auth->config(['loginRedirect' => '/doadores/editar']);
+            $this->Auth->config(['loginRedirect' => '/doadores/']);
 
         }
         elseif($this->_perfil == 2)
@@ -33,7 +33,7 @@ class LoginController extends AppController
                                             
                                 ]);  
 
-            $this->Auth->config(['loginRedirect' => '/cooperativas/editar']);
+            $this->Auth->config(['loginRedirect' => '/cooperativas/']);
         }
 
 
@@ -47,7 +47,7 @@ class LoginController extends AppController
 	            $this->Auth->setUser($user);
                 return $this->redirect($this->Auth->redirectUrl());
 	        }
-	        $this->Flash->error(__('E-mail ou senha inválidos, por favor, tente novamente.'));
+	        $this->Flash->error(__('Login e/ou senha inválidos.'));
 	    }
 	}
 

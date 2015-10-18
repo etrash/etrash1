@@ -1,7 +1,8 @@
+<?= $this->Html->script('jquery.maskedinput.min', ['block' => true]); ?>
 <?= $this->Html->script('funcoes', ['block' => true]);?>
 
 <div class="doadores form">
-	<?= $this->Form->create(); ?>
+	<?= $this->Form->create(null, ['id' => 'pedidoForm']); ?>
 	<fieldset>
 		<legend>Novo Pedido de Coleta</legend>
 			<fieldset>
@@ -52,14 +53,13 @@
 
 						echo $this->Form->radio('dia_semana', ['Segunda-feira' => 'Segunda-feira','Terça-feira' => 'Terça-feira','Quarta-feira' => 'Quarta-feira','Quinta-feira' => 'Quinta-feira','Sexta-feira' => 'Sexta-feira','Sábado' => 'Sábado','Domingo' => 'Domingo'],['hiddenField' => false]);
 
-						echo $this->Form->time('horario', [ 
-															'hour' => [
-														        'id' => 'horario_hora',
-														    ],
-															'minute' => [
-														        'id' => 'horario_minuto',
-														    ],
-															 'label' => ['text' => 'Horário de Preferência'] ]);			
+						echo $this->Form->input('horario_intervalo', [
+															'type' => 'text',
+															'id' => 'horario_intervalo',
+														    'label' => [
+														    'text' => 'Horário disponível para coleta', 
+														    ]]);
+
 						echo $this->Form->button('Adcionar', [
 														    'name' => 'horario_adicionar',
 														    'type' => 'button',
@@ -78,7 +78,7 @@
 		
 		</fieldset>
 		
-	<?= $this->Form->label('Observações'); ?>
+	<?= $this->Form->label('pedido_obs', 'Observações'); ?>
 	<?= $this->Form->textarea('pedido_obs'); ?>
 
 	</fieldset>
@@ -89,7 +89,15 @@
 										    'onclick' => 'limpaPedido();'
 										    ]); ?>
 
-		<?= $this->Form->Submit('Publicar Pedido'); ?>
+		<?= $this->Form->button('Gravar Pedido', ['onclick' => "if(confirm('Após esta etapa seu pedido estará visível para as cooperativas. Você confirma esta operação?')){document.getElementById('pedidoForm').submit();}", 'type' => 'button']); ?>
 
     <?= $this->Form->end() ?>
 </div>
+<?php echo $this->Html->scriptBlock(
+"
+jQuery(function($){
+		   $('#horario_intervalo').mask('De 99h99min Até 99h99min');
+		});
+"
+)
+?>

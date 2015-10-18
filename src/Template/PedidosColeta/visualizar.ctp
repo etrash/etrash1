@@ -1,22 +1,28 @@
 <div>
-	<h1>Informações da coleta</h1><br/>
-	Pedido realizado em <?= $datahora_inclusao; ?><br/>
-	Status: <?= $status; ?><br/>
+	<h1>Informações sobre a criação do pedido de coleta</h1><br/>
+	Pedido realizado em <?= $pedido_div['datahora_inclusao']; ?><br/>
+	Status: <?= $pedido_div['status']; ?><br/>
 	<fieldset>
 		<legend>Materiais do pedido</legend>
-		<?= $materiais_div; ?>
+		<?= $pedido_div['materiais_div']; ?>
 	</fieldset>
-	Periodicidade: <?= $periodicidade; ?><br/>
-	Frequência: <?= $frequencia; ?><br/>
+	Periodicidade: <?= $pedido_div['periodicidade']; ?><br/>
+	Frequência: <?= $pedido_div['frequencia']; ?><br/>
 	<fieldset>
 		<legend>Dias e horários de preferência</legend>
-		<?= $horarios_div; ?>
+		<?= $pedido_div['horarios_div']; ?>
 	</fieldset>
 	Observações:<br/>
-	<?= $observacoes; ?><br/>
-	<?= $cancelamento_div; ?><br/>
+	<?= $pedido_div['observacoes']; ?><br/>
+	<?= $pedido_div['cancelamento_div']; ?><br/>
 </div>
 <div>
 	<h1>Informações da Cooperativa</h1><br/>
-	<?= $cooperativa_div; ?>
+	<?= $pedido_div['cooperativa_div']; ?>
+</div>
+<div>
+	<h1>Informações efetivas sobre as coletas já realizadas</h1><br/>
+	Remuneração Total: <?= $pedido_div['coletas_totalvalor']; ?><br/>
+	Quantidade Total: <?= $pedido_div['coletas_totalqtde']; ?> KG<br/>
+	<?= $pedido_div['coletas']; ?>
 </div>

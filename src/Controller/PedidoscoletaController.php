@@ -7,8 +7,11 @@ use Cake\Event\Event;
 use Cake\Network\Email\Email;
 use Cake\Routing\Router;
 
+use Cake\View\CellTrait;
+
 class PedidoscoletaController extends AppController
 {
+	use CellTrait;
 
     public function initialize()
 	{
@@ -22,54 +25,11 @@ class PedidoscoletaController extends AppController
 	public function index()
 	{
 
-		$this->loadModel('Pedido_coleta_status');
-
 		if($this->Auth->user('doador_id') == null)
 			return $this->redirect(['action' => 'consultar']);
 
-		$query = $this->Pedidoscoleta->find('all')
-	    ->where(['doador_id = ' => $this->Auth->user('doador_id')]);
-
-	    $PCs = $query->all();
-	    $dataPC = $PCs->toArray();
-
-	    $pedidos_coleta ="";
-		// Iteration will execute the query.
-		foreach ($dataPC as $row) 
-		{
-			$visualizar_url  =  Router::url(array('controller'=>'pedidoscoleta', 'action'=>'visualizar')) . "/".$row['pedido_id'];
-
-			if($row['status_id'] != 4)
-			{
-				$alterar_url  =  Router::url(array('controller'=>'pedidoscoleta', 'action'=>'alterar'));
-				$cancelar_url =  Router::url(array('controller'=>'pedidoscoleta', 'action'=>'cancelar'));
-
-				$alterar  = "<div style='float:right'><a href='".$alterar_url."/".$row['pedido_id']."'>Alterar</a></div><br/>";
-				$cancelar =  "<div style='float:right'><a href='".$cancelar_url."/".$row['pedido_id']."'>Cancelar</a></div>";
-			}
-			else
-			{
-				$alterar  = "";
-				$cancelar = "";
-			}
-
-			$status = $this->Pedido_coleta_status->get($row['status_id']);
-			
-			$pedidos_coleta .= 
-							"<fieldset>
-								<legend>Pedido nº ".$row['pedido_id']."</legend>
-								
-								".$alterar.$cancelar."
-								<div>Pedido realizado em ".$row['pedido_datahorainclusao']."</div><br />
-								<div>Cooperativa: </div><br />
-								<div>Status: ".$status['status_nome']."</div><br/>
-								<a href='".$visualizar_url."'>Ver detalhes / Coletas</a>
-							</fieldset>";
-		}
-
-		if(count($dataPC) == 0)
-			$pedidos_coleta = "Não há pedidos de coleta cadastrado para sua conta.";
-
+		$pedidos_coleta = $this->Pedidoscoleta->listaPedidos($this->Auth->user('doador_id'));
+		
 		$this->set('pedidos_coleta',$pedidos_coleta);
 	}	
 
@@ -89,51 +49,16 @@ class PedidoscoletaController extends AppController
 
 		if ($this->request->is(['patch', 'post', 'put']))
 		{
-			$Pedidoscoleta->set('status_id',4);
-			$Pedidoscoleta->set('pedido_motivo',$this->request->data('pedido_motivo'));
-			
-			if ($this->Pedidoscoleta->save($Pedidoscoleta)) 
-		    {
-
-				$this->loadModel('Cooperativas');
-				$this->loadModel('Doadores');
-
-            	//Carrega dados do doador
-            	$doador = $this->Doadores->get($Pedidoscoleta->get('doador_id'));
-
-				$email = new Email('default');
-				$email->from(['ueak21@gmail.com' => 'E-TRASH'])
-					->template('exclusao')
-					->viewVars(['nome' => $doador->get('doador_nome'), 'pedido_id' => $Pedidoscoleta->get('pedido_id'), 'motivo' => $this->request->data('pedido_motivo')])
-					->emailFormat('html')
-				    ->to($doador->get('doador_email'))
-				    ->subject('Cancelamento de pedido de coleta')
-				    ->send('My message');
-
-            	//Envia para a(s) cooperativa(s)
-				if($Pedidoscoleta->get('cooperativa_id') > 0)
-				{
-
-	            	$cooperativa = $this->Cooperativas->get($Pedidoscoleta->get('cooperativa_id'));
-
-					$email = new Email('default');
-					$email->from(['ueak21@gmail.com' => 'E-TRASH'])
-						->template('exclusao')
-						->viewVars(['nome' => $cooperativa->get('cooperativa_nome'), 'pedido_id' => $Pedidoscoleta->get('pedido_id'), 'motivo' => $this->request->data('pedido_motivo')])
-						->emailFormat('html')
-					    ->to($cooperativa->get('cooperativa_email'))
-					    ->subject('Cancelamento de pedido de coleta')
-					    ->send('My message');
-				}
-
-		        $this->Flash->success('O pedido foi cancelado com sucesso.');
+			if($this->Pedidoscoleta->cancelarPedido($id, $this->request->data('pedido_motivo'), $Pedidoscoleta))
+			{
+				$this->Flash->success('O pedido foi cancelado com sucesso.');
 		        return $this->redirect(['action' => 'index']);
 		    }
-	        else 
-	        {
-	            $this->Flash->error('Ocorreu um erro. Por favor, tente novamente.');
+		    else
+		    {
+		    	$this->Flash->error('Ocorreu um erro. Por favor, tente novamente.');
 		        return $this->redirect(['action' => 'index']);
-	        }
+		    }
 	    }
 	}
 
@@ -144,32 +69,9 @@ class PedidoscoletaController extends AppController
 		if($this->Auth->user('cooperativa_id') == null)
 			return $this->redirect(['action' => 'index']);
 
-		$this->loadModel('Materiais');
-
-		$materiais = $this->Materiais->find('all');
-
-		$materiais_options = "";
-
-		// Iteration will execute the query.
-		foreach ($materiais as $row) 
-		{
-			$material_nome = $row['material_nome'];
-			$material_id = $row['material_id'];
-
-
-			//VERIFICA MATERIAIS SELECIONADOS
-			$material_checked = "";
-			if($this->request->data('material') != null)
-			{
-				if(in_array($material_id, $this->request->data('material')))
-					$material_checked = "checked='checked'";
-				else
-					$material_checked = "";
-			}
-
-			$materiais_options .= "<label><input type='checkbox' name='material[]' value='$material_id' $material_checked >$material_nome</label>\n";
-		}
-		
+    	//MONTA OPÇÕES DE MATERIAIS
+    	$this->loadModel('Materiais');
+		$materiais_options = $this->Materiais->montaCheck($this->request->data());			
 		$this->set('materiais_options', $materiais_options);
 
 		$pedidos_coleta = "";
@@ -177,120 +79,26 @@ class PedidoscoletaController extends AppController
         if ($this->request->is('post')) 
         {
         	if($this->request->data('regiao') == null && $this->request->data('material') == null)
-	    		$this->Flash->error('É necessário preencher um filtro.');
+	    		$this->Flash->error('É necessário preencher pelo menos um filtro.');
 	    	else
 	    	{
-	    		$join = array();
-	    		$where = array();
-
-	    		$where['pedidoscoleta.status_id'] = 1;
-
-	    		if($this->request->data('regiao') != null)
-	    		{
-	    			$join['d'] = [
-						            'table' => 'doadores',
-						            'type' => 'INNER',
-						            'conditions' => 'pedidoscoleta.doador_id = d.doador_id'
-						         ];
-
-					$where['doador_regiao'] = $this->request->data('regiao');
-	    		}
-
-	    		if($this->request->data('material') != null)
-	    		{
-	    			$whereM = array();
-
-	    			$join['m'] = [
-						            'table' => 'pedidos_coleta_materiais',
-						            'type' => 'INNER',
-						            'conditions' => 'pedidoscoleta.pedido_id = m.pedido_id'
-						         ];
-
-					//print_r($this->request->data('material'));
-
-					foreach ($this->request->data('material') as $material_id) {
-						$whereM[] = array('material_id' => $material_id);
-					}
-
-					$where['OR'] = $whereM;
-	    		}
-
-				$query = $this->Pedidoscoleta->find()
-			    ->hydrate(false)
-			    ->join($join)
-			    ->where($where)
-			    ->group('pedidoscoleta.pedido_id');
-
-				$PCs = $query->all();
-	    		$dataPC = $PCs->toArray();
-
-	    		$pedidos_coleta ="";
-
-
-				$this->loadModel('Pedido_coleta_status');
-				$this->loadModel('Doadores');
-
-				// Iteration will execute the query.
-				foreach ($dataPC as $row) 
-				{
-					$ver_url  =  Router::url(array('controller'=>'pedidoscoleta', 'action'=>'ver')) . "/".$row['pedido_id'];
-
-					$status = $this->Pedido_coleta_status->get($row['status_id']);
-					
-					//MATERIAIS DO PEDIDO
-					$queryM = $this->Materiais->find()
-				    ->hydrate(false)
-				    ->select(['material_nome'])
-				    ->join(['pcm' => [
-						            'table' => 'pedidos_coleta_materiais',
-						            'type' => 'INNER',
-						            'conditions' => 'materiais.material_id = pcm.material_id'
-						         ]])
-				    ->where(['pedido_id' => $row['pedido_id']])
-				    ->group('materiais.material_id');
-
-					$materiais = $queryM->all();
-		    		
-		    		$materiais_pedido = "";
-
-		    		foreach ($materiais as $rowM) 
-						$materiais_pedido .= "<li>".$rowM['material_nome'] . "</li>";
-
-		    		$pedidos_coleta ="";
-
-		    		//Região
-		    		$queryD = $this->Doadores->find()
-				    ->hydrate(false)
-				    ->select(['doador_regiao'])
-				    ->where(['doador_id' => $row['doador_id']]);
-
-				    $regiao = $queryD->first()['doador_regiao'];
-
-					$pedidos_coleta .= 
-									"<fieldset>
-										<legend>Pedido nº ".$row['pedido_id']."</legend>
-										<div>Pedido realizado em ".$row['pedido_datahorainclusao']."</div><br />
-										<div>Status: ".$status['status_nome']."</div><br/>
-										<div>Materiais:<br/><ul>".$materiais_pedido."</ul></div><br/>
-										<div>Região: ".$regiao."</div><br/>
-										<a href='".$ver_url."'>Ver detalhes</a>
-									</fieldset>";
-				}
-
-				if(count($dataPC) == 0)
-					$pedidos_coleta = "Não há pedidos de coleta cadastrado com os filtros selecionados.";
-				else
-					$pedidos_coleta = "
-										<fieldset>
-											<legend>Pedidos de Coleta encontrados</legend>
-											$pedidos_coleta
-										</fieldset>
-										";
-
+	    		$pedidos_coleta = $this->Pedidoscoleta->pesquisaPedidos($this->request->data());
 				$this->set('pedidos_coleta',$pedidos_coleta);
 	    	}
 
         }
+	}
+
+	public function gerenciar()
+	{
+		//VERIFICA SE É COOPERATIVA
+		if($this->Auth->user('cooperativa_id') == null)
+			return $this->redirect(['action' => 'index']);
+
+		$pedidos_coleta = "";
+		
+		$pedidos_coleta = $this->Pedidoscoleta->listaPedidosCoop($this->Auth->user('cooperativa_id'));
+		$this->set('pedidos_coleta',$pedidos_coleta);
 	}
 
 	public function visualizar($id)
@@ -298,91 +106,16 @@ class PedidoscoletaController extends AppController
 		$Pedidoscoleta = $this->Pedidoscoleta->get($id);
 
 	    //VERIFICA SE O PEDIDO PERTENCE AO USUÁRIO LOGADO
-	    if($Pedidoscoleta->get('doador_id') != $this->Auth->user('doador_id'))
+	    if($Pedidoscoleta->get('doador_id') != $this->Auth->user('doador_id') && $Pedidoscoleta->get('cooperativa_id') != $this->Auth->user('cooperativa_id'))
 	    {
 	    	$this->Flash->error('O pedido não pertence ao seu usuário.');
 	        return $this->redirect(['action' => 'index']);
 	    }
 
-		$this->loadModel('Cooperativas');
-		$this->loadModel('Doadores');
-		$this->loadModel('Materiais');
-		$this->loadModel('Pedidos_coleta_materiais');
-		$this->loadModel('Pedidos_coleta_horarios');
-		$this->loadModel('Pedido_coleta_status');
+        //MONTA DIVs do PEDIDO
+		$pedido_div = $this->Pedidoscoleta->montaPedido($id, $this->Auth->user('cooperativa_id'));
 
-		$materiais = $this->Materiais->find('all');
-
-		$queryPCM = $this->Pedidos_coleta_materiais->find('all')
-	    ->where(['Pedidos_coleta_materiais.pedido_id = ' => $id]);
-
-	    $PCMs = $queryPCM->all();
-	    $dataPCM = $PCMs->toArray();
-
-		$queryPCH = $this->Pedidos_coleta_horarios->find('all')
-	    ->where(['Pedidos_coleta_horarios.pedido_id = ' => $id]);
-
-	    $PCHs = $queryPCH->all();
-	    $dataPCH = $PCHs->toArray();
-
-	    $materiais_div = "";
-		$horarios_div = "";
-
-		// Iteration will execute the query.
-		foreach ($materiais as $row) 
-		{
-			$material_nome = $row['material_nome'];
-			$material_id = $row['material_id'];
-			$materiais_options[$material_id] = $material_nome;
-		}
-
-		// Iteration will execute the query.
-		foreach ($dataPCM as $row) 
-		{
-			$materiais_div .= "Material: ".$materiais_options[$row['material_id']]." | Quantidade: ".$row['quantidade_material']."<br/>\n";
-		}
-
-		// Iteration will execute the query.
-		foreach ($dataPCH as $row) 
-		{
-			$date = strtotime($row['horario']);
-			$horarios_div .= "Dia da semana: ".$row['dia_semana']." | Horário: ".date('H', $date).":".date('i', $date)."<br/>\n";
-		}
-
-		$this->set('materiais_div', $materiais_div);
-		$this->set('horarios_div', $horarios_div);
-
-		//CARREGA DADOS DA TABELA PEDIDO
-		$this->set('datahora_inclusao', $Pedidoscoleta->get('pedido_datahorainclusao'));
-
-		$status = $this->Pedido_coleta_status->get($Pedidoscoleta->get('status_id'));
-		$this->set('status', $status['status_nome']);
-
-		$this->set('periodicidade', $Pedidoscoleta->get('pedido_periodicidade'));
-		$this->set('frequencia', $Pedidoscoleta->get('pedido_frequencia'));
-		$this->set('observacoes', $Pedidoscoleta->get('pedido_obs'));
-
-		if($status['status_id'] == 4 && $Pedidoscoleta->get('pedido_motivo') != "")
-		{
-			$cancelamento_div = "<div>Motivo do cancelamento: <br/> ".$Pedidoscoleta->get('pedido_motivo')."</div>";
-			$this->set('cancelamento_div',$cancelamento_div);
-		}
-
-		if($Pedidoscoleta->get('cooperativa_id') > 0)
-		{
-			$cooperativa = $this->Cooperativas->get($Pedidoscoleta->get('cooperativa_id'));
-			$this->set('cooperativa_nome', $cooperativa->get('cooperativa_nome'));
-			$this->set('cooperativa_email', $cooperativa->get('cooperativa_email'));
-			$this->set('cooperativa_telefone', $cooperativa->get('cooperativa_telefone'));
-
-			$cooperativa_div = "Nome: " . $cooperativa->get('cooperativa_nome') . "<br/>".
-							   "E-mail: " .  $cooperativa->get('cooperativa_email') . "<br/>".
-							   "Telefone: " .  $cooperativa->get('cooperativa_telefone');
-		}
-		else
-			$cooperativa_div = "Ainda não há uma cooperativa contratada para este pedido.";
-
-		$this->set('cooperativa_div',$cooperativa_div);
+		$this->set('pedido_div', $pedido_div);
 	}
 
 	public function ver($id)
@@ -394,89 +127,25 @@ class PedidoscoletaController extends AppController
 		
 		$Pedidoscoleta = $this->Pedidoscoleta->get($id);
 
-		$this->loadModel('Cooperativas');
+		//MONTA DIVs do PEDIDO
+		$pedido_div = $this->Pedidoscoleta->montaPedido($id);
+
 		$this->loadModel('Doadores');
-		$this->loadModel('Materiais');
-		$this->loadModel('Pedidos_coleta_materiais');
-		$this->loadModel('Pedidos_coleta_horarios');
-		$this->loadModel('Pedido_coleta_status');
 		$this->loadModel('Pedidos_coleta_cooperativas');
-
-		$materiais = $this->Materiais->find('all');
-
-		$queryPCM = $this->Pedidos_coleta_materiais->find('all')
-	    ->where(['Pedidos_coleta_materiais.pedido_id = ' => $id]);
-
-	    $PCMs = $queryPCM->all();
-	    $dataPCM = $PCMs->toArray();
-
-		$queryPCH = $this->Pedidos_coleta_horarios->find('all')
-	    ->where(['Pedidos_coleta_horarios.pedido_id = ' => $id]);
-
-	    $PCHs = $queryPCH->all();
-	    $dataPCH = $PCHs->toArray();
-
-	    $materiais_div = "";
-		$horarios_div = "";
-
-		// Iteration will execute the query.
-		foreach ($materiais as $row) 
-		{
-			$material_nome = $row['material_nome'];
-			$material_id = $row['material_id'];
-			$materiais_options[$material_id] = $material_nome;
-		}
-
-		// Iteration will execute the query.
-		foreach ($dataPCM as $row) 
-		{
-			$materiais_div .= "Material: ".$materiais_options[$row['material_id']]." | Quantidade: ".$row['quantidade_material']."<br/>\n";
-		}
-
-		// Iteration will execute the query.
-		foreach ($dataPCH as $row) 
-		{
-			$date = strtotime($row['horario']);
-			$horarios_div .= "Dia da semana: ".$row['dia_semana']." | Horário: ".date('H', $date).":".date('i', $date)."<br/>\n";
-		}
-
-		$this->set('materiais_div', $materiais_div);
-		$this->set('horarios_div', $horarios_div);
-
-		//CARREGA DADOS DA TABELA PEDIDO
-		$this->set('datahora_inclusao', $Pedidoscoleta->get('pedido_datahorainclusao'));
-
-		$status = $this->Pedido_coleta_status->get($Pedidoscoleta->get('status_id'));
-		$this->set('status', $status['status_nome']);
-
-		$this->set('periodicidade', $Pedidoscoleta->get('pedido_periodicidade'));
-		$this->set('frequencia', $Pedidoscoleta->get('pedido_frequencia'));
-		$this->set('observacoes', $Pedidoscoleta->get('pedido_obs'));
-
+		
 		//CEP e Região
-		$queryD = $this->Doadores->find()
-	    ->hydrate(false)
-	    ->select(['doador_regiao', 'doador_cep'])
-	    ->where(['doador_id' => $Pedidoscoleta->get('doador_id')]);
-
-	    $doador_endereco = $queryD->first();
+		$doador_endereco = 	$this->Doadores->montaEndereco($Pedidoscoleta->get('doador_id'));
 
 	    //VERIFICA SE JÁ SE CANDIDATOU
-		$query = $this->Pedidos_coleta_cooperativas->find('all', [
-		    'conditions' => ['pedido_id' => $Pedidoscoleta->get('pedido_id'), 'cooperativa_id' => $this->Auth->user('cooperativa_id')]
-		]);
+	    $candidatou = $this->Pedidos_coleta_cooperativas->seCandidatou($Pedidoscoleta->get('pedido_id'), $this->Auth->user('cooperativa_id'));
 
-		$candidatura = $query->first();
-
-		if($candidatura != null)
-			$candidatou = true;
-		else
-			$candidatou = false;
-
+		$google_maps = "https://www.google.com/maps/embed/v1/place?key=AIzaSyBfyrDLCLUT4J1gI0DUseA9QiAKwycwmnw&q=".$doador_endereco['doador_cep'];
 
 	    $this->set('doador_endereco', $doador_endereco);
 	    $this->set('Pedidoscoleta', $Pedidoscoleta);
 	    $this->set('candidatou', $candidatou);
+	    $this->set('google_maps', $google_maps);
+	    $this->set('pedido_div', $pedido_div);
 	}
 
 	public function cadastrar()
@@ -489,63 +158,28 @@ class PedidoscoletaController extends AppController
 
 		$data = $materiais->toArray();
 
-		// Iteration will execute the query.
-		foreach ($materiais as $row) 
-		{
-			$material_nome = $row['material_nome'];
-			$material_id = $row['material_id'];
-			$materiais_options[$material_id] = $material_nome;
-		}
-
-		 $this->set('materiais_options',$materiais_options);
+        //MONTA OPTIONS DO SELECT DE MATERIAIS
+		$this->loadModel('Materiais');
+		$materiais_options = $this->Materiais->montaSelect();
+	 	$this->set('materiais_options',$materiais_options);
 	       
-	     $pedidocoleta = $this->Pedidoscoleta->newEntity();
+	    $pedidocoleta = $this->Pedidoscoleta->newEntity();
 
 		 if ($this->request->is('post'))
 		 {
-		 	$pedidocoleta->set('doador_id'         , $this->Auth->user('doador_id'));
-		 	$pedidocoleta->set('status_id'         , 1);
-		 	$pedidocoleta->set('pedido_periodicidade', $this->request->data('pedido_periodicidade'));
-		 	$pedidocoleta->set('pedido_frequencia' , $this->request->data('pedido_frequencia'));
-		 	$pedidocoleta->set('pedido_datahorainclusao'		   , date("Y-m-d H:i:s"));
+		 	$cadastrou = $this->Pedidoscoleta->cadastraNovo($this->Auth->user('doador_id'), $this->request->data());
 
-		 	$materiais   = $this->request->data('material_id');
-		 	$quantidades = $this->request->data('quantidade');
-
-		 	$dias 	  = $this->request->data('dia');
-		 	$horarios = $this->request->data('horario');
-
-            if ($this->Pedidoscoleta->save($pedidocoleta)) 
-            {
-            	for ($i=0; $i < count($materiais); $i++) 
-            	{ 
-            		$material = $this->Pedidos_coleta_materiais->newEntity();
-		 			$material->set('pedido_id', $pedidocoleta->get('pedido_id'));
-		 			$material->set('material_id', $this->request->data('material_id')[$i]);
-		 			$material->set('quantidade_material', $this->request->data('quantidade')[$i]);
-		 			$this->Pedidos_coleta_materiais->save($material);
-            	}
-
-            	for ($i=0; $i < count($dias); $i++) 
-            	{ 
-            		$dia = $this->Pedidos_coleta_horarios->newEntity();
-		 			$dia->set('pedido_id', $pedidocoleta->get('pedido_id'));
-		 			$dia->set('dia_semana', $this->request->data('dia')[$i]);
-		 			$dia->set('horario', $this->request->data('horario')[$i]);
-		 			$this->Pedidos_coleta_horarios->save($dia);
-            	}
-
-                $this->Flash->success('O pedido foi cadastrado com sucesso! Você será notificado sobre o interesse das cooperativas sobre este pedido. O número do pedido é '. $pedidocoleta->get('pedido_id'));
+		 	if($cadastrou)
+		 	{
+		 		$this->Flash->success('O pedido foi cadastrado com sucesso! Você será notificado sobre o interesse das cooperativas sobre este pedido. O número do pedido é '. $pedidocoleta->get('pedido_id'));
                 return $this->redirect(['action' => 'index']);
             }
-            else 
-            {
-                $this->Flash->error('Ocorram os seguintes erros abaixo. Por favor, tente novamente!');
-            }
+            else
+                $this->Flash->error('Alguns campos obrigatórios não foram preenchidos. Por favor, tente novamente!');
         }
 	}
 
-	public function alterar($id = 0)
+	public function alterar($id)
 	{
 		$pedidoColeta = $this->Pedidoscoleta->get($id);
 	    $this->set('pedidoColeta', $pedidoColeta);
@@ -563,109 +197,32 @@ class PedidoscoletaController extends AppController
 		$this->loadModel('Pedidos_coleta_materiais');
 		$this->loadModel('Pedidos_coleta_horarios');
 
-		$materiais = $this->Materiais->find('all');
+        //MONTA OPTIONS DO SELECT DE MATERIAIS
+		$this->loadModel('Materiais');
+		$materiais_options = $this->Materiais->montaSelect();
+	 	$this->set('materiais_options',$materiais_options);
 
-		$queryPCM = $this->Pedidos_coleta_materiais->find('all')
-	    ->where(['Pedidos_coleta_materiais.pedido_id = ' => $id]);
-
-	    $PCMs = $queryPCM->all();
-	    $dataPCM = $PCMs->toArray();
-
-		$queryPCH = $this->Pedidos_coleta_horarios->find('all')
-	    ->where(['Pedidos_coleta_horarios.pedido_id = ' => $id]);
-
-	    $PCHs = $queryPCH->all();
-	    $dataPCH = $PCHs->toArray();
-
-	    $addMateriais = "";
-		$addHorarios = "";
-
-		// Iteration will execute the query.
-		foreach ($materiais as $row) 
-		{
-			$material_nome = $row['material_nome'];
-			$material_id = $row['material_id'];
-			$materiais_options[$material_id] = $material_nome;
-		}
-
-		// Iteration will execute the query.
-		foreach ($dataPCM as $row) 
-		{
-			$addMateriais .= "addMaterial(".$row['material_id'].", '".$materiais_options[$row['material_id']]."', ".$row['quantidade_material'].");\n";
-		}
-
-		// Iteration will execute the query.
-		 foreach ($dataPCH as $row) 
-		 {
-		 	$date = strtotime($row['horario']);
-		 	$addHorarios .= "addDias('".date('H', $date)."', '".date('i', $date)."', '".$row['dia_semana']."');\n";
-		 }
-
-		$this->set('materiais_options',$materiais_options);
-
+	 	//CARREGA OS MATERIAIS
+		$this->loadModel('Pedidos_coleta_materiais');
+		$addMateriais = $this->Pedidos_coleta_materiais->addMateriais($id);
 		$this->set('addMateriais',$addMateriais);
 
+	 	//CARREGA OS HORÁRIOS
+		$this->loadModel('Pedidos_coleta_horarios');
+		$addHorarios = $this->Pedidos_coleta_horarios->addHorarios($id);
 		$this->set('addHorarios',$addHorarios);
 
 		 if ($this->request->is(['patch', 'post', 'put'])) 
 		 {
-	        	//CHECA A SENHA
-	            $Pedidoscoleta = $this->Pedidoscoleta->patchEntity($pedidoColeta, $this->request->data);
+	            $alterou = $this->Pedidoscoleta->alteraCadastro($id, $pedidoColeta, $this->request->data());
 
-			 	$Pedidoscoleta->set('pedido_periodicidade', $this->request->data('pedido_periodicidade'));
-			 	$Pedidoscoleta->set('pedido_frequencia' , $this->request->data('pedido_frequencia'));
-			 	$Pedidoscoleta->set('pedido_datahoraalteracao'		   , date("Y-m-d H:i:s"));
-
-	            if ($this->Pedidoscoleta->save($pedidoColeta)) 
-	            {
-
-					$this->Pedidos_coleta_materiais->deleteAll(['pedido_id' => $id]);
-					$this->Pedidos_coleta_horarios->deleteAll(['pedido_id' => $id]);
-
-				 	$materiais   = $this->request->data('material_id');
-				 	$quantidades = $this->request->data('quantidade');
-
-				 	$dias 	  = $this->request->data('dia');
-				 	$horarios = $this->request->data('horario');
-
-					for ($i=0; $i < count($materiais); $i++) 
-	            	{ 
-	            		$material = $this->Pedidos_coleta_materiais->newEntity();
-			 			$material->set('pedido_id', $Pedidoscoleta->get('pedido_id'));
-			 			$material->set('material_id', $this->request->data('material_id')[$i]);
-			 			$material->set('quantidade_material', $this->request->data('quantidade')[$i]);
-			 			$this->Pedidos_coleta_materiais->save($material);
-	            	}
-
-	            	for ($i=0; $i < count($dias); $i++) 
-	            	{ 
-	            		$dia = $this->Pedidos_coleta_horarios->newEntity();
-			 			$dia->set('pedido_id', $Pedidoscoleta->get('pedido_id'));
-			 			$dia->set('dia_semana', $this->request->data('dia')[$i]);
-			 			$dia->set('horario', $this->request->data('horario')[$i]);
-			 			$this->Pedidos_coleta_horarios->save($dia);
-	            	}
-
-	            	//Carrega dados do doador
-	            	$doador = $this->Doadores->get($Pedidoscoleta->get('doador_id'));
-
-					$visualizar_url =  "http://" . Router::url(array('controller'=>'pedidoscoleta', 'action'=>'visualizar')) . "/" . $Pedidoscoleta->get('pedido_id');
-
-					$email = new Email('default');
-					$email->from(['ueak21@gmail.com' => 'E-TRASH'])
-						->template('alteracao')
-						->viewVars(['nome' => $doador->get('doador_nome'), 'pedido_id' => $Pedidoscoleta->get('pedido_id'), 'link' => $visualizar_url])
-						->emailFormat('html')
-					    ->to($doador->get('doador_email'))
-					    ->subject('Alteração de pedido de coleta')
-					    ->send('My message');
-
-
+				if($alterou)
+				{
 	                $this->Flash->success('O pedido foi alterado com sucesso.');
 	                return $this->redirect(['action' => 'index']);
-	            } else {
-	                $this->Flash->error('Ocorreu um erro. Por favor, tente novamente.');
 	            }
+	            else
+	                $this->Flash->error('Ocorreu um erro. Por favor, tente novamente.');
 	     }
 	}
 
@@ -679,13 +236,8 @@ class PedidoscoletaController extends AppController
 		$pedido_id = $this->request->data('pedido_id');
 		$Pedidoscoleta = $this->Pedidoscoleta->get($pedido_id);
 		$cooperativa_id = $this->Auth->user('cooperativa_id');
-
-		//VERIFICA SE JÁ SE CANDIDATOU
-		$query = $this->Pedidos_coleta_cooperativas->find('all', [
-		    'conditions' => ['pedido_id' => $Pedidoscoleta->get('pedido_id'), 'cooperativa_id' => $cooperativa_id]
-		]);
-
-		$candidatura = $query->first();
+		
+		$candidatura = $this->Pedidos_coleta_cooperativas->seCandidatou($Pedidoscoleta->get('pedido_id'), $cooperativa_id);
 
 		if($candidatura != null)
 		{
@@ -737,15 +289,84 @@ class PedidoscoletaController extends AppController
 	            return $this->redirect(['action' => 'ver', 'id' => $pedido_id]);
 	        }
 		}
+	}
 
+	public function confirmar($id)
+	{
+		//LISTA DE COOPERATIVAS
+		$this->loadModel('Cooperativas');
+
+		$cooperativas = $this->Cooperativas->listaCandidatas($id);
+
+		//CHECA SE HÁ COOPERATIVAS INTERESSADAS
+		if(is_null($cooperativas))
+			$cooperativas_div = "Não há cooperativas interessadas no pedido de coleta.";
+		else
+			foreach ($cooperativas as $row) 
+				$cooperativas_div .= $this->cell('Pedidoscoleta', ['nome' => $row['cooperativa_nome'], 'doacao' => $row['$cooperativa_doacao'], 'cooperativa_id' => $row['cooperativa_id'], 'pedido_id' => $id]);
+
+		$this->set('cooperativas', $cooperativas_div);
+	}
+
+	public function eleger($id, $cooperativa_id)
+	{
+		$pedidoColeta = $this->Pedidoscoleta->get($id);
+	    $this->set('pedidoColeta', $pedidoColeta);
+
+	    //VERIFICA SE O PEDIDO PERTENCE AO USUÁRIO LOGADO
+	    if($pedidoColeta->get('doador_id') != $this->Auth->user('doador_id'))
+	    {
+	    	$this->Flash->error('O pedido não pertence ao seu usuário.');
+	        return $this->redirect(['action' => 'index']);
+	    }
+	    else
+	    {
+			$pedidoColeta->set('cooperativa_id', $cooperativa_id);
+			if($this->Pedidoscoleta->save($pedidoColeta))
+			{
+				$this->loadModel('Doadores');
+				$this->loadModel('Cooperativas');
+
+				//ENVIA E-MAIL PARA A COOPERAITVA ELEITA E PARA O DOADOR
+				$doador = $this->Doadores->get($pedidoColeta->get('doador_id'));
+				$cooperativa = $this->Cooperativas->get($cooperativa_id);
+
+				$email = new Email('default');
+						$email->from(['ueak21@gmail.com' => 'E-TRASH'])
+							->template('eleicao_doador')
+							->viewVars(['nome' => $doador->get('doador_nome'), 'pedido_id' => $id, 'cooperativa_nome' => $cooperativa->get('cooperativa_nome')])
+							->emailFormat('html')
+						    ->to($doador->get('doador_email'))
+						    ->subject('Cooperativa escolhida para pedido de coleta')
+						    ->send('My message');
+
+				//ENVIA E-MAIL PARA A COOPERATIVA
+				$email = new Email('default');
+						$email->from(['ueak21@gmail.com' => 'E-TRASH'])
+							->template('eleicao_coop')
+							->viewVars(['nome' => $cooperativa->get('responsavel_nome'), 'pedido_id' => $id])
+							->emailFormat('html')
+						    ->to($doador->get('doador_email'))
+						    ->subject('Sua cooperativa foi escolhida!')
+						    ->send('My message');
+
+		    	$this->Flash->success('A operação foi efetuada com sucesso! A cooperativa será notificada.');
+		        return $this->redirect(['action' => 'index']);
+			}
+			else
+			{
+		    	$this->Flash->error('Houve algum erro. Por favor, tente novamente.');
+		        return $this->redirect(['action' => 'index']);
+			}
+	    }
 	}
 
     public function isAuthorized($user)
     {
-    	if($this->request->action === 'index')
+    	if($this->request->action === 'index' || $this->request->action === 'visualizar')
     		return true;
 
-        if($this->Auth->user('doador_id') == null && $this->request->action != 'consultar' && $this->request->action != 'ver'  && $this->request->action != 'candidatar')
+        if($this->Auth->user('doador_id') == null && $this->request->action != 'consultar' && $this->request->action != 'ver' && $this->request->action != 'candidatar'  && $this->request->action != 'gerenciar')
         	return false;
         elseif($this->Auth->user('cooperativa_id') == null && $this->request->action === 'consultar' && $this->request->action === 'ver'  && $this->request->action === 'candidatar')
         	return false;
