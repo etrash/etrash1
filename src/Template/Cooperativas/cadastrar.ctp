@@ -3,7 +3,6 @@
 echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 echo $this->Html->script('funcoes', ['block' => true]);
 
-
 ?>
 
  <div class="cooperativas form">
@@ -32,45 +31,55 @@ echo $this->Html->script('funcoes', ['block' => true]);
 													   ]);
 			echo $this->Form->input('cooperativa_cep', [
 														'required' => true,
+														'onBlur' => 'buscaCep(this.value)',
 													    'label' => [
 													    'text' => 'CEP'
 													   ]]);
 
-			echo "<div class='input select required'>";
-			echo $this->Form->label('cooperativa_estado', 'Estado');
-			echo $this->Form->select('cooperativa_estado', $estados_options,
-										    ['empty' => '(Selecione o estado)']
-									);
-			echo "</div>";
+            echo $this->Html->image('site/load.gif', ['alt' => 'load', 'id' => 'loadgif', 'style' => 'display:none;height:30px;']);
+			
+			
+			echo $this->Form->input('cooperativa_estado', [
+														'required' => true,
+														'readonly' => true,
+														'value' => 'São Paulo',
+													    'label' => [
+													    'text' => 'Estado'
+													   ]]);
 			
 			echo $this->Form->input('cooperativa_cidade', [
 														'required' => true,
+														'readonly' => true,
+														'value' => 'São Paulo',
 													    'label' => [
 													    'text' => 'Cidade'
 													   ]]);
 
-			echo "<div class='input select required'>";
 
-			echo $this->Form->label('cooperativa_regiao', 'Região');
-
-			echo  $this->Form->select(
-							    'cooperativa_regiao',
-							    ['Centro' => 'Centro','Norte' => 'Norte','Leste' => 'Leste','Sul' => 'Sul','Oeste' => 'Oeste'],
-							    ['empty' => '(Escolha a região)', 'id' => 'cooperativa-regiao','required' => true]
-							);
-			echo "</div>";
-
+			echo $this->Form->input('cooperativa_regiao', [
+														'required' => true,
+														'readonly' => true,
+														'id' => 'regiao',
+													    'label' => [
+													    'text' => 'Região'
+													   ]]);
 
 			echo $this->Form->input('cooperativa_bairro', [
 														'required' => true,
+														'readonly' => true,
+														'id' => 'bairro',
 													    'label' => [
 													    'text' => 'Bairro'
 													   ]]);
+			
 			echo $this->Form->input('cooperativa_endereco', [
 														'required' => true,
+														'readonly' => true,
+														'id' => 'logradouro',
 													    'label' => [
 													    'text' => 'Logradouro'
 													   ]]);
+
 			echo $this->Form->input('cooperativa_numero', [
 														'required' => true,
 													    'label' => [
@@ -153,7 +162,7 @@ echo $this->Html->script('funcoes', ['block' => true]);
 																   ]]);
 
 					?>
-						<?= $this->Form->button('Adcionar', [
+						<?= $this->Form->button('Adicionar', [
 														    'name' => 'material_adicionar',
 														    'type' => 'button',
 														     'onclick' => 'addMaterialValor($(\'#material_nome\').val(), $(\'#material_nome option:selected\').text(), $(\'#material_valor\').val());'

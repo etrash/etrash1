@@ -17,6 +17,7 @@ class EstatisticasController extends AppController
 
     public function index()
     {
+        $this->set('user', $this->Auth->user());
     }
 
     public function materiais()
@@ -40,6 +41,13 @@ class EstatisticasController extends AppController
 
     public function media()
     {
+
+        if(is_null($this->Auth->user('doador_id')))
+        {       
+            $this->Flash->error('Você não possui acesso a este gráfico.');
+            return $this->redirect(['action' => 'index']);
+        }
+
         $this->loadModel('Coletas_materiais');
         
         $data = $this->Coletas_materiais->montaGrafico(3, $this->Auth->user('doador_id'));
@@ -76,6 +84,12 @@ class EstatisticasController extends AppController
 
     public function cooperativa()
     {
+        if(is_null($this->Auth->user('cooperativa_id')))
+        {       
+            $this->Flash->error('Você não possui acesso a este gráfico.');
+            return $this->redirect(['action' => 'index']);
+        }
+
         $this->loadModel('Coletas_materiais');
         
         $data = $this->Coletas_materiais->montaGrafico(5, $this->Auth->user('cooperativa_id'));
@@ -83,9 +97,39 @@ class EstatisticasController extends AppController
         $this->set('data', $data);
     }
 
-    public function isAuthorized($user)
+
+    public function coletas($pedido_id)
+    {
+        $this->loadModel('Coletas_materiais');
+        
+        $data = $this->Coletas_materiais->montaGrafico(6, $pedido_id);
+
+        $this->set('data', $data);
+    }
+
+    public function materiais_coleta()
     {
 
+        if($this->Auth->user('doador_id') > 0)
+        {       
+            $user_id = $this->Auth->user('doador_id');
+            $user_tipo = "doador_id";
+        }
+        else
+        {
+            $user_id = $this->Auth->user('cooperativa_id');
+            $user_tipo = "cooperativa_id";
+        }
+
+        $this->loadModel('Coletas_materiais');
+        
+        $data = $this->Coletas_materiais->montaGrafico(7, $user_id, $user_tipo);
+
+        $this->set('data', $data);
+    }
+
+    public function isAuthorized($user)
+    {   
         return true;
     }
 

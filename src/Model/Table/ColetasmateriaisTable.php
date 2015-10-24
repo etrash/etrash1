@@ -12,6 +12,17 @@
 	    {
 	        $this->table('coletas_materiais');
 	    }
+
+        public function materiaisPorColeta($coleta_id)
+        {
+            $queryCM = $this->find('all')
+            ->where(['Coletas_materiais.coleta_id = ' => $coleta_id]);
+
+            $CMs = $queryCM->all();
+            $dataCM = $CMs->toArray();
+
+            return $dataCM;
+        }
         
         public function addMateriais($pedido_id)
         {
@@ -37,6 +48,8 @@
 
         public function maisColetados()
         {
+            $periodo = new Time('30 days ago');
+            
             $queryCM = $this->find('all', [
                 'order' => ['tot_quantidade' => 'ASC']
             ])
@@ -51,7 +64,7 @@
                        'type' => 'INNER',
                        'conditions' => ['Coletas_materiais.material_id = m.material_id']
                     ]])
-            ->where(['coleta_datahora >=' => new Time('30 days ago')])
+            ->where(['coleta_datahora >=' => $periodo->i18nFormat('YYYY-MM-dd HH:mm:ss')])
             ->group(['Coletas_materiais.material_id'])
             ->limit(10);
 
@@ -63,6 +76,8 @@
 
         public function coletasPorRegiao()
         {
+
+            $periodo = new Time('30 days ago');
             $queryCM = $this->find('all')
             ->select(['d.doador_regiao', 'tot_quantidade' => 'sum(material_quantidade)'])
             ->join(['c' => [
@@ -80,7 +95,7 @@
                        'type' => 'INNER',
                        'conditions' => ['pc.doador_id = d.doador_id']
                     ]])
-            ->where(['coleta_datahora >=' => new Time('30 days ago')])
+            ->where(['coleta_datahora >=' => $periodo->i18nFormat('YYYY-MM-dd HH:mm:ss')])
             ->group(['d.doador_regiao']);
 
             $CMs = $queryCM->all();
@@ -124,7 +139,11 @@
 
         public function mediaCoops($periodo, $material_id)
         {
-            $queryCM = $this->find('all')
+            $periodo  = new Time($periodo);
+
+            $queryCM = $this->find('all', [
+                'order' => ['tot_quantidade' => 'ASC']
+                ])
             ->select(['coop.cooperativa_nome', 'tot_quantidade' => 'sum(material_quantidade)'])
             ->join(['c' => [
                             'table' => 'coletas',
@@ -141,7 +160,7 @@
                        'type' => 'INNER',
                        'conditions' => ['coop.cooperativa_id = pc.cooperativa_id']
                     ]])
-            ->where(['coleta_datahora >=' => new Time($periodo), 'material_id' => $material_id ])
+            ->where(['coleta_datahora >=' => $periodo->i18nFormat('YYYY-MM-dd HH:mm:ss'), 'material_id' => $material_id ])
             ->group(['pc.cooperativa_id']);
 
             $CMs = $queryCM->all();
@@ -171,6 +190,83 @@
                     ]])
             ->where(['pc.cooperativa_id' => $cooperativa_id ])
             ->group(['Coletas_materiais.material_id']);
+
+            $CMs = $queryCM->all();
+            $dataCM = $CMs->toArray();
+
+            return $dataCM;
+        } 
+
+
+        public function coletas($pedido_id)
+        {
+            $queryCM = $this->find('all')
+            ->select(['m.material_nome', 'm.material_id'])
+            ->join(['c' => [
+                            'table' => 'coletas',
+                            'type' => 'INNER',
+                            'conditions' => 'Coletas_materiais.coleta_id = c.coleta_id'
+                         ],
+                    'pc' => [
+                       'table' => 'pedidoscoleta',
+                       'type' => 'INNER',
+                       'conditions' => ['c.pedido_id = pc.pedido_id']
+                    ],
+                    'm' => [
+                       'table' => 'materiais',
+                       'type' => 'INNER',
+                       'conditions' => ['m.material_id = Coletas_materiais.material_id']
+                    ]])
+            ->where(['c.pedido_id' => $pedido_id])
+            ->group(['m.material_id']);
+
+            $CMs = $queryCM->all();
+            $dataCM['materiais'] = $CMs->toArray();
+
+            $queryCM = $this->find('all')
+            ->select(['c.coleta_datahora', 'Coletas_materiais.material_id', 'material_quantidade'])
+            ->join(['c' => [
+                            'table' => 'coletas',
+                            'type' => 'INNER',
+                            'conditions' => 'Coletas_materiais.coleta_id = c.coleta_id'
+                         ],
+                    'pc' => [
+                       'table' => 'pedidoscoleta',
+                       'type' => 'INNER',
+                       'conditions' => ['c.pedido_id = pc.pedido_id']
+                        ]
+                    ])
+            ->where(['c.pedido_id' => $pedido_id]);
+
+            $CMs = $queryCM->all();
+            $dataCM['data'] = $CMs->toArray();
+
+            return $dataCM;
+        } 
+
+
+
+        public function materiaisPorUsuario($user_id, $user_tipo)
+        {
+            $queryCM = $this->find('all')
+            ->select(['m.material_nome', 'tot_quantidade' => 'sum(material_quantidade)'])
+            ->join(['c' => [
+                            'table' => 'coletas',
+                            'type' => 'INNER',
+                            'conditions' => 'Coletas_materiais.coleta_id = c.coleta_id'
+                         ],
+                    'pc' => [
+                       'table' => 'pedidoscoleta',
+                       'type' => 'INNER',
+                       'conditions' => ['c.pedido_id = pc.pedido_id']
+                    ],
+                    'm' => [
+                       'table' => 'materiais',
+                       'type' => 'INNER',
+                       'conditions' => ['m.material_id = Coletas_materiais.material_id']
+                    ]])
+            ->where([$user_tipo => $user_id])
+            ->group(['m.material_id']);
 
             $CMs = $queryCM->all();
             $dataCM = $CMs->toArray();
@@ -246,7 +342,65 @@
                     }
 
                     break;
-                
+
+                case 6:
+                    
+                    $dataArray = $this->coletas($param1);
+                    foreach ($dataArray['materiais'] as $i=>$row) 
+                    {
+                        $data['cols'] .= "data.addColumn('number', '".$row['m']['material_nome']."');\n";
+                    }
+
+                    foreach ($dataArray['data'] as $i=>$row) 
+                    {
+                        $quantidades[$row['c']['coleta_datahora']][$row['material_id']] = $row['material_quantidade'];
+                    }
+
+                    $counti = 1;
+                    
+                    foreach ($quantidades as $i=>$row) 
+                    {
+                        $qtde_materiais = "";
+                        $countj = 1;
+
+                        foreach ($dataArray['materiais'] as $j=>$row) 
+                        {
+                            $qtde = $quantidades[$i][$row['m']['material_id']];
+                            if(is_null($qtde))
+                                $qtde = 0;
+
+                            if($countj != count($dataArray['materiais']))
+                                $qtde_materiais .= "".$qtde.",";
+                            else
+                                $qtde_materiais .= "".$qtde;
+
+                            $countj++;
+                        }
+
+                        if($counti != count($quantidades))
+                            $data['data'] .= "['".$i."', ".$qtde_materiais."],\n";
+                        else
+                            $data['data'] .= "['".$i."', ".$qtde_materiais."]\n";
+
+                        $counti++;
+                    }                    
+
+                    break;
+
+                case 7:
+                                        
+                    $dataArray = $this->materiaisPorUsuario($param1, $param2);
+                    
+                    foreach ($dataArray as $i=>$row) 
+                    {
+                        if($i != count($dataArray))
+                            $data .= "['".$row['m']['material_nome']."', ".$row['tot_quantidade']."],\n";
+                        else
+                            $data .= "['".$row['m']['material_nome']."', ".$row['tot_quantidade']."]\n";
+                    }
+
+                    break;
+
                 default:
                     # code...
                     break;

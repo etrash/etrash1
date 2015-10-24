@@ -28,11 +28,6 @@ use Cake\Routing\Router;
 			$materiais_options = $this->Materiais->montaSelect();
 		 	$this->set('materiais_options',$materiais_options);
 
-	        //MONTA OPTIONS DO SELECT DE ESTADOS
-			$this->loadModel('Estados');
-			$estados_options = $this->Estados->montaSelect();
-        	$this->set('estados_options', $estados_options);
-
 	        if ($this->request->is('post')) 
 	        {
 
@@ -83,11 +78,6 @@ use Cake\Routing\Router;
 			$cooperativa = $this->Cooperativas->get($id);
 	        $this->set('cooperativa', $cooperativa);
 
-	        //CARREGA ESTADOS
-			$this->loadModel('Estados');
-			$estados_options = $this->Estados->montaSelect();
-        	$this->set('estados_options', $estados_options);
-        	
 	        //MONTA OPTIONS DO SELECT DE MATERIAIS
 			$this->loadModel('Materiais');
 			$materiais_options = $this->Materiais->montaSelect();
@@ -141,7 +131,6 @@ use Cake\Routing\Router;
 
 	    public function consultar()
 	    {
-
 	    	//MONTA OPÇÕES DE MATERIAIS
 	    	$this->loadModel('Materiais');
 			$materiais_options = $this->Materiais->montaCheck($this->request->data());			

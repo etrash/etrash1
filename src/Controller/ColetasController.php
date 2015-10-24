@@ -81,18 +81,17 @@ class ColetasController extends AppController
 		$this->set('addMateriais',$addMateriais);
 
 
-		 if ($this->request->is(['patch', 'post', 'put'])) 
-		 {
-	            $alterou = $this->Coletas->alteraCadastro($id, $coleta, $this->request->data());
-
-				if($alterou)
-				{
-	                $this->Flash->success('A coleta foi alterada com sucesso.');
-	                return $this->redirect(['controller' => 'pedidoscoleta', 'action' => 'visualizar', $pedidoColeta->get('pedido_id')]);
-	            }
-	            else
-	                $this->Flash->error('Ocorreu um erro. Por favor, tente novamente.');
-	     }
+		if ($this->request->is(['patch', 'post', 'put'])) 
+		{
+	        $alterou = $this->Coletas->alteraCadastro($id, $coleta, $this->request->data());
+			if($alterou)
+			{
+               $this->Flash->success('A coleta foi alterada com sucesso.');
+               return $this->redirect(['controller' => 'pedidoscoleta', 'action' => 'visualizar', $pedidoColeta->get('pedido_id')]);
+            }
+            else
+               $this->Flash->error('Ocorreu um erro. Por favor, tente novamente.');
+	    }
 	}
 
 	public function excluir($id)

@@ -147,7 +147,7 @@
                                   <p  style='text-align:left;color:#999999;font-size:14px;font-weight:normal;line-height:19px;'>
                                     Parabéns! Sua cooperativa foi escolhida  para o pedido de coleta de número <?= $pedido_id; ?>.<br/>
                                     Informamos que é de responsabilidade da cooperativa a notificação prévia das coletas para o doador bem como o pagamento, se houver, das coletas.<br/>
-                                    Acesse este <a href='#'>link</a> para cadastrar uma coleta.<br/>
+                                    Acesse este <a href='<?php echo $link; ?>'>link</a> para cadastrar uma coleta.<br/>
                                     </p>
                                     <p style='padding-top:20px;'>
                                     <span style='color:#222222;'>

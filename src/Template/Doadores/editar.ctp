@@ -1,6 +1,7 @@
 <?php  
 
 echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
+echo $this->Html->script('funcoes', ['block' => true]);
 
 
 ?>
@@ -29,42 +30,52 @@ echo $this->Html->script('jquery.maskedinput.min', ['block' => true]);
 
 													   ]);
 			echo $this->Form->input('doador_cep', [
+														'required' => true,
+														'onBlur' => 'buscaCep(this.value)',
 													    'label' => [
 													    'text' => 'CEP'
 													   ]]);
 
+            echo $this->Html->image('site/load.gif', ['alt' => 'load', 'id' => 'loadgif', 'style' => 'display:none;height:30px;']);
 			
-			echo "<div class='input select required'>";
-			echo $this->Form->label('doador_estado', 'Estado');
-			echo $this->Form->select('doador_estado', $estados_options,
-										    ['empty' => '(Selecione o estado)']
-									);
-			echo "</div>";
-
+			
+			echo $this->Form->input('doador_estado', [
+														'required' => true,
+														'readonly' => true,
+														'value' => 'São Paulo',
+													    'label' => [
+													    'text' => 'Estado'
+													   ]]);
+			
 			echo $this->Form->input('doador_cidade', [
+														'required' => true,
+														'readonly' => true,
+														'value' => 'São Paulo',
 													    'label' => [
 													    'text' => 'Cidade'
 													   ]]);
 
-			echo "<div class='input select required'>";
 
-			echo $this->Form->label('doador_regiao', 'Região');
-
-			echo  $this->Form->select(
-							    'doador_regiao',
-							    ['Centro' => 'Centro','Norte' => 'Norte','Leste' => 'Leste','Sul' => 'Sul','Oeste' => 'Oeste'],
-							    ['empty' => '(Escolha a região)','required' => true]
-							);
-
-			echo "</div>";
+			echo $this->Form->input('doador_regiao', [
+														'required' => true,
+														'readonly' => true,
+														'id' => 'regiao',
+													    'label' => [
+													    'text' => 'Região'
+													   ]]);
 
 			echo $this->Form->input('doador_bairro', [
+														'required' => true,
+														'readonly' => true,
+														'id' => 'bairro',
 													    'label' => [
 													    'text' => 'Bairro'
 													   ]]);
-
+			
 			echo $this->Form->input('doador_endereco', [
 														'required' => true,
+														'readonly' => true,
+														'id' => 'logradouro',
 													    'label' => [
 													    'text' => 'Logradouro'
 													   ]]);

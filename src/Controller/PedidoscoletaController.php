@@ -115,6 +115,11 @@ class PedidoscoletaController extends AppController
         //MONTA DIVs do PEDIDO
 		$pedido_div = $this->Pedidoscoleta->montaPedido($id, $this->Auth->user('cooperativa_id'));
 
+		//MONTA GRÁFICO
+        $this->loadModel('Coletas_materiais');
+        $data = $this->Coletas_materiais->montaGrafico(6, $id);
+        $this->set('data', $data);
+
 		$this->set('pedido_div', $pedido_div);
 	}
 
@@ -171,7 +176,7 @@ class PedidoscoletaController extends AppController
 
 		 	if($cadastrou)
 		 	{
-		 		$this->Flash->success('O pedido foi cadastrado com sucesso! Você será notificado sobre o interesse das cooperativas sobre este pedido. O número do pedido é '. $pedidocoleta->get('pedido_id'));
+		 		$this->Flash->success('O pedido foi cadastrado com sucesso! Você será notificado sobre o interesse das cooperativas sobre este pedido.');
                 return $this->redirect(['action' => 'index']);
             }
             else
@@ -239,9 +244,9 @@ class PedidoscoletaController extends AppController
 		
 		$candidatura = $this->Pedidos_coleta_cooperativas->seCandidatou($Pedidoscoleta->get('pedido_id'), $cooperativa_id);
 
-		if($candidatura != null)
+		if($candidatura != null || $Pedidoscoleta->get('cooperativa_id') > 0)
 		{
-            $this->Flash->error('Você já se candidatou para este pedido de coleta.');
+            $this->Flash->error('Infelizmente esse pedido não está mais disponível.');
             return $this->redirect(['action' => 'ver', 'id' => $pedido_id]);
 		}			
 		else
@@ -256,7 +261,7 @@ class PedidoscoletaController extends AppController
 				$this->loadModel('Cooperativas');
 				
 				//ENVIA E-MAIL PARA O DOADOR
-				$visualizar_url =  "http://" . Router::url(array('controller'=>'pedidoscoleta', 'action'=>'visualizar')) . "/" . $pedido_id;
+				$confirmar_url =  "http://" . Router::url(array('controller'=>'pedidoscoleta', 'action'=>'confirmar')) . "/" . $pedido_id;
 
 				$doador = $this->Doadores->get($Pedidoscoleta->get('doador_id'));
 				$cooperativa = $this->Cooperativas->get($cooperativa_id);
@@ -264,7 +269,7 @@ class PedidoscoletaController extends AppController
 				$email = new Email('default');
 						$email->from(['ueak21@gmail.com' => 'E-TRASH'])
 							->template('candidatura_doador')
-							->viewVars(['nome' => $doador->get('doador_nome'), 'pedido_id' => $pedido_id, 'link' => $visualizar_url, 'cooperativa_nome' => $cooperativa->get('cooperativa_nome')])
+							->viewVars(['nome' => $doador->get('doador_nome'), 'pedido_id' => $pedido_id, 'link' => $confirmar_url, 'cooperativa_nome' => $cooperativa->get('cooperativa_nome')])
 							->emailFormat('html')
 						    ->to($doador->get('doador_email'))
 						    ->subject('Cooperativa interessada em pedido de coleta')
@@ -322,6 +327,7 @@ class PedidoscoletaController extends AppController
 	    else
 	    {
 			$pedidoColeta->set('cooperativa_id', $cooperativa_id);
+			$pedidoColeta->set('status_id', 2);
 			if($this->Pedidoscoleta->save($pedidoColeta))
 			{
 				$this->loadModel('Doadores');
@@ -330,6 +336,8 @@ class PedidoscoletaController extends AppController
 				//ENVIA E-MAIL PARA A COOPERAITVA ELEITA E PARA O DOADOR
 				$doador = $this->Doadores->get($pedidoColeta->get('doador_id'));
 				$cooperativa = $this->Cooperativas->get($cooperativa_id);
+
+				$cadastrar_url =  "http://" . Router::url(array('controller'=>'coletas', 'action'=>'cadastrar')) . "/" . $pedido_id;
 
 				$email = new Email('default');
 						$email->from(['ueak21@gmail.com' => 'E-TRASH'])
@@ -344,7 +352,7 @@ class PedidoscoletaController extends AppController
 				$email = new Email('default');
 						$email->from(['ueak21@gmail.com' => 'E-TRASH'])
 							->template('eleicao_coop')
-							->viewVars(['nome' => $cooperativa->get('responsavel_nome'), 'pedido_id' => $id])
+							->viewVars(['nome' => $cooperativa->get('responsavel_nome'), 'pedido_id' => $id, 'link' => $cadastrar_url])
 							->emailFormat('html')
 						    ->to($doador->get('doador_email'))
 						    ->subject('Sua cooperativa foi escolhida!')

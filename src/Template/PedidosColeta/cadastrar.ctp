@@ -22,7 +22,7 @@
 														    ]]);
 
 					?>
-						<?= $this->Form->button('Adcionar', [
+						<?= $this->Form->button('Adicionar', [
 														    'name' => 'material_adicionar',
 														    'type' => 'button',
 														    'onclick' => 'addMaterial($(\'#material_nome\').val(), $(\'#material_nome option:selected\').text(), $(\'#material-quantidade\').val());'
@@ -60,7 +60,7 @@
 														    'text' => 'Horário disponível para coleta', 
 														    ]]);
 
-						echo $this->Form->button('Adcionar', [
+						echo $this->Form->button('Adicionar', [
 														    'name' => 'horario_adicionar',
 														    'type' => 'button',
 														    'onclick' => 'addDia();'

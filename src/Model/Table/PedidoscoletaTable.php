@@ -49,7 +49,7 @@
 			{
 				$visualizar_url  =  Router::url(array('controller'=>'pedidoscoleta', 'action'=>'visualizar')) . "/".$row['pedido_id'];
 
-				if($row['status_id'] != 4)
+				if($row['status_id'] != 3)
 				{
 					$alterar_url  =  Router::url(array('controller'=>'pedidoscoleta', 'action'=>'alterar'));
 					$cancelar_url =  Router::url(array('controller'=>'pedidoscoleta', 'action'=>'cancelar'));
@@ -101,7 +101,7 @@
 		public function cancelarPedido($id, $motivo)
 		{
 			$pedido = $this->get($id);
-			$pedido->set('status_id',4);
+			$pedido->set('status_id',3);
 			$pedido->set('pedido_motivo',$motivo);
 			
 			if ($this->save($pedido)) 
@@ -313,7 +313,7 @@
 			$pedido_div['frequencia'] 	  =	$pedido->get('pedido_frequencia');
 			$pedido_div['observacoes'] 	  =	$pedido->get('pedido_obs');
 
-			if($status['status_id'] == 4 && $pedido->get('pedido_motivo') != "")
+			if($status['status_id'] == 3 && $pedido->get('pedido_motivo') != "")
 			{
 				$cancelamento_div = "<div>Motivo do cancelamento: <br/> ".$pedido->get('pedido_motivo')."</div>";
 				$pedido_div['cancelamento_div'] = $cancelamento_div;
@@ -454,6 +454,12 @@
 		public function listaPedidosCoop($cooperativa_id)
 		{
 			$query = $this->find('all')
+            ->join(['d' => [
+                            'table' => 'doadores',
+                            'type' => 'INNER',
+                            'conditions' => 'Pedidoscoleta.doador_id = d.doador_id'
+                         ]
+                    ])
 		    ->where(['cooperativa_id = ' => $cooperativa_id]);
 
 		    $PCs = $query->all();
@@ -465,7 +471,7 @@
 			{
 				$visualizar_url  =  Router::url(array('controller'=>'pedidoscoleta', 'action'=>'visualizar')) . "/".$row['pedido_id'];
 
-				if($row['status_id'] != 4)
+				if($row['status_id'] != 3)
 				{
 					$coleta_url  =  Router::url(array('controller'=>'coletas', 'action'=>'cadastrar'));;
 
@@ -478,13 +484,13 @@
 				
 				$this->Pedido_coleta_status = TableRegistry::get('Pedido_coleta_status');
 				$status = $this->Pedido_coleta_status->get($row['status_id']);
-				
+
 				$pedidos_coleta .= 
 								"<fieldset>
 									<legend>Pedido nº ".$row['pedido_id']."</legend>
 									".$coleta."
 									<div>Pedido cadastrado em ".$row['pedido_datahorainclusao']."</div><br />
-									<div>Doador: </div><br />
+									<div>Doador: ".$row['d']['doador_nome']."</div><br />
 									<div>Status: ".$status['status_nome']."</div><br/>
 									<a href='".$visualizar_url."'>Ver detalhes / Coletas</a>
 								</fieldset>";

@@ -50,7 +50,7 @@
 														    ]]);
 
 					?>
-						<?= $this->Form->button('Adcionar', [
+						<?= $this->Form->button('Adicionar', [
 														    'name' => 'material_adicionar',
 														    'type' => 'button',
 														    'onclick' => 'addMaterialValorQtde($(\'#material_nome\').val(), $(\'#material_nome option:selected\').text(), $(\'#material_valor\').val(),$(\'#material-quantidade\').val());'

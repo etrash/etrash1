@@ -16,8 +16,8 @@ use Cake\I18n\Number;
 	        $this->addBehavior('Timestamp', [
 	            'events' => [
 	                'Model.beforeSave' => [
-	                    'coleta_datahorainclusao' => 'new',
-	                    'coleta_datahoraalteracao' => 'always',
+	                    'datahora_inclusao' => 'new',
+	                    'datahora_alteracao' => 'always',
 	                ]
 	            ]
 	        ]);
@@ -26,9 +26,11 @@ use Cake\I18n\Number;
 		public function cadastraNovo($data)
 		{
 	    	$coleta = $this->newEntity();
+	    	
+ 	    	$datahora = Time::createFromFormat('d/m/Y H:i', $data['pedido_datahora']);
 
 	    	$coleta->set('pedido_id'         , $data['pedido_id']);
-		 	$coleta->set('pedido_datahora', $data['pedido_datahora']);
+		 	$coleta->set('coleta_datahora', $datahora->i18nFormat('YYYY-MM-dd HH:mm:ss'));
 		 	$coleta->set('coleta_obs' , $data['coleta_obs']);
 
 		 	$materiais   = $data['material_id'];
@@ -85,9 +87,9 @@ use Cake\I18n\Number;
 				else
 					$alterar  = "";
 
-            	$this->Coleta_materiais = TableRegistry::get('Coleta_materiais');
+            	$this->Coletas_materiais = TableRegistry::get('Coletas_materiais');
 
-            	$materiais_coleta = $this->Coleta_materiais->materiaisPorColeta($row['coleta_id']);
+            	$materiais_coleta = $this->Coletas_materiais->materiaisPorColeta($row['coleta_id']);
 
 	            //MONTA OPTIONS DO SELECT DE MATERIAIS
 	            $this->Materiais = TableRegistry::get('Materiais');

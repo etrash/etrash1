@@ -37,6 +37,7 @@ class AppController extends Controller
      * @return void
      */
     
+
     public function initialize()
     {
         $this->loadComponent('Flash');
@@ -69,10 +70,12 @@ class AppController extends Controller
         elseif($this->Auth->user('doador_id') == null)
         {
             $menu_superior_itens = "<li class='active'><a href='".Router::url(['controller' => 'cooperativas'])."'>Meu Cadastro</a></li>";
+            $menu_superior_itens .= "<li><a href='".Router::url(['controller' => 'login', 'action' => 'logout'])."'>Logout</a></li>";
         }
         else
         {
             $menu_superior_itens = "<li class='active'><a href='".Router::url(['controller' => 'doadores'])."'>Meu Cadastro</a></li>";
+            $menu_superior_itens .= "<li><a href='".Router::url(['controller' => 'login', 'action' => 'logout'])."'>Logout</a></li>";
         }
 
         $this->set('menu_superior_itens', $menu_superior_itens);

@@ -174,3 +174,37 @@ function limpaPedido()
 	$("textarea[name=pedido_obs]").val("");
 	$('input[name=dia_semana]').removeAttr('checked'); 
 }
+
+function buscaCep(cep)
+{
+
+	$("#bairro").val('');
+	$("#logradouro").val('');
+	$("#regiao").val('');
+
+	$.ajax({
+    // a url do xjsonml
+        url : "../ws/busca_cep.php?cep="+cep,
+    // o tipo de dados que é xml
+        dataType : "json",
+    // antes de enviar loga "Enviando"
+        beforeSend : function(){
+            $('#loadgif').show();
+        },
+    // se terminar com sucesso loga o retorno
+        success : function(json){
+        	if(json.regiao != undefined)
+	    	{
+		    	$("#bairro").val(json.bairro);
+		    	$("#logradouro").val(json.logradouro);
+		    	$("#regiao").val(json.regiao);
+        	}
+		    else
+		    {
+		    	alert("CEP Inválido ou fora da cidade de São Paulo");
+		    }
+
+		    $('#loadgif').hide();
+        }
+    });
+}

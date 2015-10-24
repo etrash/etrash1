@@ -21,11 +21,6 @@ use App\Controller\AppController;
 	    public function cadastrar()
 		{
 	        $doador = $this->Doadores->newEntity();
-
-	        //CARREGA ESTADOS
-			$this->loadModel('Estados');
-			$estados_options = $this->Estados->montaSelect();
-        	$this->set('estados_options', $estados_options);
         	
 	        if ($this->request->is('post')) {
 
@@ -59,11 +54,6 @@ use App\Controller\AppController;
 			$id = $this->Auth->user('doador_id');
 			$doador = $this->Doadores->get($id);
 	        $this->set('doador', $doador);
-
-	        //CARREGA ESTADOS
-			$this->loadModel('Estados');
-			$estados_options = $this->Estados->montaSelect();
-        	$this->set('estados_options', $estados_options);
 
 	        if ($this->request->is(['patch', 'post', 'put'])) {
 	        	//CHECA A SENHA
