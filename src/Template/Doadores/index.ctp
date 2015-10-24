@@ -1,7 +1,7 @@
 <div>
 	<fieldset>
-		<legend> MENU<legend>	
-		<ul>
+		<legend> MENU</legend>	
+		<ul class="inner-menu">
 			<li>
 				<?php 
 				echo $this->Html->link(

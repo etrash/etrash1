@@ -123,3 +123,12 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
     </div>
 </body>
 </html>
+
+<script type="text/javascript">
+    
+    var inputs = document.querySelectorAll("input[type='text'], input[type='password'], input[type='number'], textarea, select");
+    for ( var i = 0; i < inputs.length; i++ ) {
+        inputs[i].classList.add("form-control");
+    }
+
+</script>

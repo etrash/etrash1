@@ -57,7 +57,7 @@
 					if(is_null($row['cooperativa_id']))
 					{
 						$confirmar_url =   Router::url(array('controller'=>'pedidoscoleta', 'action'=>'confirmar'));
-						$confirmar =  "<div style='float:right'><a href='".$confirmar_url."/".$row['pedido_id']."'>Eleger Cooperativa</a></div><br/>";
+						$confirmar =  "<a class='btn btn-sm btn-success' href='".$confirmar_url."/".$row['pedido_id']."'>Eleger Cooperativa</a>";
 					}
 					else
 					{
@@ -66,8 +66,8 @@
 					}
 
 
-					$alterar  = "<div style='float:right'><a href='".$alterar_url."/".$row['pedido_id']."'>Alterar</a></div><br/>";
-					$cancelar = "<div style='float:right'><a href='".$cancelar_url."/".$row['pedido_id']."'>Cancelar</a></div>";
+					$alterar  = "<a class='btn btn-sm btn-warning' href='".$alterar_url."/".$row['pedido_id']."'>Alterar</a>";
+					$cancelar = "<a class='btn btn-sm btn-danger' href='".$cancelar_url."/".$row['pedido_id']."'>Cancelar</a>";
 				}
 				else
 				{
@@ -81,14 +81,13 @@
 				$status = $this->Pedido_coleta_status->get($row['status_id']);
 				
 				$pedidos_coleta .= 
-								"<fieldset>
-									<legend>Pedido nº ".$row['pedido_id']."</legend>
-									
-									".$confirmar.$alterar.$cancelar."
-									<div>Pedido cadastrado em ".$row['pedido_datahorainclusao']."</div><br />
-									<div>Cooperativa: </div><br />
-									<div>Status: ".$status['status_nome']."</div><br/>
-									<a href='".$visualizar_url."'>Ver detalhes / Coletas</a>
+								"<fieldset class='pedido'>
+									<legend>Pedido <span class='number'>".$row['pedido_id']."</span></legend>
+									<div class='float-right btn-group'>".$confirmar.$alterar.$cancelar."</div>
+									<div>Pedido cadastrado em ".$row['pedido_datahorainclusao']."</div>
+									<div>Cooperativa: </div>
+									<div><strong>Status: ".$status['status_nome']."</strong></div>
+									<a href='".$visualizar_url."' class='btn btn-default btn-success btn-xs'>Ver detalhes / Coletas</a>
 								</fieldset>";
 			}
 
