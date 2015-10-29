@@ -15,6 +15,8 @@
 namespace Cake\Database\Type;
 
 use Cake\Database\Driver;
+use Cake\Database\Type;
+use InvalidArgumentException;
 use PDO;
 
 /**
@@ -22,42 +24,40 @@ use PDO;
  *
  * Use to convert integer data between PHP and the database types.
  */
-class IntegerType extends \Cake\Database\Type
+class IntegerType extends Type
 {
 
     /**
      * Convert integer data into the database format.
      *
-     * @param string|resource $value The value to convert.
+     * @param mixed $value The value to convert.
      * @param Driver $driver The driver instance to convert with.
-     * @return string|resource
+     * @return int
      */
     public function toDatabase($value, Driver $driver)
     {
         if ($value === null || $value === '') {
             return null;
         }
-        if (is_array($value)) {
-            return 1;
+
+        if (!is_scalar($value)) {
+            throw new InvalidArgumentException('Cannot convert value to integer');
         }
+
         return (int)$value;
     }
 
     /**
      * Convert integer values to PHP integers
      *
-     * @param null|string|resource $value The value to convert.
+     * @param mixed $value The value to convert.
      * @param Driver $driver The driver instance to convert with.
-     * @return resource
-     * @throws \Cake\Core\Exception\Exception
+     * @return int
      */
     public function toPHP($value, Driver $driver)
     {
         if ($value === null) {
             return null;
-        }
-        if (is_array($value)) {
-            return 1;
         }
         return (int)$value;
     }

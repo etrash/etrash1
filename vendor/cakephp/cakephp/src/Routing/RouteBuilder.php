@@ -85,6 +85,13 @@ class RouteBuilder
     protected $_params;
 
     /**
+     * Name prefix for connected routes.
+     *
+     * @var string
+     */
+    protected $_namePrefix = '';
+
+    /**
      * The route collection routes should be added to.
      *
      * @var \Cake\Routing\RouteCollection
@@ -94,15 +101,18 @@ class RouteBuilder
     /**
      * Constructor
      *
+     * ### Options
+     *
+     * - `routeClass` - The default route class to use when adding routes.
+     * - `extensions` - The extensions to connect when adding routes.
+     * - `namePrefix` - The prefix to prepend to all route names.
+     *
      * @param \Cake\Routing\RouteCollection $collection The route collection to append routes into.
      * @param string $path The path prefix the scope is for.
      * @param array $params The scope's routing parameters.
-     * @param array $options Options list. Valid keys are:
-     *
-     *   - `routeClass` - The default route class to use when adding routes.
-     *   - `extensions` - The extensions to connect when adding routes.
+     * @param array $options Options list.
      */
-    public function __construct($collection, $path, array $params = [], array $options = [])
+    public function __construct(RouteCollection $collection, $path, array $params = [], array $options = [])
     {
         $this->_collection = $collection;
         $this->_path = $path;
@@ -113,13 +123,16 @@ class RouteBuilder
         if (isset($options['extensions'])) {
             $this->_extensions = $options['extensions'];
         }
+        if (isset($options['namePrefix'])) {
+            $this->_namePrefix = $options['namePrefix'];
+        }
     }
 
     /**
      * Get or set default route class.
      *
      * @param string|null $routeClass Class name.
-     * @return string|void
+     * @return string|null
      */
     public function routeClass($routeClass = null)
     {
@@ -136,7 +149,7 @@ class RouteBuilder
      * extensions applied. However, setting extensions does not modify existing routes.
      *
      * @param null|string|array $extensions Either the extensions to use or null.
-     * @return array|void
+     * @return array|null
      */
     public function extensions($extensions = null)
     {
@@ -168,6 +181,23 @@ class RouteBuilder
     public function params()
     {
         return $this->_params;
+    }
+
+    /**
+     * Get/set the name prefix for this scope.
+     *
+     * Modifying the name prefix will only change the prefix
+     * used for routes connected after the prefix is changed.
+     *
+     * @param string|null $value Either the value to set or null.
+     * @return string
+     */
+    public function namePrefix($value = null)
+    {
+        if ($value !== null) {
+            $this->_namePrefix = $value;
+        }
+        return $this->_namePrefix;
     }
 
     /**
@@ -317,14 +347,18 @@ class RouteBuilder
      *
      * Examples:
      *
-     * `$routes->connect('/:controller/:action/*');`
+     * ```
+     * $routes->connect('/:controller/:action/*');
+     * ```
      *
      * The first parameter will be used as a controller name while the second is
      * used as the action name. The '/*' syntax makes this route greedy in that
      * it will match requests like `/posts/index` as well as requests
      * like `/posts/edit/1/foo/bar`.
      *
-     * `$routes->connect('/home-page', ['controller' => 'Pages', 'action' => 'display', 'home']);`
+     * ```
+     * $routes->connect('/home-page', ['controller' => 'Pages', 'action' => 'display', 'home']);
+     * ```
      *
      * The above shows the use of route parameter defaults. And providing routing
      * parameters for a static route.
@@ -363,7 +397,9 @@ class RouteBuilder
      *
      * Example of using the `_method` condition:
      *
-     * `$routes->connect('/tasks', ['controller' => 'Tasks', 'action' => 'index', '_method' => 'GET']);`
+     * ```
+     * $routes->connect('/tasks', ['controller' => 'Tasks', 'action' => 'index', '_method' => 'GET']);
+     * ```
      *
      * The above route will only be matched for GET requests. POST requests will fail to match this route.
      *
@@ -390,6 +426,9 @@ class RouteBuilder
 
         if (empty($options['routeClass'])) {
             $options['routeClass'] = $this->_routeClass;
+        }
+        if (isset($options['_name']) && $this->_namePrefix) {
+            $options['_name'] = $this->_namePrefix . $options['_name'];
         }
 
         $route = $this->_makeRoute($route, $defaults, $options);
@@ -456,12 +495,16 @@ class RouteBuilder
      *
      * Examples:
      *
-     * `$routes->redirect('/home/*', ['controller' => 'posts', 'action' => 'view']);`
+     * ```
+     * $routes->redirect('/home/*', ['controller' => 'posts', 'action' => 'view']);
+     * ```
      *
      * Redirects /home/* to /posts/view and passes the parameters to /posts/view. Using an array as the
      * redirect destination allows you to use other routes to define where an URL string should be redirected to.
      *
-     * `$routes-redirect('/posts/*', 'http://google.com', ['status' => 302]);`
+     * ```
+     * $routes-redirect('/posts/*', 'http://google.com', ['status' => 302]);
+     * ```
      *
      * Redirects /posts/* to http://google.com with a HTTP status of 302
      *
@@ -569,16 +612,23 @@ class RouteBuilder
         }
         if (!is_callable($callback)) {
             $msg = 'Need a callable function/object to connect routes.';
-            throw new \InvalidArgumentException($msg);
+            throw new InvalidArgumentException($msg);
         }
 
         if ($this->_path !== '/') {
             $path = $this->_path . $path;
         }
+        $namePrefix = $this->_namePrefix;
+        if (isset($params['_namePrefix'])) {
+            $namePrefix .= $params['_namePrefix'];
+        }
+        unset($params['_namePrefix']);
+
         $params = $params + $this->_params;
         $builder = new static($this->_collection, $path, $params, [
             'routeClass' => $this->_routeClass,
-            'extensions' => $this->_extensions
+            'extensions' => $this->_extensions,
+            'namePrefix' => $namePrefix,
         ]);
         $callback($builder);
     }

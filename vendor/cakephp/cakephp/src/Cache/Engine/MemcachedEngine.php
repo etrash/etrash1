@@ -24,7 +24,7 @@ use Memcached;
  * more information.
  *
  * Main advantage of this Memcached engine over the memcached engine is
- * support of binary protocol, and igbibnary serialization
+ * support of binary protocol, and igbinary serialization
  * (if memcached extension compiled with --enable-igbinary)
  * Compressed keys can also be incremented/decremented
  *
@@ -101,7 +101,7 @@ class MemcachedEngine extends CacheEngine
      */
     public function init(array $config = [])
     {
-        if (!class_exists('Memcached')) {
+        if (!extension_loaded('memcached')) {
             return false;
         }
 
@@ -422,6 +422,9 @@ class MemcachedEngine extends CacheEngine
         }
 
         $keys = $this->_Memcached->getAllKeys();
+        if ($keys === false) {
+            return false;
+        }
 
         foreach ($keys as $key) {
             if (strpos($key, $this->_config['prefix']) === 0) {
@@ -430,6 +433,24 @@ class MemcachedEngine extends CacheEngine
         }
 
         return true;
+    }
+
+    /**
+     * Add a key to the cache if it does not already exist.
+     *
+     * @param string $key Identifier for the data.
+     * @param mixed $value Data to be cached.
+     * @return bool True if the data was successfully cached, false on failure.
+     */
+    public function add($key, $value)
+    {
+        $duration = $this->_config['duration'];
+        if ($duration > 30 * DAY) {
+            $duration = 0;
+        }
+
+        $key = $this->_key($key);
+        return $this->_Memcached->add($key, $value, $duration);
     }
 
     /**

@@ -15,6 +15,7 @@
 namespace Cake\Cache;
 
 use Cake\Cache\Engine\NullEngine;
+use Cake\Core\ObjectRegistry;
 use Cake\Core\StaticConfigTrait;
 use InvalidArgumentException;
 use RuntimeException;
@@ -113,6 +114,26 @@ class Cache
     protected static $_registry;
 
     /**
+     * Returns the Cache Registry instance used for creating and using cache adapters.
+     * Also allows for injecting of a new registry instance.
+     *
+     * @param \Cake\Core\ObjectRegistry $registry Injectable registry object.
+     * @return \Cake\Core\ObjectRegistry
+     */
+    public static function registry(ObjectRegistry $registry = null)
+    {
+        if ($registry) {
+            static::$_registry = $registry;
+        }
+        
+        if (empty(static::$_registry)) {
+            static::$_registry = new CacheRegistry();
+        }
+
+        return static::$_registry;
+    }
+
+    /**
      * Finds and builds the instance of the required engine class.
      *
      * @param string $name Name of the config array that needs an engine instance built
@@ -121,9 +142,7 @@ class Cache
      */
     protected static function _buildEngine($name)
     {
-        if (empty(static::$_registry)) {
-            static::$_registry = new CacheRegistry();
-        }
+        $registry = static::registry();
 
         if (empty(static::$_config[$name]['className'])) {
             throw new InvalidArgumentException(
@@ -132,7 +151,7 @@ class Cache
         }
 
         $config = static::$_config[$name];
-        static::$_registry->load($name, $config);
+        $registry->load($name, $config);
 
         if (!empty($config['groups'])) {
             foreach ($config['groups'] as $group) {
@@ -158,12 +177,14 @@ class Cache
             return new NullEngine();
         }
 
-        if (isset(static::$_registry->{$config})) {
-            return static::$_registry->{$config};
+        $registry = static::registry();
+
+        if (isset($registry->{$config})) {
+            return $registry->{$config};
         }
 
         static::_buildEngine($config);
-        return static::$_registry->{$config};
+        return $registry->{$config};
     }
 
     /**
@@ -188,11 +209,15 @@ class Cache
      *
      * Writing to the active cache config:
      *
-     * `Cache::write('cached_data', $data);`
+     * ```
+     * Cache::write('cached_data', $data);
+     * ```
      *
      * Writing to a specific cache config:
      *
-     * `Cache::write('cached_data', $data, 'long_term');`
+     * ```
+     * Cache::write('cached_data', $data, 'long_term');
+     * ```
      *
      * @param string $key Identifier for the data
      * @param mixed $value Data to be cached - anything except a resource
@@ -228,23 +253,27 @@ class Cache
      *
      * Writing to the active cache config:
      *
-     * `Cache::writeMany(['cached_data_1' => 'data 1', 'cached_data_2' => 'data 2']);`
+     * ```
+     * Cache::writeMany(['cached_data_1' => 'data 1', 'cached_data_2' => 'data 2']);
+     * ```
      *
      * Writing to a specific cache config:
      *
-     * `Cache::writeMany(['cached_data_1' => 'data 1', 'cached_data_2' => 'data 2'], 'long_term');`
+     * ```
+     * Cache::writeMany(['cached_data_1' => 'data 1', 'cached_data_2' => 'data 2'], 'long_term');
+     * ```
      *
      * @param array $data An array of data to be stored in the cache
      * @param string $config Optional string configuration name to write to. Defaults to 'default'
      * @return array of bools for each key provided, indicating true for success or false for fail
-     * @throws RuntimeException
+     * @throws \RuntimeException
      */
     public static function writeMany($data, $config = 'default')
     {
         $engine = static::engine($config);
         $return = $engine->writeMany($data);
         foreach ($return as $key => $success) {
-            if ($success === false && !empty($data[$key])) {
+            if ($success === false && $data[$key] !== '') {
                 throw new RuntimeException(sprintf(
                     '%s cache was unable to write \'%s\' to %s cache',
                     $config,
@@ -263,11 +292,15 @@ class Cache
      *
      * Reading from the active cache configuration.
      *
-     * `Cache::read('my_data');`
+     * ```
+     * Cache::read('my_data');
+     * ```
      *
      * Reading from a specific cache configuration.
      *
-     * `Cache::read('my_data', 'long_term');`
+     * ```
+     * Cache::read('my_data', 'long_term');
+     * ```
      *
      * @param string $key Identifier for the data
      * @param string $config optional name of the configuration to use. Defaults to 'default'
@@ -286,11 +319,15 @@ class Cache
      *
      * Reading multiple keys from the active cache configuration.
      *
-     * `Cache::readMany(['my_data_1', 'my_data_2]);`
+     * ```
+     * Cache::readMany(['my_data_1', 'my_data_2]);
+     * ```
      *
      * Reading from a specific cache configuration.
      *
-     * `Cache::readMany(['my_data_1', 'my_data_2], 'long_term');`
+     * ```
+     * Cache::readMany(['my_data_1', 'my_data_2], 'long_term');
+     * ```
      *
      * @param array $keys an array of keys to fetch from the cache
      * @param string $config optional name of the configuration to use. Defaults to 'default'
@@ -348,11 +385,15 @@ class Cache
      *
      * Deleting from the active cache configuration.
      *
-     * `Cache::delete('my_data');`
+     * ```
+     * Cache::delete('my_data');
+     * ```
      *
      * Deleting from a specific cache configuration.
      *
-     * `Cache::delete('my_data', 'long_term');`
+     * ```
+     * Cache::delete('my_data', 'long_term');
+     * ```
      *
      * @param string $key Identifier for the data
      * @param string $config name of the configuration to use. Defaults to 'default'
@@ -371,11 +412,15 @@ class Cache
      *
      * Deleting multiple keys from the active cache configuration.
      *
-     * `Cache::deleteMany(['my_data_1', 'my_data_2']);`
+     * ```
+     * Cache::deleteMany(['my_data_1', 'my_data_2']);
+     * ```
      *
      * Deleting from a specific cache configuration.
      *
-     * `Cache::deleteMany(['my_data_1', 'my_data_2], 'long_term');`
+     * ```
+     * Cache::deleteMany(['my_data_1', 'my_data_2], 'long_term');
+     * ```
      *
      * @param array $keys Array of cache keys to be deleted
      * @param string $config name of the configuration to use. Defaults to 'default'
@@ -515,5 +560,37 @@ class Cache
         $results = call_user_func($callable);
         self::write($key, $results, $config);
         return $results;
+    }
+
+    /**
+     * Write data for key into a cache engine if it doesn't exist already.
+     *
+     * ### Usage:
+     *
+     * Writing to the active cache config:
+     *
+     * ```
+     * Cache::add('cached_data', $data);
+     * ````
+     *
+     * Writing to a specific cache config:
+     *
+     * ```
+     * Cache::add('cached_data', $data, 'long_term');
+     * ```
+     *
+     * @param string $key Identifier for the data.
+     * @param mixed $value Data to be cached - anything except a resource.
+     * @param string $config Optional string configuration name to write to. Defaults to 'default'.
+     * @return bool True if the data was successfully cached, false on failure.
+     *   Or if the key existed already.
+     */
+    public static function add($key, $value, $config = 'default')
+    {
+        $engine = static::engine($config);
+        if (is_resource($value)) {
+            return false;
+        }
+        return $engine->add($key, $value);
     }
 }

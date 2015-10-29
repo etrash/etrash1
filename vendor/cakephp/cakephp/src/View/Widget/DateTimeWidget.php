@@ -16,8 +16,9 @@ namespace Cake\View\Widget;
 
 use Cake\View\Form\ContextInterface;
 use Cake\View\StringTemplate;
-use Cake\View\Widget\SelectBoxWidget;
-use Cake\View\Widget\WidgetInterface;
+use DateTime;
+use Exception;
+use RuntimeException;
 
 /**
  * Input widget class for generating a date time input widget.
@@ -91,7 +92,7 @@ class DateTimeWidget implements WidgetInterface
      * - `minute` - Array of options for the minute select box.
      * - `second` - Set to true to enable the seconds input. Defaults to false.
      * - `meridian` - Set to true to enable the meridian input. Defaults to false.
-     *   The meridian will be enabled automatically if you chose a 12 hour format.
+     *   The meridian will be enabled automatically if you choose a 12 hour format.
      *
      * The `year` option accepts the `start` and `end` options. These let you control
      * the year range that is generated. It defaults to +-5 years from today.
@@ -122,31 +123,11 @@ class DateTimeWidget implements WidgetInterface
      */
     public function render(array $data, ContextInterface $context)
     {
-        $data += [
-            'name' => '',
-            'empty' => false,
-            'disabled' => null,
-            'val' => null,
-            'year' => [],
-            'month' => [],
-            'day' => [],
-            'hour' => [],
-            'minute' => [],
-            'second' => [],
-            'meridian' => null,
-        ];
+        $data = $this->_normalizeData($data);
 
         $selected = $this->_deconstructDate($data['val'], $data);
 
-        $timeFormat = isset($data['hour']['format']) ? $data['hour']['format'] : null;
-        if ($timeFormat === 12 && !isset($data['meridian'])) {
-            $data['meridian'] = [];
-        }
-        if ($timeFormat === 24) {
-            $data['meridian'] = false;
-        }
-
-        $templateOptions = [];
+        $templateOptions = ['templateVars' => $data['templateVars']];
         foreach ($this->_selects as $select) {
             if ($data[$select] === false || $data[$select] === null) {
                 $templateOptions[$select] = '';
@@ -154,7 +135,7 @@ class DateTimeWidget implements WidgetInterface
                 continue;
             }
             if (!is_array($data[$select])) {
-                throw new \RuntimeException(sprintf(
+                throw new RuntimeException(sprintf(
                     'Options for "%s" must be an array|false|null',
                     $select
                 ));
@@ -169,12 +150,55 @@ class DateTimeWidget implements WidgetInterface
             if (!isset($data[$select]['disabled'])) {
                 $data[$select]['disabled'] = $data['disabled'];
             }
+            if (isset($data[$select]['templateVars']) && $templateOptions['templateVars']) {
+                $data[$select]['templateVars'] = array_merge(
+                    $templateOptions['templateVars'],
+                    $data[$select]['templateVars']
+                );
+            }
+            if (!isset($data[$select]['templateVars'])) {
+                $data[$select]['templateVars'] = $templateOptions['templateVars'];
+            }
             $templateOptions[$select] = $this->{$method}($data[$select], $context);
             unset($data[$select]);
         }
         unset($data['name'], $data['empty'], $data['disabled'], $data['val']);
         $templateOptions['attrs'] = $this->_templates->formatAttributes($data);
         return $this->_templates->format('dateWidget', $templateOptions);
+    }
+
+    /**
+     * Normalize data.
+     *
+     * @param array $data Data to normalize.
+     * @return array Normalized data.
+     */
+    protected function _normalizeData($data)
+    {
+        $data += [
+            'name' => '',
+            'empty' => false,
+            'disabled' => null,
+            'val' => null,
+            'year' => [],
+            'month' => [],
+            'day' => [],
+            'hour' => [],
+            'minute' => [],
+            'second' => [],
+            'meridian' => null,
+            'templateVars' => [],
+        ];
+
+        $timeFormat = isset($data['hour']['format']) ? $data['hour']['format'] : null;
+        if ($timeFormat === 12 && !isset($data['meridian'])) {
+            $data['meridian'] = [];
+        }
+        if ($timeFormat === 24) {
+            $data['meridian'] = false;
+        }
+
+        return $data;
     }
 
     /**
@@ -195,11 +219,11 @@ class DateTimeWidget implements WidgetInterface
         }
         try {
             if (is_string($value)) {
-                $date = new \DateTime($value);
+                $date = new DateTime($value);
             } elseif (is_bool($value)) {
-                $date = new \DateTime();
+                $date = new DateTime();
             } elseif (is_int($value)) {
-                $date = new \DateTime('@' . $value);
+                $date = new DateTime('@' . $value);
             } elseif (is_array($value)) {
                 $dateArray = [
                     'year' => '', 'month' => '', 'day' => '',
@@ -226,17 +250,18 @@ class DateTimeWidget implements WidgetInterface
                     }
                     if (!empty($dateArray['minute']) && isset($options['minute']['interval'])) {
                         $dateArray['minute'] += $this->_adjustValue($dateArray['minute'], $options['minute']);
+                        $dateArray['minute'] = str_pad(strval($dateArray['minute']), 2, '0', STR_PAD_LEFT);
                     }
 
                     return $dateArray;
                 }
 
-                $date = new \DateTime();
+                $date = new DateTime();
             } else {
                 $date = clone $value;
             }
-        } catch (\Exception $e) {
-            $date = new \DateTime();
+        } catch (Exception $e) {
+            $date = new DateTime();
         }
 
         if (isset($options['minute']['interval'])) {
@@ -294,6 +319,7 @@ class DateTimeWidget implements WidgetInterface
             'start' => date('Y', strtotime('-5 years')),
             'end' => date('Y', strtotime('+5 years')),
             'order' => 'desc',
+            'templateVars' => [],
             'options' => []
         ];
 
@@ -325,7 +351,8 @@ class DateTimeWidget implements WidgetInterface
             'names' => false,
             'val' => null,
             'leadingZeroKey' => true,
-            'leadingZeroValue' => false
+            'leadingZeroValue' => false,
+            'templateVars' => [],
         ];
 
         if (empty($options['options'])) {
@@ -356,6 +383,7 @@ class DateTimeWidget implements WidgetInterface
             'val' => null,
             'leadingZeroKey' => true,
             'leadingZeroValue' => false,
+            'templateVars' => [],
         ];
         $options['options'] = $this->_generateNumbers(1, 31, $options);
 
@@ -380,6 +408,7 @@ class DateTimeWidget implements WidgetInterface
             'end' => null,
             'leadingZeroKey' => true,
             'leadingZeroValue' => false,
+            'templateVars' => [],
         ];
         $is24 = $options['format'] == 24;
 
@@ -408,8 +437,10 @@ class DateTimeWidget implements WidgetInterface
         }
 
         unset(
-            $options['end'], $options['start'],
-            $options['format'], $options['leadingZeroKey'],
+            $options['end'],
+            $options['start'],
+            $options['format'],
+            $options['leadingZeroKey'],
             $options['leadingZeroValue']
         );
         return $this->_select->render($options, $context);
@@ -431,6 +462,7 @@ class DateTimeWidget implements WidgetInterface
             'round' => 'up',
             'leadingZeroKey' => true,
             'leadingZeroValue' => true,
+            'templateVars' => [],
         ];
         $options['interval'] = max($options['interval'], 1);
         if (empty($options['options'])) {
@@ -460,7 +492,8 @@ class DateTimeWidget implements WidgetInterface
             'val' => null,
             'leadingZeroKey' => true,
             'leadingZeroValue' => true,
-            'options' => $this->_generateNumbers(1, 60)
+            'options' => $this->_generateNumbers(0, 59),
+            'templateVars' => [],
         ];
 
         unset($options['leadingZeroKey'], $options['leadingZeroValue']);
@@ -479,7 +512,8 @@ class DateTimeWidget implements WidgetInterface
         $options += [
             'name' => '',
             'val' => null,
-            'options' => ['am' => 'am', 'pm' => 'pm']
+            'options' => ['am' => 'am', 'pm' => 'pm'],
+            'templateVars' => [],
         ];
         return $this->_select->render($options, $context);
     }
@@ -510,8 +544,8 @@ class DateTimeWidget implements WidgetInterface
         if ($leadingZero === false) {
             $i = 1;
             foreach ($months as $key => $name) {
-                $months[$i++] = $name;
                 unset($months[$key]);
+                $months[$i++] = $name;
             }
         }
 
@@ -568,15 +602,15 @@ class DateTimeWidget implements WidgetInterface
      */
     public function secureFields(array $data)
     {
+        $data = $this->_normalizeData($data);
+
         $fields = [];
-        $hourFormat = isset($data['hour']['format']) ? $data['hour']['format'] : null;
-        foreach ($this->_selects as $type) {
-            if ($type === 'meridian' && ($hourFormat === null || $hourFormat === 24)) {
+        foreach ($this->_selects as $select) {
+            if ($data[$select] === false || $data[$select] === null) {
                 continue;
             }
-            if (!isset($data[$type]) || $data[$type] !== false) {
-                $fields[] = $data['name'] . '[' . $type . ']';
-            }
+
+            $fields[] = $data['name'] . '[' . $select . ']';
         }
         return $fields;
     }

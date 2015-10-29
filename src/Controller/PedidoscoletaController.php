@@ -8,10 +8,13 @@ use Cake\Network\Email\Email;
 use Cake\Routing\Router;
 
 use Cake\View\CellTrait;
+use Cake\Core\Configure;
+
 
 class PedidoscoletaController extends AppController
 {
 	use CellTrait;
+	public $components = array('RequestHandler');
 
     public function initialize()
 	{
@@ -121,6 +124,49 @@ class PedidoscoletaController extends AppController
         $this->set('data', $data);
 
 		$this->set('pedido_div', $pedido_div);
+		$this->set('id', $id);
+	}
+
+
+
+	public function pdf($id)
+	{
+		$Pedidoscoleta = $this->Pedidoscoleta->get($id);
+
+	    //VERIFICA SE O PEDIDO PERTENCE AO USUÁRIO LOGADO
+	    if($Pedidoscoleta->get('doador_id') != $this->Auth->user('doador_id') && $Pedidoscoleta->get('cooperativa_id') != $this->Auth->user('cooperativa_id'))
+	    {
+	    	$this->Flash->error('O pedido não pertence ao seu usuário.');
+	        return $this->redirect(['action' => 'index']);
+	    }
+
+        //MONTA DIVs do PEDIDO
+		$pedido_div = $this->Pedidoscoleta->montaPedido($id, $this->Auth->user('cooperativa_id'));
+
+		//MONTA GRÁFICO
+        $this->loadModel('Coletas_materiais');
+        $data = $this->Coletas_materiais->montaGrafico(6, $id);
+        $this->set('data', $data);
+		$this->set('pedido_div', $pedido_div);
+ 		
+	    $CakePdf = new \CakePdf\Pdf\CakePdf();
+	    $CakePdf->template('pedido', 'default');
+	    $CakePdf->viewVars(['data' => $data, 'pedido_div' => $pedido_div]);
+	    //get the pdf string returned
+	    $pdf = $CakePdf->output();
+	    //or write it to file directly
+
+	    $pdf = $CakePdf->write(WWW_ROOT . DS . 'files' . DS . 'pedido_'.$id.'.pdf');
+
+
+		if($pdf)
+        	return $this->redirect('/files/pedido_'.$id.'.pdf');
+ 		else
+ 		{
+ 			$this->Flash->error('Erro ao gerar PDF!');
+        	return $this->redirect(['action' => 'visualizar', $id]);
+ 		}
+
 	}
 
 	public function ver($id)

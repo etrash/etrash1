@@ -17,16 +17,15 @@ namespace Cake\View;
 use Cake\Cache\Cache;
 use Cake\Core\App;
 use Cake\Core\Plugin;
+use Cake\Event\EventDispatcherInterface;
+use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventManager;
-use Cake\Event\EventManagerTrait;
 use Cake\Log\LogTrait;
 use Cake\Network\Request;
 use Cake\Network\Response;
 use Cake\Routing\RequestActionTrait;
 use Cake\Routing\Router;
 use Cake\Utility\Inflector;
-use Cake\View\CellTrait;
-use Cake\View\ViewVarsTrait;
 use InvalidArgumentException;
 use LogicException;
 use RuntimeException;
@@ -36,8 +35,8 @@ use RuntimeException;
  * in from the controller to render the results of the controller action. Often this is HTML,
  * but can also take the form of JSON, XML, PDF's or streaming files.
  *
- * CakePHP uses a two-step-view pattern. This means that the view content is rendered first,
- * and then inserted into the selected layout. This also means you can pass data from the view to the
+ * CakePHP uses a two-step-view pattern. This means that the template content is rendered first,
+ * and then inserted into the selected layout. This also means you can pass data from the template to the
  * layout using `$this->set()`
  *
  * View class supports using plugins as themes. You can set
@@ -54,13 +53,14 @@ use RuntimeException;
  * @property      \Cake\View\Helper\SessionHelper $Session
  * @property      \Cake\View\Helper\TextHelper $Text
  * @property      \Cake\View\Helper\TimeHelper $Time
+ * @property      \Cake\View\Helper\UrlHelper $Url
  * @property      \Cake\View\ViewBlock $Blocks
  */
-class View
+class View implements EventDispatcherInterface
 {
 
     use CellTrait;
-    use EventManagerTrait;
+    use EventDispatcherTrait;
     use LogTrait;
     use RequestActionTrait;
     use ViewVarsTrait;
@@ -97,6 +97,7 @@ class View
      * Current passed params. Passed to View from the creating Controller for convenience.
      *
      * @var array
+     * @deprecated 3.1.0 Use `$this->request->params['pass']` instead.
      */
     public $passedArgs = [];
 
@@ -108,22 +109,22 @@ class View
     public $helpers = [];
 
     /**
-     * The name of the views subfolder containing views for this View.
+     * The name of the subfolder containing templates for this View.
      *
      * @var string
      */
-    public $viewPath = null;
+    public $templatePath = null;
 
     /**
-     * The name of the view file to render. The name specified
+     * The name of the template file to render. The name specified
      * is the filename in /app/Template/<SubFolder> without the .ctp extension.
      *
      * @var string
      */
-    public $view = null;
+    public $template = null;
 
     /**
-     * The name of the layout file to render the view inside of. The name specified
+     * The name of the layout file to render the template inside of. The name specified
      * is the filename of the layout in /app/Template/Layout without the .ctp
      * extension.
      *
@@ -140,7 +141,7 @@ class View
 
     /**
      * Turns on or off CakePHP's conventional mode of applying layout files. On by default.
-     * Setting to off means that layouts will not be automatically applied to rendered views.
+     * Setting to off means that layouts will not be automatically applied to rendered templates.
      *
      * @var bool
      */
@@ -154,7 +155,7 @@ class View
     protected $_ext = '.ctp';
 
     /**
-     * Sub-directory for this view file. This is often used for extension based routing.
+     * Sub-directory for this template file. This is often used for extension based routing.
      * Eg. With an `xml` extension, $subDir would be `xml/`
      *
      * @var string
@@ -214,8 +215,8 @@ class View
      * @var array
      */
     protected $_passedVars = [
-        'viewVars', 'autoLayout', 'helpers', 'view', 'layout', 'name', 'theme',
-        'layoutPath', 'viewPath', 'plugin', 'passedArgs'
+        'viewVars', 'autoLayout', 'helpers', 'template', 'layout', 'name', 'theme',
+        'layoutPath', 'templatePath', 'plugin', 'passedArgs'
     ];
 
     /**
@@ -265,8 +266,16 @@ class View
      * Constant for view file type 'view'
      *
      * @var string
+     * @deprecated 3.1.0 Use TYPE_TEMPLATE instead.
      */
     const TYPE_VIEW = 'view';
+
+    /**
+     * Constant for view file type 'template'.
+     *
+     * @var string
+     */
+    const TYPE_TEMPLATE = 'view';
 
     /**
      * Constant for view file type 'element'
@@ -297,6 +306,12 @@ class View
         EventManager $eventManager = null,
         array $viewOptions = []
     ) {
+        if (isset($viewOptions['view'])) {
+            $this->template($viewOptions['view']);
+        }
+        if (isset($viewOptions['viewPath'])) {
+            $this->templatePath($viewOptions['viewPath']);
+        }
         foreach ($this->_passedVars as $var) {
             if (isset($viewOptions[$var])) {
                 $this->{$var} = $viewOptions[$var];
@@ -333,6 +348,101 @@ class View
      */
     public function initialize()
     {
+    }
+
+    /**
+     * Get/set path for templates files.
+     *
+     * @param string $path Path for template files. If null returns current path.
+     * @return string|null
+     */
+    public function templatePath($path = null)
+    {
+        if ($path === null) {
+            return $this->templatePath;
+        }
+
+        $this->templatePath = $path;
+    }
+
+    /**
+     * Get/set path for layout files.
+     *
+     * @param string $path Path for layout files. If null returns current path.
+     * @return string|null
+     */
+    public function layoutPath($path = null)
+    {
+        if ($path === null) {
+            return $this->layoutPath;
+        }
+
+        $this->layoutPath = $path;
+    }
+
+    /**
+     * Turns on or off CakePHP's conventional mode of applying layout files.
+     * On by default. Setting to off means that layouts will not be
+     * automatically applied to rendered templates.
+     *
+     * @param bool $autoLayout Boolean to turn on/off. If null returns current value.
+     * @return bool|null
+     */
+    public function autoLayout($autoLayout = null)
+    {
+        if ($autoLayout === null) {
+            return $this->autoLayout;
+        }
+
+        $this->autoLayout = $autoLayout;
+    }
+
+    /**
+     * The view theme to use.
+     *
+     * @param string $theme Theme name. If null returns current theme.
+     * @return string|null
+     */
+    public function theme($theme = null)
+    {
+        if ($theme === null) {
+            return $this->theme;
+        }
+
+        $this->theme = $theme;
+    }
+
+    /**
+     * Get/set the name of the template file to render. The name specified is the
+     * filename in /app/Template/<SubFolder> without the .ctp extension.
+     *
+     * @param string $name Template file name to set. If null returns current name.
+     * @return string|null
+     */
+    public function template($name = null)
+    {
+        if ($name === null) {
+            return $this->template;
+        }
+
+        $this->template = $name;
+    }
+
+    /**
+     * Get/set the name of the layout file to render the template inside of.
+     * The name specified is the filename of the layout in /app/Template/Layout
+     * without the .ctp extension.
+     *
+     * @param string $name Layout file name to set. If null returns current name.
+     * @return string|null
+     */
+    public function layout($name = null)
+    {
+        if ($name === null) {
+            return $this->layout;
+        }
+
+        $this->layout = $name;
     }
 
     /**
@@ -428,9 +538,9 @@ class View
     }
 
     /**
-     * Renders view for given view file and layout.
+     * Renders view for given template file and layout.
      *
-     * Render triggers helper callbacks, which are fired before and after the view are rendered,
+     * Render triggers helper callbacks, which are fired before and after the template are rendered,
      * as well as before and after the layout. The helper callbacks are called:
      *
      * - `beforeRender`
@@ -438,15 +548,15 @@ class View
      * - `beforeLayout`
      * - `afterLayout`
      *
-     * If View::$autoRender is false and no `$layout` is provided, the view will be returned bare.
+     * If View::$autoRender is false and no `$layout` is provided, the template will be returned bare.
      *
-     * View and layout names can point to plugin views/layouts. Using the `Plugin.view` syntax
-     * a plugin view/layout can be used instead of the app ones. If the chosen plugin is not found
-     * the view will be located along the regular view path cascade.
+     * Template and layout names can point to plugin templates/layouts. Using the `Plugin.template` syntax
+     * a plugin template/layout can be used instead of the app ones. If the chosen plugin is not found
+     * the template will be located along the regular view path cascade.
      *
      * @param string|null $view Name of view file to use
      * @param string|null $layout Layout to use.
-     * @return string|void Rendered content or null if content already rendered and returned earlier.
+     * @return string|null Rendered content or null if content already rendered and returned earlier.
      * @throws \Cake\Core\Exception\Exception If there is an error in the view.
      * @triggers View.beforeRender $this, [$viewFileName]
      * @triggers View.afterRender $this, [$viewFileName]
@@ -454,22 +564,28 @@ class View
     public function render($view = null, $layout = null)
     {
         if ($this->hasRendered) {
-            return;
+            return null;
+        }
+
+        if ($layout !== null) {
+            $defaultLayout = $this->layout;
+            $this->layout = $layout;
         }
 
         if ($view !== false && $viewFileName = $this->_getViewFileName($view)) {
-            $this->_currentType = static::TYPE_VIEW;
+            $this->_currentType = static::TYPE_TEMPLATE;
             $this->dispatchEvent('View.beforeRender', [$viewFileName]);
             $this->Blocks->set('content', $this->_render($viewFileName));
             $this->dispatchEvent('View.afterRender', [$viewFileName]);
         }
 
-        if ($layout === null) {
-            $layout = $this->layout;
+        if ($this->layout && $this->autoLayout) {
+            $this->Blocks->set('content', $this->renderLayout('', $this->layout));
         }
-        if ($layout && $this->autoLayout) {
-            $this->Blocks->set('content', $this->renderLayout('', $layout));
+        if ($layout !== null) {
+            $this->layout = $defaultLayout;
         }
+
         $this->hasRendered = true;
         return $this->Blocks->get('content');
     }
@@ -478,7 +594,7 @@ class View
      * Renders a layout. Returns output from _render(). Returns false on error.
      * Several variables are created for use in layout.
      *
-     * @param string $content Content to render in a view, wrapped by the surrounding layout.
+     * @param string $content Content to render in a template, wrapped by the surrounding layout.
      * @param string|null $layout Layout name
      * @return mixed Rendered output, or false on error
      * @throws \Cake\Core\Exception\Exception if there is an error in the view.
@@ -492,16 +608,15 @@ class View
             return $this->Blocks->get('content');
         }
 
-        if (empty($content)) {
-            $content = $this->Blocks->get('content');
-        } else {
-            $this->Blocks->set('content', $content);
+        if (!empty($content)) {
+             $this->Blocks->set('content', $content);
         }
+
         $this->dispatchEvent('View.beforeLayout', [$layoutFileName]);
 
         $title = $this->Blocks->get('title');
         if ($title === '') {
-            $title = Inflector::humanize($this->viewPath);
+            $title = Inflector::humanize($this->templatePath);
             $this->Blocks->set('title', $title);
         }
 
@@ -551,6 +666,23 @@ class View
     /**
      * Start capturing output for a 'block'
      *
+     * You can use start on a block multiple times to
+     * append or prepend content in a capture mode.
+     *
+     * ```
+     * // Append content to an existing block.
+     * $this->start('content');
+     * echo $this->fetch('content');
+     * echo 'Some new content';
+     * $this->end();
+     *
+     * // Prepend content to an existing block
+     * $this->start('content');
+     * echo 'Some new content';
+     * echo $this->fetch('content');
+     * $this->end();
+     * ```
+     *
      * @param string $name The name of the block to capture for.
      * @return void
      * @see ViewBlock::start()
@@ -572,12 +704,7 @@ class View
      */
     public function append($name, $value = null)
     {
-        if ($value !== null) {
-            $this->Blocks->concat($name, $value);
-            return;
-        }
-        $this->Blocks->start($name);
-        echo $this->Blocks->get($name);
+        $this->Blocks->concat($name, $value);
     }
 
     /**
@@ -647,17 +774,17 @@ class View
     }
 
     /**
-     * Provides view or element extension/inheritance. Views can extends a
+     * Provides template or element extension/inheritance. Views can extends a
      * parent view and populate blocks in the parent template.
      *
-     * @param string $name The view or element to 'extend' the current one with.
+     * @param string $name The template or element to 'extend' the current one with.
      * @return void
-     * @throws \LogicException when you extend a view with itself or make extend loops.
+     * @throws \LogicException when you extend a template with itself or make extend loops.
      * @throws \LogicException when you extend an element which doesn't exist
      */
     public function extend($name)
     {
-        if ($name[0] === '/' || $this->_currentType === static::TYPE_VIEW) {
+        if ($name[0] === '/' || $this->_currentType === static::TYPE_TEMPLATE) {
             $parent = $this->_getViewFileName($name);
         } else {
             switch ($this->_currentType) {
@@ -667,7 +794,7 @@ class View
                         list($plugin, $name) = $this->pluginSplit($name);
                         $paths = $this->_paths($plugin);
                         $defaultPath = $paths[0] . 'Element' . DS;
-                        throw new \LogicException(sprintf(
+                        throw new LogicException(sprintf(
                             'You cannot extend an element which does not exist (%s).',
                             $defaultPath . $name . $this->_ext
                         ));
@@ -682,10 +809,10 @@ class View
         }
 
         if ($parent == $this->_current) {
-            throw new \LogicException('You cannot have views extend themselves.');
+            throw new LogicException('You cannot have views extend themselves.');
         }
         if (isset($this->_parents[$parent]) && $this->_parents[$parent] == $this->_current) {
-            throw new \LogicException('You cannot have views extend in a loop.');
+            throw new LogicException('You cannot have views extend in a loop.');
         }
         $this->_parents[$this->_current] = $parent;
     }
@@ -728,12 +855,40 @@ class View
      */
     public function __get($name)
     {
+        if ($name === 'view') {
+            return $this->template;
+        }
+        if ($name === 'viewPath') {
+            return $this->templatePath;
+        }
+
         $registry = $this->helpers();
         if (isset($registry->{$name})) {
             $this->{$name} = $registry->{$name};
             return $registry->{$name};
         }
         return $this->{$name};
+    }
+
+    /**
+     * Magic setter for deprecated properties.
+     *
+     * @param string $name Name to property.
+     * @param mixed $value Value for property.
+     * @return void
+     */
+    public function __set($name, $value)
+    {
+        if ($name === 'view') {
+            $this->template = $value;
+            return;
+        }
+        if ($name === 'viewPath') {
+            $this->templatePath = $value;
+            return;
+        }
+
+        $this->{$name} = $value;
     }
 
     /**
@@ -751,8 +906,8 @@ class View
     }
 
     /**
-     * Renders and returns output for given view filename with its
-     * array of data. Handles parent/extended views.
+     * Renders and returns output for given template filename with its
+     * array of data. Handles parent/extended templates.
      *
      * @param string $viewFile Filename of the view
      * @param array $data Data to include in rendered view. If empty the current
@@ -848,8 +1003,10 @@ class View
 
     /**
      * Returns filename of given action's template file (.ctp) as a string.
-     * CamelCased action names will be under_scored! This means that you can have
-     * LongActionNames that refer to long_action_names.ctp views.
+     * CamelCased action names will be under_scored by default.
+     * This means that you can have LongActionNames that refer to
+     * long_action_names.ctp views. You can change the inflection rule by
+     * overriding _inflectViewFileName.
      *
      * @param string|null $name Controller action to find template filename for
      * @return string Template filename
@@ -857,32 +1014,32 @@ class View
      */
     protected function _getViewFileName($name = null)
     {
-        $viewPath = $subDir = '';
+        $templatePath = $subDir = '';
 
         if ($this->subDir !== null) {
             $subDir = $this->subDir . DS;
         }
-        if ($this->viewPath) {
-            $viewPath = $this->viewPath . DS;
+        if ($this->templatePath) {
+            $templatePath = $this->templatePath . DS;
         }
 
         if ($name === null) {
-            $name = $this->view;
+            $name = $this->template;
         }
 
         list($plugin, $name) = $this->pluginSplit($name);
         $name = str_replace('/', DS, $name);
 
         if (strpos($name, DS) === false && $name[0] !== '.') {
-            $name = $viewPath . $subDir . Inflector::underscore($name);
+            $name = $templatePath . $subDir . $this->_inflectViewFileName($name);
         } elseif (strpos($name, DS) !== false) {
             if ($name[0] === DS || $name[1] === ':') {
                 if (is_file($name)) {
                     return $name;
                 }
                 $name = trim($name, DS);
-            } elseif (!$plugin || $this->viewPath !== $this->name) {
-                $name = $viewPath . $subDir . $name;
+            } elseif (!$plugin || $this->templatePath !== $this->name) {
+                $name = $templatePath . $subDir . $name;
             } else {
                 $name = DS . $subDir . $name;
             }
@@ -894,6 +1051,17 @@ class View
             }
         }
         throw new Exception\MissingTemplateException(['file' => $name . $this->_ext]);
+    }
+
+    /**
+     * Change the name of a view template file into underscored format.
+     *
+     * @param string $name Name of file which should be inflected.
+     * @return string File name after conversion
+     */
+    protected function _inflectViewFileName($name)
+    {
+        return Inflector::underscore($name);
     }
 
     /**
@@ -959,22 +1127,12 @@ class View
         }
         $subDir = null;
 
-        if ($this->layoutPath !== null) {
+        if ($this->layoutPath) {
             $subDir = $this->layoutPath . DS;
         }
         list($plugin, $name) = $this->pluginSplit($name);
 
-        $layoutPaths = ['Layout' . DS . $subDir];
-        if (!empty($this->request->params['prefix'])) {
-            $prefixPath = array_map(
-                'Cake\Utility\Inflector::camelize',
-                explode('/', $this->request->params['prefix'])
-            );
-            array_unshift(
-                $layoutPaths,
-                implode('/', $prefixPath) . DS . $layoutPaths[0]
-            );
-        }
+        $layoutPaths = $this->_getSubPaths('Layout' . DS . $subDir);
 
         foreach ($this->_paths($plugin) as $path) {
             foreach ($layoutPaths as $layoutPath) {
@@ -1000,12 +1158,46 @@ class View
         list($plugin, $name) = $this->pluginSplit($name);
 
         $paths = $this->_paths($plugin);
+        $elementPaths = $this->_getSubPaths('Element');
+
         foreach ($paths as $path) {
-            if (file_exists($path . 'Element' . DS . $name . $this->_ext)) {
-                return $path . 'Element' . DS . $name . $this->_ext;
+            foreach ($elementPaths as $elementPath) {
+                if (file_exists($path . $elementPath . DS . $name . $this->_ext)) {
+                    return $path . $elementPath . DS . $name . $this->_ext;
+                }
             }
         }
         return false;
+    }
+
+    /**
+     * Find all sub templates path, based on $basePath
+     * If a prefix is defined in the current request, this method will prepend
+     * the prefixed template path to the $basePath, cascading up in case the prefix
+     * is nested.
+     * This is essentially used to find prefixed template paths for elements
+     * and layouts.
+     *
+     * @param string $basePath Base path on which to get the prefixed one.
+     * @return array Array with all the templates paths.
+     */
+    protected function _getSubPaths($basePath)
+    {
+        $paths = [$basePath];
+        if (!empty($this->request->params['prefix'])) {
+            $prefixPath = explode('/', $this->request->params['prefix']);
+            $path = '';
+            foreach ($prefixPath as $prefixPart) {
+                $path .= Inflector::camelize($prefixPart) . DS;
+
+                array_unshift(
+                    $paths,
+                    $path . $basePath
+                );
+            }
+        }
+
+        return $paths;
     }
 
     /**
@@ -1025,11 +1217,11 @@ class View
                 return $this->_pathsForPlugin[$plugin];
             }
         }
-        $viewPaths = App::path('Template');
+        $templatePaths = App::path('Template');
         $pluginPaths = $themePaths = [];
         if (!empty($plugin)) {
-            for ($i = 0, $count = count($viewPaths); $i < $count; $i++) {
-                $pluginPaths[] = $viewPaths[$i] . 'Plugin' . DS . $plugin . DS;
+            for ($i = 0, $count = count($templatePaths); $i < $count; $i++) {
+                $pluginPaths[] = $templatePaths[$i] . 'Plugin' . DS . $plugin . DS;
             }
             $pluginPaths = array_merge($pluginPaths, App::path('Template', $plugin));
         }
@@ -1038,7 +1230,7 @@ class View
             $themePaths = App::path('Template', Inflector::camelize($this->theme));
 
             if ($plugin) {
-                for ($i = 0, $count = count($viewPaths); $i < $count; $i++) {
+                for ($i = 0, $count = count($templatePaths); $i < $count; $i++) {
                     array_unshift($themePaths, $themePaths[$i] . 'Plugin' . DS . $plugin . DS);
                 }
             }
@@ -1047,7 +1239,7 @@ class View
         $paths = array_merge(
             $themePaths,
             $pluginPaths,
-            $viewPaths,
+            $templatePaths,
             [dirname(__DIR__) . DS . 'Template' . DS]
         );
 

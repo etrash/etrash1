@@ -106,6 +106,15 @@ class ExtractTask extends Shell
     protected $_extractCore = false;
 
     /**
+     * No welcome message.
+     *
+     * @return void
+     */
+    protected function _welcome()
+    {
+    }
+
+    /**
      * Method to interact with the User and get path selections.
      *
      * @return void
@@ -182,16 +191,12 @@ class ExtractTask extends Shell
 
         if ($this->_extractCore) {
             $this->_paths[] = CAKE;
-            $this->_exclude = array_merge($this->_exclude, [
-                CAKE . 'Test',
-                CAKE . 'Console' . DS . 'Templates'
-            ]);
         }
 
         if (isset($this->params['output'])) {
             $this->_output = $this->params['output'];
         } elseif (isset($this->params['plugin'])) {
-            $this->_output = $this->_paths[0] . DS . 'Locale';
+            $this->_output = $this->_paths[0] . 'Locale';
         } else {
             $message = "What is the path you would like to output?\n[Q]uit";
             while (true) {
@@ -243,31 +248,26 @@ class ExtractTask extends Shell
      *
      * @param string $domain The domain
      * @param string $msgid The message string
-     * @param array $details The file and line references
+     * @param array $details Context and plural form if any, file and line references
      * @return void
      */
     protected function _addTranslation($domain, $msgid, $details = [])
     {
-        if (empty($this->_translations[$domain][$msgid])) {
-            $this->_translations[$domain][$msgid] = [
-                'msgid_plural' => false,
-                'msgctxt' => ''
+        $context = isset($details['msgctxt']) ? $details['msgctxt'] : "";
+
+        if (empty($this->_translations[$domain][$msgid][$context])) {
+            $this->_translations[$domain][$msgid][$context] = [
+                'msgid_plural' => false
             ];
         }
 
         if (isset($details['msgid_plural'])) {
-            $this->_translations[$domain][$msgid]['msgid_plural'] = $details['msgid_plural'];
-        }
-        if (isset($details['msgctxt'])) {
-            $this->_translations[$domain][$msgid]['msgctxt'] = $details['msgctxt'];
+            $this->_translations[$domain][$msgid][$context]['msgid_plural'] = $details['msgid_plural'];
         }
 
         if (isset($details['file'])) {
-            $line = 0;
-            if (isset($details['line'])) {
-                $line = $details['line'];
-            }
-            $this->_translations[$domain][$msgid]['references'][$details['file']][] = $line;
+            $line = isset($details['line']) ? $details['line'] : 0;
+            $this->_translations[$domain][$msgid][$context]['references'][$details['file']][] = $line;
         }
     }
 
@@ -342,6 +342,10 @@ class ExtractTask extends Shell
         ])->addOption('extract-core', [
             'help' => 'Extract messages from the CakePHP core libs.',
             'choices' => ['yes', 'no']
+        ])->addOption('no-location', [
+            'boolean' => true,
+            'default' => false,
+            'help' => 'Do not write file locations for each extracted message.',
         ]);
 
         return $parser;
@@ -354,9 +358,15 @@ class ExtractTask extends Shell
      */
     protected function _extractTokens()
     {
+        $progress = $this->helper('progress');
+        $progress->init(['total' => count($this->_files)]);
+        $isVerbose = $this->param('verbose');
+
         foreach ($this->_files as $file) {
             $this->_file = $file;
-            $this->out(sprintf('Processing %s...', $file), 1, Shell::VERBOSE);
+            if ($isVerbose) {
+                $this->out(sprintf('Processing %s...', $file), 1, Shell::VERBOSE);
+            }
 
             $code = file_get_contents($file);
             $allTokens = token_get_all($code);
@@ -377,6 +387,10 @@ class ExtractTask extends Shell
             $this->_parse('__dx', ['domain', 'context', 'singular']);
             $this->_parse('__dxn', ['domain', 'context', 'singular', 'plural']);
 
+            if (!$isVerbose) {
+                $progress->increment(1);
+                $progress->draw();
+            }
         }
     }
 
@@ -431,7 +445,7 @@ class ExtractTask extends Shell
                         $details['msgctxt'] = $context;
                     }
                     $this->_addTranslation($domain, $singular, $details);
-                } else {
+                } elseif (strpos($this->_file, CAKE_CORE_INCLUDE_PATH) === false) {
                     $this->_markerError($this->_file, $line, $functionName, $count);
                 }
             }
@@ -449,35 +463,40 @@ class ExtractTask extends Shell
         $paths = $this->_paths;
         $paths[] = realpath(APP) . DS;
         foreach ($this->_translations as $domain => $translations) {
-            foreach ($translations as $msgid => $details) {
-                $plural = $details['msgid_plural'];
-                $context = $details['msgctxt'];
-                $files = $details['references'];
-                $occurrences = [];
-                foreach ($files as $file => $lines) {
-                    $lines = array_unique($lines);
-                    $occurrences[] = $file . ':' . implode(';', $lines);
-                }
-                $occurrences = implode("\n#: ", $occurrences);
-                $header = '#: ' . str_replace(DS, '/', str_replace($paths, '', $occurrences)) . "\n";
+            foreach ($translations as $msgid => $contexts) {
+                foreach ($contexts as $context => $details) {
+                    $plural = $details['msgid_plural'];
+                    $files = $details['references'];
+                    $occurrences = [];
+                    foreach ($files as $file => $lines) {
+                        $lines = array_unique($lines);
+                        $occurrences[] = $file . ':' . implode(';', $lines);
+                    }
+                    $occurrences = implode("\n#: ", $occurrences);
+                    $header = "";
+                    if (!$this->param('no-location')) {
+                        $header = '#: ' . str_replace(DS, '/', str_replace($paths, '', $occurrences)) . "\n";
+                    }
 
-                $sentence = '';
-                if ($context) {
-                    $sentence .= "msgctxt \"{$context}\"\n";
-                }
-                if ($plural === false) {
-                    $sentence .= "msgid \"{$msgid}\"\n";
-                    $sentence .= "msgstr \"\"\n\n";
-                } else {
-                    $sentence .= "msgid \"{$msgid}\"\n";
-                    $sentence .= "msgid_plural \"{$plural}\"\n";
-                    $sentence .= "msgstr[0] \"\"\n";
-                    $sentence .= "msgstr[1] \"\"\n\n";
-                }
+                    $sentence = '';
+                    if ($context !== "") {
+                        $sentence .= "msgctxt \"{$context}\"\n";
+                    }
+                    if ($plural === false) {
+                        $sentence .= "msgid \"{$msgid}\"\n";
+                        $sentence .= "msgstr \"\"\n\n";
+                    } else {
+                        $sentence .= "msgid \"{$msgid}\"\n";
+                        $sentence .= "msgid_plural \"{$plural}\"\n";
+                        $sentence .= "msgstr[0] \"\"\n";
+                        $sentence .= "msgstr[1] \"\"\n\n";
+                    }
 
-                $this->_store($domain, $header, $sentence);
-                if ($domain !== 'default' && $this->_merge) {
-                    $this->_store('default', $header, $sentence);
+                    if ($domain !== 'default' && $this->_merge) {
+                        $this->_store('default', $header, $sentence);
+                    } else {
+                        $this->_store($domain, $header, $sentence);
+                    }
                 }
             }
         }
@@ -708,6 +727,9 @@ class ExtractTask extends Shell
      */
     protected function _isPathUsable($path)
     {
+        if (!is_dir($path)) {
+            mkdir($path, 0770, true);
+        }
         return is_dir($path) && is_writable($path);
     }
 }

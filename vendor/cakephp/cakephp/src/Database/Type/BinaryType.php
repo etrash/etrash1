@@ -16,6 +16,8 @@ namespace Cake\Database\Type;
 
 use Cake\Core\Exception\Exception;
 use Cake\Database\Driver;
+use Cake\Database\Driver\Sqlserver;
+use Cake\Database\Type;
 use PDO;
 
 /**
@@ -23,7 +25,7 @@ use PDO;
  *
  * Use to convert binary data between PHP and the database types.
  */
-class BinaryType extends \Cake\Database\Type
+class BinaryType extends Type
 {
 
     /**
@@ -53,6 +55,9 @@ class BinaryType extends \Cake\Database\Type
     {
         if ($value === null) {
             return null;
+        }
+        if (is_string($value) && $driver instanceof Sqlserver) {
+            $value = pack('H*', $value);
         }
         if (is_string($value)) {
             return fopen('data:text/plain;base64,' . base64_encode($value), 'rb');

@@ -14,10 +14,10 @@
  */
 namespace Cake\Network;
 
+use ArrayAccess;
 use BadMethodCallException;
 use Cake\Core\Configure;
 use Cake\Network\Exception\MethodNotAllowedException;
-use Cake\Network\Session;
 use Cake\Utility\Hash;
 
 /**
@@ -28,7 +28,7 @@ use Cake\Utility\Hash;
  *
  * `$request['controller']` or `$request->controller`.
  */
-class Request implements \ArrayAccess
+class Request implements ArrayAccess
 {
 
     /**
@@ -383,6 +383,8 @@ class Request implements \ArrayAccess
 
         if (!$baseUrl) {
             $base = dirname(env('PHP_SELF'));
+            // Clean up additional / which cause following code to fail..
+            $base = preg_replace('#/+#', '/', $base);
 
             $indexPos = strpos($base, '/' . $webroot . '/index.php');
             if ($indexPos !== false) {
@@ -670,23 +672,6 @@ class Request implements \ArrayAccess
     }
 
     /**
-     * Detects if a URL extension is present.
-     *
-     * @param array $detect Detector options array.
-     * @return bool Whether or not the request is the type you are checking.
-     */
-    protected function _extensionDetector($detect)
-    {
-        if (is_string($detect['extension'])) {
-            $detect['extension'] = [$detect['extension']];
-        }
-        if (in_array($this->params['_ext'], $detect['extension'])) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Detects if a specific accept header is present.
      *
      * @param array $detect Detector options array.
@@ -791,8 +776,10 @@ class Request implements \ArrayAccess
      * Callback detectors allow you to provide a callable to handle the check.
      * The callback will receive the request object as its only parameter.
      *
-     * e.g `addDetector('custom', function ($request) { //Return a boolean });`
-     * e.g `addDetector('custom', ['SomeClass', 'somemethod']);`
+     * ```
+     * addDetector('custom', function ($request) { //Return a boolean });
+     * addDetector('custom', ['SomeClass', 'somemethod']);
+     * ```
      *
      * ### Environment value comparison
      *
@@ -805,14 +792,18 @@ class Request implements \ArrayAccess
      *
      * Pattern value comparison allows you to compare a value fetched from `env()` to a regular expression.
      *
-     * e.g `addDetector('iphone', ['env' => 'HTTP_USER_AGENT', 'pattern' => '/iPhone/i']);`
+     * ```
+     * addDetector('iphone', ['env' => 'HTTP_USER_AGENT', 'pattern' => '/iPhone/i']);
+     * ```
      *
      * ### Option based comparison
      *
      * Option based comparisons use a list of options to create a regular expression. Subsequent calls
      * to add an already defined options detector will merge the options.
      *
-     * e.g `addDetector('mobile', ['env' => 'HTTP_USER_AGENT', 'options' => ['Fennec']]);`
+     * ```
+     * addDetector('mobile', ['env' => 'HTTP_USER_AGENT', 'options' => ['Fennec']]);
+     * ```
      *
      * ### Request parameter detectors
      *
@@ -995,11 +986,15 @@ class Request implements \ArrayAccess
      *
      * #### Get all types:
      *
-     * `$this->request->accepts();`
+     * ```
+     * $this->request->accepts();
+     * ```
      *
      * #### Check for a single type:
      *
-     * `$this->request->accepts('application/json');`
+     * ```
+     * $this->request->accepts('application/json');
+     * ```
      *
      * This method will order the returned content types by the preference values indicated
      * by the client.
@@ -1126,13 +1121,17 @@ class Request implements \ArrayAccess
      *
      * ### Reading values.
      *
-     * `$request->data('Post.title');`
+     * ```
+     * $request->data('Post.title');
+     * ```
      *
      * When reading values you will get `null` for keys/values that do not exist.
      *
      * ### Writing values
      *
-     * `$request->data('Post.title', 'New post!');`
+     * ```
+     * $request->data('Post.title', 'New post!');
+     * ```
      *
      * You can write to any value, even paths/keys that do not exist, and the arrays
      * will be created for you.
@@ -1179,11 +1178,15 @@ class Request implements \ArrayAccess
      *
      * Getting input with a decoding function:
      *
-     * `$this->request->input('json_decode');`
+     * ```
+     * $this->request->input('json_decode');
+     * ```
      *
      * Getting input using a decoding function, and additional params:
      *
-     * `$this->request->input('Xml::build', ['return' => 'DOMDocument']);`
+     * ```
+     * $this->request->input('Xml::build', ['return' => 'DOMDocument']);
+     * ```
      *
      * Any additional parameters are applied to the callback in the order they are given.
      *
@@ -1224,10 +1227,12 @@ class Request implements \ArrayAccess
      *
      * @param string $key The key you want to read/write from/to.
      * @param string|null $value Value to set. Default null.
+     * @param string|null $default Default value when trying to retrieve an environment
+     *   variable's value that does not exist. The value parameter must be null.
      * @return $this|string|null This instance if used as setter,
      *   if used as getter either the environment value, or null if the value doesn't exist.
      */
-    public function env($key, $value = null)
+    public function env($key, $value = null, $default = null)
     {
         if ($value !== null) {
             $this->_environment[$key] = $value;
@@ -1239,7 +1244,7 @@ class Request implements \ArrayAccess
         if (!array_key_exists($key, $this->_environment)) {
             $this->_environment[$key] = env($key);
         }
-        return $this->_environment[$key];
+        return $this->_environment[$key] !== null ? $this->_environment[$key] : $default;
     }
 
     /**

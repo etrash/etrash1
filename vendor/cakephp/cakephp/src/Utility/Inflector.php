@@ -46,7 +46,7 @@ class Inflector
         '/(?<!u)(m)an$/i' => '\1en',
         '/(c)hild$/i' => '\1hildren',
         '/(buffal|tomat)o$/i' => '\1\2oes',
-        '/(alumn|bacill|cact|foc|fung|nucle|radi|stimul|syllab|termin|vir)us$/i' => '\1i',
+        '/(alumn|bacill|cact|foc|fung|nucle|radi|stimul|syllab|termin)us$/i' => '\1i',
         '/us$/i' => 'uses',
         '/(alias)$/i' => '\1es',
         '/(ax|cris|test)is$/i' => '\1es',
@@ -142,7 +142,8 @@ class Inflector
         'tooth' => 'teeth',
         'goose' => 'geese',
         'foot' => 'feet',
-        'foe' => 'foes'
+        'foe' => 'foes',
+        'sieve' => 'sieves'
     ];
 
     /**
@@ -180,11 +181,9 @@ class Inflector
         'Å' => 'A',
         'Ǻ' => 'A',
         'Ā' => 'A',
-        'Å' => 'A',
         'Ă' => 'A',
         'Ą' => 'A',
         'Ǎ' => 'A',
-        'Ä' => 'Ae',
         'à' => 'a',
         'á' => 'a',
         'â' => 'a',
@@ -221,7 +220,6 @@ class Inflector
         'Ė' => 'E',
         'Ę' => 'E',
         'Ě' => 'E',
-        'Ë' => 'E',
         'è' => 'e',
         'é' => 'e',
         'ê' => 'e',
@@ -303,7 +301,6 @@ class Inflector
         'Ơ' => 'O',
         'Ø' => 'O',
         'Ǿ' => 'O',
-        'Ö' => 'Oe',
         'ò' => 'o',
         'ó' => 'o',
         'ô' => 'o',
@@ -357,7 +354,6 @@ class Inflector
         'Ǘ' => 'U',
         'Ǚ' => 'U',
         'Ǜ' => 'U',
-        'Ü' => 'Ue',
         'ù' => 'u',
         'ú' => 'u',
         'û' => 'u',
@@ -463,7 +459,7 @@ class Inflector
      *
      * ```
      * Inflector::rules('plural', ['/^(inflect)or$/i' => '\1ables']);
-     * Inflector::rules('irregular' => ['red' => 'redlings']);
+     * Inflector::rules('irregular', ['red' => 'redlings']);
      * Inflector::rules('uninflected', ['dontinflectme']);
      * Inflector::rules('transliteration', ['/å/' => 'aa']);
      * ```
@@ -510,8 +506,8 @@ class Inflector
             static::$_cache['irregular']['pluralize'] = '(?:' . implode('|', array_keys(static::$_irregular)) . ')';
         }
 
-        if (preg_match('/(.*)\\b(' . static::$_cache['irregular']['pluralize'] . ')$/i', $word, $regs)) {
-            static::$_cache['pluralize'][$word] = $regs[1] . substr($word, 0, 1) .
+        if (preg_match('/(.*?(?:\\b|_))(' . static::$_cache['irregular']['pluralize'] . ')$/i', $word, $regs)) {
+            static::$_cache['pluralize'][$word] = $regs[1] . substr($regs[2], 0, 1) .
                 substr(static::$_irregular[strtolower($regs[2])], 1);
             return static::$_cache['pluralize'][$word];
         }
@@ -550,8 +546,8 @@ class Inflector
             static::$_cache['irregular']['singular'] = '(?:' . implode('|', static::$_irregular) . ')';
         }
 
-        if (preg_match('/(.*)\\b(' . static::$_cache['irregular']['singular'] . ')$/i', $word, $regs)) {
-            static::$_cache['singularize'][$word] = $regs[1] . substr($word, 0, 1) .
+        if (preg_match('/(.*?(?:\\b|_))(' . static::$_cache['irregular']['singular'] . ')$/i', $word, $regs)) {
+            static::$_cache['singularize'][$word] = $regs[1] . substr($regs[2], 0, 1) .
                 substr(array_search(strtolower($regs[2]), static::$_irregular), 1);
             return static::$_cache['singularize'][$word];
         }
@@ -640,7 +636,11 @@ class Inflector
         $result = static::_cache($cacheKey, $string);
 
         if ($result === false) {
-            $result = ucwords(str_replace($delimiter, ' ', $string));
+            $result = explode(' ', str_replace($delimiter, ' ', $string));
+            foreach ($result as &$word) {
+                $word = mb_strtoupper(mb_substr($word, 0, 1)) . mb_substr($word, 1);
+            }
+            $result = implode(' ', $result);
             static::_cache($cacheKey, $string, $result);
         }
 
@@ -661,7 +661,7 @@ class Inflector
         $result = static::_cache($cacheKey, $string);
 
         if ($result === false) {
-            $result = strtolower(preg_replace('/(?<=\\w)([A-Z])/', $delimiter . '\\1', $string));
+            $result = mb_strtolower(preg_replace('/(?<=\\w)([A-Z])/', $delimiter . '\\1', $string));
             static::_cache($cacheKey, $string, $result);
         }
 

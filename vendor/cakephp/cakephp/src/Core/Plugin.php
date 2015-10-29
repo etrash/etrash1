@@ -14,8 +14,7 @@
  */
 namespace Cake\Core;
 
-use Cake\Core\ClassLoader;
-use Cake\Core\Configure;
+use Cake\Core\Exception\MissingPluginException;
 use DirectoryIterator;
 
 /**
@@ -136,8 +135,8 @@ class Plugin
 
         if (empty($config['path'])) {
             $paths = App::path('Plugin');
+            $pluginPath = str_replace('/', DS, $plugin);
             foreach ($paths as $path) {
-                $pluginPath = str_replace('/', DS, $plugin);
                 if (is_dir($path . $pluginPath)) {
                     $config['path'] = $path . $pluginPath . DS;
                     break;
@@ -146,7 +145,7 @@ class Plugin
         }
 
         if (empty($config['path'])) {
-            throw new Exception\MissingPluginException(['plugin' => $plugin]);
+            throw new MissingPluginException(['plugin' => $plugin]);
         }
 
         $config['classPath'] = $config['path'] . $config['classBase'] . DS;
@@ -229,7 +228,7 @@ class Plugin
             $dir = new DirectoryIterator($path);
             foreach ($dir as $path) {
                 if ($path->isDir() && !$path->isDot()) {
-                    $plugins[] = $path->getBaseName();
+                    $plugins[] = $path->getBasename();
                 }
             }
         }
@@ -260,7 +259,7 @@ class Plugin
     public static function path($plugin)
     {
         if (empty(static::$_plugins[$plugin])) {
-            throw new Exception\MissingPluginException(['plugin' => $plugin]);
+            throw new MissingPluginException(['plugin' => $plugin]);
         }
         return static::$_plugins[$plugin]['path'];
     }
@@ -275,7 +274,7 @@ class Plugin
     public static function classPath($plugin)
     {
         if (empty(static::$_plugins[$plugin])) {
-            throw new Exception\MissingPluginException(['plugin' => $plugin]);
+            throw new MissingPluginException(['plugin' => $plugin]);
         }
         return static::$_plugins[$plugin]['classPath'];
     }
@@ -290,7 +289,7 @@ class Plugin
     public static function configPath($plugin)
     {
         if (empty(static::$_plugins[$plugin])) {
-            throw new Exception\MissingPluginException(['plugin' => $plugin]);
+            throw new MissingPluginException(['plugin' => $plugin]);
         }
         return static::$_plugins[$plugin]['configPath'];
     }
@@ -351,7 +350,7 @@ class Plugin
      */
     public static function loaded($plugin = null)
     {
-        if ($plugin) {
+        if ($plugin !== null) {
             return isset(static::$_plugins[$plugin]);
         }
         $return = array_keys(static::$_plugins);

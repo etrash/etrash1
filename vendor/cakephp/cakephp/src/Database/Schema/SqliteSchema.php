@@ -14,14 +14,23 @@
  */
 namespace Cake\Database\Schema;
 
+use Cake\Core\Configure;
 use Cake\Database\Exception;
-use Cake\Database\Schema\Table;
+use RuntimeException;
 
 /**
  * Schema management/reflection features for Sqlite
  */
 class SqliteSchema extends BaseSchema
 {
+
+    /**
+     * Array containing the foreign keys constraints names
+     * Necessary for composite foreign keys to be handled
+     *
+     * @var array
+     */
+    protected $_constraintsIdMap = [];
 
     /**
      * Convert a column definition to the abstract types.
@@ -207,14 +216,24 @@ class SqliteSchema extends BaseSchema
      */
     public function convertForeignKeyDescription(Table $table, $row)
     {
+        $name = $row['from'] . '_fk';
+
+        $update = isset($row['on_update']) ? $row['on_update'] : '';
+        $delete = isset($row['on_delete']) ? $row['on_delete'] : '';
         $data = [
             'type' => Table::CONSTRAINT_FOREIGN,
             'columns' => [$row['from']],
             'references' => [$row['table'], $row['to']],
-            'update' => $this->_convertOnClause($row['on_update']),
-            'delete' => $this->_convertOnClause($row['on_delete']),
+            'update' => $this->_convertOnClause($update),
+            'delete' => $this->_convertOnClause($delete),
         ];
-        $name = $row['from'] . '_fk';
+
+        if (isset($this->_constraintsIdMap[$table->name()][$row['id']])) {
+            $name = $this->_constraintsIdMap[$table->name()][$row['id']];
+        } else {
+            $this->_constraintsIdMap[$table->name()][$row['id']] = $name;
+        }
+
         $table->addConstraint($name, $data);
     }
 
@@ -251,13 +270,17 @@ class SqliteSchema extends BaseSchema
         if (in_array($data['type'], $hasUnsigned, true) &&
             isset($data['unsigned']) && $data['unsigned'] === true
         ) {
-            $out .= ' UNSIGNED';
+            if ($data['type'] !== 'integer' || [$name] !== (array)$table->primaryKey()) {
+                $out .= ' UNSIGNED';
+            }
         }
         $out .= $typeMap[$data['type']];
 
         $hasLength = ['integer', 'string'];
         if (in_array($data['type'], $hasLength, true) && isset($data['length'])) {
-            $out .= '(' . (int)$data['length'] . ')';
+            if ($data['type'] !== 'integer' || [$name] !== (array)$table->primaryKey()) {
+                $out .= '(' . (int)$data['length'] . ')';
+            }
         }
         $hasPrecision = ['float', 'decimal'];
         if (in_array($data['type'], $hasPrecision, true) &&
@@ -309,10 +332,11 @@ class SqliteSchema extends BaseSchema
         }
         if ($data['type'] === Table::CONSTRAINT_FOREIGN) {
             $type = 'FOREIGN KEY';
+
             $clause = sprintf(
                 ' REFERENCES %s (%s) ON UPDATE %s ON DELETE %s',
                 $this->_driver->quoteIdentifier($data['references'][0]),
-                $this->_driver->quoteIdentifier($data['references'][1]),
+                $this->_convertConstraintColumns($data['references'][1]),
                 $this->_foreignOnClause($data['update']),
                 $this->_foreignOnClause($data['delete'])
             );
@@ -328,6 +352,28 @@ class SqliteSchema extends BaseSchema
             implode(', ', $columns),
             $clause
         );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * SQLite can not properly handle adding a constraint to an existing table.
+     * This method is no-op
+     */
+    public function addConstraintSql(Table $table)
+    {
+        return [];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * SQLite can not properly handle dropping a constraint to an existing table.
+     * This method is no-op
+     */
+    public function dropConstraintSql(Table $table)
+    {
+        return [];
     }
 
     /**

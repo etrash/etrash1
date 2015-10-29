@@ -180,6 +180,20 @@ Request::addDetector('tablet', function ($request) {
  */
 
 Plugin::load('Migrations');
+Plugin::load('CakePdf', array('bootstrap' => true, 'routes' => true));
+
+Configure::write('CakePdf', [
+'engine' => 'CakePdf.tcpdf',
+'margin' => [
+    'bottom' => 15,
+    'left' => 50,
+    'right' => 30,
+    'top' => 45
+],
+'orientation' => 'landscape',
+'download' => true
+]);
+
 
 // Only try to load DebugKit in development mode
 // Debug Kit should not be installed on a production system

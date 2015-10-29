@@ -62,6 +62,11 @@ p {
 }
 .toolbar.open {
 	border-radius: 0;
+	overflow: auto;
+}
+
+.hidden {
+    display: none;
 }
 
 /* Open close button */
@@ -291,6 +296,17 @@ table tbody tr:nth-child(odd) {
 	cursor: default;
 }
 
+.toggle-checkbox {
+	display: block;
+	margin-bottom: 10px;
+	font-size: 12px;
+	color: #666;
+}
+.toggle-checkbox input[type=checkbox] {
+	vertical-align: middle;
+	margin-top: 0;
+}
+
 
 /**
  * Graph table.
@@ -350,6 +366,10 @@ table tbody tr:nth-child(odd) {
 	background: #eee;
 	padding: 2px;
 	border-radius: 4px;
+}
+
+.xhr {
+	background:#7CFF46
 }
 .history-time {
 	font-size: 12px;

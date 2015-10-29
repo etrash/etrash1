@@ -17,8 +17,6 @@ use Cake\Core\Configure;
 use Cake\Network\Request;
 use Cake\Network\Response;
 use Cake\Network\Session;
-use Cake\Routing\DispatcherFactory;
-use Cake\Routing\Router;
 
 /**
  * Provides the requestAction() method for doing sub-requests
@@ -63,7 +61,7 @@ trait RequestActionTrait
      *
      * ```
      * $vars = $this->requestAction('/articles/popular', [
-     *   'query' => ['page' = > 1],
+     *   'query' => ['page' => 1],
      *   'cookies' => ['remember_me' => 1],
      * ]);
      * ```
@@ -118,14 +116,20 @@ trait RequestActionTrait
                 'url' => $url
             ];
         } elseif (is_array($url)) {
+            $defaultParams = ['plugin' => null, 'controller' => null, 'action' => null];
             $params = [
-                'params' => $url,
+                'params' => $url + $defaultParams,
                 'base' => false,
                 'url' => Router::reverse($url)
             ];
             if (empty($params['params']['pass'])) {
                 $params['params']['pass'] = [];
             }
+        }
+        $current = Router::getRequest();
+        if ($current) {
+            $params['base'] = $current->base;
+            $params['webroot'] = $current->webroot;
         }
 
         $params['post'] = $params['query'] = [];

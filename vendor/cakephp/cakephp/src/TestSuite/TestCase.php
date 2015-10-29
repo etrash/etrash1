@@ -1,6 +1,6 @@
 <?php
 /**
- * CakePHP(tm) Tests <http://book.cakephp.org/2.0/en/development/testing.html>
+ * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
  * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
  *
  * Licensed under The MIT License
@@ -16,15 +16,19 @@ namespace Cake\TestSuite;
 use Cake\Core\App;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
+use Cake\Event\EventManager;
+use Cake\ORM\Exception\MissingTableClassException;
 use Cake\ORM\TableRegistry;
 use Cake\Routing\Router;
 use Cake\Utility\Inflector;
+use Exception;
+use PHPUnit_Framework_TestCase;
 
 /**
  * Cake TestCase class
  *
  */
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+abstract class TestCase extends PHPUnit_Framework_TestCase
 {
 
     /**
@@ -98,6 +102,8 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         if (class_exists('Cake\Routing\Router', false)) {
             Router::reload();
         }
+
+        EventManager::instance(new EventManager());
     }
 
     /**
@@ -117,7 +123,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     /**
      * Chooses which fixtures to load for a given test
      *
-     * Each parameter is a model name that corresponds to a fixture, i.e. 'Post', 'Author', etc.
+     * Each parameter is a model name that corresponds to a fixture, i.e. 'Posts', 'Authors', etc.
      *
      * @return void
      * @see \Cake\TestSuite\TestCase::$autoFixtures
@@ -126,7 +132,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     public function loadFixtures()
     {
         if (empty($this->fixtureManager)) {
-            throw new \Exception('No fixture manager to load the test fixture');
+            throw new Exception('No fixture manager to load the test fixture');
         }
         $args = func_get_args();
         foreach ($args as $class) {
@@ -573,7 +579,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      * @param mixed $methods The list of methods to mock
      * @param array $options The config data for the mock's constructor.
      * @throws \Cake\ORM\Exception\MissingTableClassException
-     * @return Model
+     * @return \Cake\ORM\Table|\PHPUnit_Framework_MockObject_MockObject
      */
     public function getMockForModel($alias, array $methods = [], array $options = [])
     {
@@ -581,7 +587,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             $class = Inflector::camelize($alias);
             $className = App::className($class, 'Model/Table', 'Table');
             if (!$className) {
-                throw new \Cake\ORM\Exception\MissingTableClassException([$alias]);
+                throw new MissingTableClassException([$alias]);
             }
             $options['className'] = $className;
         }

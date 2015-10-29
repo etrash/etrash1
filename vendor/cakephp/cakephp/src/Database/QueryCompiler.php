@@ -14,9 +14,6 @@
  */
 namespace Cake\Database;
 
-use Cake\Database\Query;
-use Cake\Database\ValueBinder;
-
 /**
  * Responsible for compiling a Query object into its SQL representation
  *
@@ -78,7 +75,7 @@ class QueryCompiler
     /**
      * Indicate whether or not this query dialect supports ordered unions.
      *
-     * Overidden in subclasses.
+     * Overridden in subclasses.
      *
      * @var bool
      */

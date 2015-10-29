@@ -14,8 +14,6 @@
  */
 namespace Cake\Core;
 
-use Cake\Core\Plugin;
-
 /**
  * App is responsible for resource location, and path management.
  *
@@ -59,13 +57,8 @@ class App
         }
 
         list($plugin, $name) = pluginSplit($class);
-        if ($plugin) {
-            $base = $plugin;
-        } else {
-            $base = Configure::read('App.namespace');
-        }
+        $base = $plugin ?: Configure::read('App.namespace');
         $base = str_replace('/', '\\', rtrim($base, '\\'));
-
         $fullname = '\\' . str_replace('/', '\\', $type . '\\' . $name) . $suffix;
 
         if (static::_classExistsInBase($fullname, $base)) {
@@ -99,12 +92,16 @@ class App
      *
      * Usage:
      *
-     * `App::path('Plugin');`
+     * ```
+     * App::path('Plugin');
+     * ```
      *
      * Will return the configured paths for plugins. This is a simpler way to access
      * the `App.paths.plugins` configure variable.
      *
-     * `App::path('Model/Datasource', 'MyPlugin');`
+     * ```
+     * App::path('Model/Datasource', 'MyPlugin');
+     * ```
      *
      * Will return the path for datasources under the 'MyPlugin' plugin.
      *
@@ -135,7 +132,9 @@ class App
      *
      * Usage:
      *
-     * `App::core('Cache/Engine');`
+     * ```
+     * App::core('Cache/Engine');
+     * ```
      *
      * Will return the full path to the cache engines package.
      *

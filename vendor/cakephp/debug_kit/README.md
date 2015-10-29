@@ -13,18 +13,18 @@ The `master` branch has the following requirements:
 
 ## DebugKit for CakePHP 2.x
 
-If you want DebugKit for your 2.x application, you can use the latest `2.2.y` tag or the 2.2 branch.
+If you want DebugKit for your 2.x application, you can use the latest `2.2.y` tag or the [2.2 branch](https://github.com/cakephp/debug_kit/tree/2.2).
 
 ## Installation
 
-* Install the plugin with composer from your CakePHP Project's ROOT directory (where composer.json file is located)
+* Install the plugin with [Composer](https://getcomposer.org/) from your CakePHP Project's ROOT directory (where the **composer.json** file is located)
 ```sh
-php composer.phar require cakephp/debug_kit "3.0.*-dev"
+php composer.phar require --dev cakephp/debug_kit "~3.0"
 ```
 
-* Load the plugin
+* [Load the plugin](http://book.cakephp.org/3.0/en/plugins.html#loading-a-plugin)
 ```php
-Plugin::load('DebugKit', ['bootstrap' => true]);
+Plugin::load('DebugKit', ['bootstrap' => true, 'routes' => true]);
 ```
 * Set `'debug' => true,` in `config/app.php`.
 
@@ -141,7 +141,7 @@ You should refer to the built-in panels for some examples on how you can build p
 Each Panel is expected to have a view element that renders the content from the
 panel. The element name must be the underscored inflection of the class name.
 For example `SessionPanel` has an element named `session_panel.ctp`, and
-SqllogPanel has an element named `sqllog_panel.ctp`. These elements should be
+`SqllogPanel` has an element named `sqllog_panel.ctp`. These elements should be
 located in the root of your `View/Elements` directory.
 
 #### Custom Titles and Elements

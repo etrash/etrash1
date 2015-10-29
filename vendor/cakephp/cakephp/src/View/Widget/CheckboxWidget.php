@@ -15,30 +15,12 @@
 namespace Cake\View\Widget;
 
 use Cake\View\Form\ContextInterface;
-use Cake\View\Widget\WidgetInterface;
 
 /**
  * Input widget for creating checkbox widgets.
  */
-class CheckboxWidget implements WidgetInterface
+class CheckboxWidget extends BasicWidget
 {
-
-    /**
-     * Template instance.
-     *
-     * @var \Cake\View\StringTemplate
-     */
-    protected $_templates;
-
-    /**
-     * Constructor
-     *
-     * @param \Cake\View\StringTemplate $templates Templates list.
-     */
-    public function __construct($templates)
-    {
-        $this->_templates = $templates;
-    }
 
     /**
      * Render a checkbox element.
@@ -64,6 +46,7 @@ class CheckboxWidget implements WidgetInterface
             'value' => 1,
             'val' => null,
             'disabled' => false,
+            'templateVars' => []
         ];
         if ($this->_isChecked($data)) {
             $data['checked'] = true;
@@ -78,6 +61,7 @@ class CheckboxWidget implements WidgetInterface
         return $this->_templates->format('checkbox', [
             'name' => $data['name'],
             'value' => $data['value'],
+            'templateVars' => $data['templateVars'],
             'attrs' => $attrs
         ]);
     }
@@ -93,17 +77,6 @@ class CheckboxWidget implements WidgetInterface
         if (array_key_exists('checked', $data)) {
             return (bool)$data['checked'];
         }
-        if ((string)$data['val'] === (string)$data['value']) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function secureFields(array $data)
-    {
-        return [$data['name']];
+        return (string)$data['val'] === (string)$data['value'];
     }
 }

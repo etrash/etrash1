@@ -116,8 +116,11 @@ class SqlServerAdapter extends PdoAdapter implements AdapterInterface
         if (empty($options['port'])) {
             $dsn = 'dblib:host=' . $options['host'] . ';dbname=' . $options['name'];
         } else {
-            $dsn = 'dblib:host=' . $options['host'] . ',' . $options['port'] . ';dbname=' . $options['name'];
+            $dsn = 'dblib:host=' . $options['host'] . ':' . $options['port'] . ';dbname=' . $options['name'];
         }
+
+        $driverOptions = array(\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION);
+
 
         try {
             $db = new \PDO($dsn, $options['user'], $options['pass'], $driverOptions);
@@ -897,6 +900,7 @@ ORDER BY T.[name], I.[index_id];";
             case static::PHINX_TYPE_DATE:
                 return array('name' => 'date');
                 break;
+            case static::PHINX_TYPE_BLOB:
             case static::PHINX_TYPE_BINARY:
                 return array('name' => 'varbinary');
                 break;

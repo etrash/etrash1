@@ -35,11 +35,18 @@ class Stream
     protected $_context;
 
     /**
-     * Array of options/content for the stream context.
+     * Array of options/content for the HTTP stream context.
      *
      * @var array
      */
     protected $_contextOptions;
+
+    /**
+     * Array of options/content for the SSL stream context.
+     *
+     * @var array
+     */
+    protected $_sslContextOptions;
 
     /**
      * The stream resource.
@@ -66,6 +73,8 @@ class Stream
     {
         $this->_stream = null;
         $this->_context = [];
+        $this->_contextOptions = [];
+        $this->_sslContextOptions = [];
         $this->_connectionErrors = [];
 
         $this->_buildContext($request, $options);
@@ -119,7 +128,8 @@ class Stream
             $this->_buildSslContext($request, $options);
         }
         $this->_context = stream_context_create([
-            'http' => $this->_contextOptions
+            'http' => $this->_contextOptions,
+            'ssl' => $this->_sslContextOptions,
         ]);
     }
 
@@ -172,7 +182,7 @@ class Stream
         if (is_array($content)) {
             $formData = new FormData();
             $formData->addMany($content);
-            $type = 'multipart/form-data; boundary="' . $formData->boundary() . '"';
+            $type = $formData->contentType();
             $request->header('Content-Type', $type);
             $this->_contextOptions['content'] = (string)$formData;
             return;
@@ -199,6 +209,9 @@ class Stream
         if (isset($options['redirect'])) {
             $this->_contextOptions['max_redirects'] = (int)$options['redirect'];
         }
+        if (isset($options['proxy']['proxy'])) {
+            $this->_contextOptions['proxy'] = $options['proxy']['proxy'];
+        }
     }
 
     /**
@@ -219,17 +232,17 @@ class Stream
             'ssl_passphrase',
         ];
         if (empty($options['ssl_cafile'])) {
-            $options['ssl_cafile'] = CAKE . 'Config' . DS . 'cacert.pem';
+            $options['ssl_cafile'] = CORE_PATH . 'config' . DS . 'cacert.pem';
         }
         if (!empty($options['ssl_verify_host'])) {
             $url = $request->url();
             $host = parse_url($url, PHP_URL_HOST);
-            $this->_contextOptions['CN_match'] = $host;
+            $this->_sslContextOptions['peer_name'] = $host;
         }
         foreach ($sslOptions as $key) {
             if (isset($options[$key])) {
                 $name = substr($key, 4);
-                $this->_contextOptions[$name] = $options[$key];
+                $this->_sslContextOptions[$name] = $options[$key];
             }
         }
     }
@@ -256,8 +269,8 @@ class Stream
             throw new Exception('Connection timed out ' . $url);
         }
         $headers = $meta['wrapper_data'];
-        if (isset($meta['wrapper_type']) && $meta['wrapper_type'] === 'curl') {
-            $headers = $meta['wrapper_data']['headers'];
+        if (isset($headers['headers']) && is_array($headers['headers'])) {
+            $headers = $headers['headers'];
         }
         return $this->createResponses($headers, $content);
     }
@@ -302,6 +315,6 @@ class Stream
      */
     public function contextOptions()
     {
-        return $this->_contextOptions;
+        return array_merge($this->_contextOptions, $this->_sslContextOptions);
     }
 }

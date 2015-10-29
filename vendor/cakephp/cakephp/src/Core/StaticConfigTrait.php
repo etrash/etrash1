@@ -16,14 +16,13 @@ namespace Cake\Core;
 
 use BadMethodCallException;
 use InvalidArgumentException;
-use UnexpectedValueException;
 
 /**
  * A trait that provides a set of static methods to manage configuration
  * for classes that provide an adapter facade or need to have sets of
  * configuration data registered and manipulated.
  *
- * Implementing objects are expected to declare a static `$_config` property.
+ * Implementing objects are expected to declare a static `$_dsnClassMap` property.
  */
 trait StaticConfigTrait
 {
@@ -51,19 +50,27 @@ trait StaticConfigTrait
      *
      * Reading config data back:
      *
-     * `Cache::config('default');`
+     * ```
+     * Cache::config('default');
+     * ```
      *
      * Setting a cache engine up.
      *
-     * `Cache::config('default', $settings);`
+     * ```
+     * Cache::config('default', $settings);
+     * ```
      *
      * Injecting a constructed adapter in:
      *
-     * `Cache::config('default', $instance);`
+     * ```
+     * Cache::config('default', $instance);
+     * ```
      *
      * Configure multiple adapters at once:
      *
-     * `Cache::config($arrayOfConfig);`
+     * ```
+     * Cache::config($arrayOfConfig);
+     * ```
      *
      * @param string|array $key The name of the configuration, or an array of multiple configs.
      * @param array $config An array of name => configuration data for adapter.
@@ -72,15 +79,18 @@ trait StaticConfigTrait
      */
     public static function config($key, $config = null)
     {
-        // Read config.
-        if ($config === null && is_string($key)) {
-            return isset(static::$_config[$key]) ? static::$_config[$key] : null;
-        }
-        if ($config === null && is_array($key)) {
-            foreach ($key as $name => $settings) {
-                static::config($name, $settings);
+        if ($config === null) {
+            // Read config.
+            if (is_string($key)) {
+                return isset(static::$_config[$key]) ? static::$_config[$key] : null;
             }
-            return;
+
+            if (is_array($key)) {
+                foreach ($key as $name => $settings) {
+                    static::config($name, $settings);
+                }
+                return;
+            }
         }
 
         if (isset(static::$_config[$key])) {
@@ -180,13 +190,13 @@ trait StaticConfigTrait
             throw new InvalidArgumentException('Only strings can be passed to parseDsn');
         }
 
+        $scheme = '';
         if (preg_match("/^([\w\\\]+)/", $dsn, $matches)) {
             $scheme = $matches[1];
             $dsn = preg_replace("/^([\w\\\]+)/", 'file', $dsn);
         }
 
         $parsed = parse_url($dsn);
-
         if ($parsed === false) {
             return $dsn;
         }

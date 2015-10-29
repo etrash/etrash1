@@ -43,9 +43,18 @@
 </script>
 
 <div>
-	<h1>Informações sobre a criação do pedido de coleta</h1><br/>
-	Pedido realizado em <?= $pedido_div['datahora_inclusao']; ?><br/>
-	Status: <?= $pedido_div['status']; ?><br/>
+	<div>
+		<h1>Informações sobre a criação do pedido de coleta</h1><br/>
+		Pedido realizado em <?= $pedido_div['datahora_inclusao']; ?><br/>
+		Status: <?= $pedido_div['status']; ?><br/>
+	</div>
+	<div style='float:right;height:50px;width:50px;'>
+        <?php 
+			echo $this->Html->link($this->Html->image('icone-pdf.png',
+        						['alt' => 'Exportar para PDF',
+        						'title' => 'Exportar para PDF']),
+    			 ['action' => 'pdf', $id], ['escape' => false, 'target' => '_blank']);?>
+	</div>
 	<fieldset>
 		<legend>Materiais do pedido</legend>
 		<?= $pedido_div['materiais_div']; ?>

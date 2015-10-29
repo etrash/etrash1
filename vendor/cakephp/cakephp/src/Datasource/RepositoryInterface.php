@@ -14,14 +14,28 @@
  */
 namespace Cake\Datasource;
 
-use Cake\Datasource\EntityInterface;
-
 /**
  * Describes the methods that any class representing a data storage should
  * comply with.
  */
 interface RepositoryInterface
 {
+
+    /**
+     * Returns the table alias or sets a new one
+     *
+     * @param string|null $alias the new table alias
+     * @return string
+     */
+    public function alias($alias = null);
+
+    /**
+     * Test to see if a Repository has a specific field/column.
+     *
+     * @param string $field The field to check for.
+     * @return bool True if the field exists, false if it does not.
+     */
+    public function hasField($field);
 
     /**
      * Creates a new Query for this repository and applies some defaults based on the
@@ -53,7 +67,7 @@ interface RepositoryInterface
      *
      * @param mixed $primaryKey primary key value to find
      * @param array|\ArrayAccess $options options accepted by `Table::find()`
-     * @throws \Cake\ORM\Exception\RecordNotFoundException if the record with such id
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException if the record with such id
      * could not be found
      * @return \Cake\Datasource\EntityInterface
      * @see RepositoryInterface::find()

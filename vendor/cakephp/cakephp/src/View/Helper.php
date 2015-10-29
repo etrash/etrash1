@@ -142,7 +142,7 @@ class Helper implements EventListenerInterface
      * Lazy loads helpers.
      *
      * @param string $name Name of the property being accessed.
-     * @return \Cake\View\Helper|void Helper instance if helper with provided name exists
+     * @return \Cake\View\Helper|null Helper instance if helper with provided name exists
      */
     public function __get($name)
     {
@@ -218,5 +218,24 @@ class Helper implements EventListenerInterface
             }
         }
         return $events;
+    }
+
+    /**
+     * Returns an array that can be used to describe the internal state of this
+     * object.
+     *
+     * @return array
+     */
+    public function __debugInfo()
+    {
+        return [
+            'helpers' => $this->helpers,
+            'theme' => $this->theme,
+            'plugin' => $this->plugin,
+            'fieldset' => $this->fieldset,
+            'tags' => $this->tags,
+            'implementedEvents' => $this->implementedEvents(),
+            '_config' => $this->config(),
+        ];
     }
 }

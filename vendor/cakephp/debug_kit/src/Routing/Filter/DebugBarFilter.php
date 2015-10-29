@@ -209,6 +209,7 @@ class DebugBarFilter extends DispatcherFilter
         $row = $requests->save($row);
 
         $this->_injectScripts($row->id, $response);
+        $response->header(['X-DEBUGKIT-ID' => $row->id]);
     }
 
     /**
@@ -232,8 +233,7 @@ class DebugBarFilter extends DispatcherFilter
             return;
         }
         $url = Router::url('/', true);
-        $script = "<script>var __debug_kit_id = '${id}', __debug_kit_base_url = '${url}';</script>";
-        $script .= '<script src="' . Router::url('/debug_kit/js/toolbar.js') . '"></script>';
+        $script = "<script id=\"__debug_kit\" data-id=\"{$id}\" data-url=\"{$url}\" src=\"" . Router::url('/debug_kit/js/toolbar.js') . '"></script>';
         $body = substr($body, 0, $pos) . $script . substr($body, $pos);
         $response->body($body);
     }

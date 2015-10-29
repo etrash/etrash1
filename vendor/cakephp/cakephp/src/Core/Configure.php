@@ -166,11 +166,10 @@ class Configure
      */
     public static function consume($var)
     {
-        $simple = strpos($var, '.') === false;
-        if ($simple && !isset(static::$_values[$var])) {
-            return null;
-        }
-        if ($simple) {
+        if (strpos($var, '.') === false) {
+            if (!isset(static::$_values[$var])) {
+                return null;
+            }
             $value = static::$_values[$var];
             unset(static::$_values[$var]);
             return $value;
@@ -187,7 +186,9 @@ class Configure
      *
      * To add a new engine to Configure:
      *
-     * `Configure::config('ini', new IniConfig());`
+     * ```
+     * Configure::config('ini', new IniConfig());
+     * ```
      *
      * @param string $name The name of the engine being configured. This alias is used later to
      *   read values from a specific engine.
@@ -207,7 +208,7 @@ class Configure
      */
     public static function configured($name = null)
     {
-        if ($name) {
+        if ($name !== null) {
             return isset(static::$_engines[$name]);
         }
         return array_keys(static::$_engines);
@@ -242,7 +243,9 @@ class Configure
      * Would load the 'user' config file using the default config engine. You can load
      * app config files by giving the name of the resource you want loaded.
      *
-     * `Configure::load('setup', 'default');`
+     * ```
+     * Configure::load('setup', 'default');
+     * ```
      *
      * If using `default` config and no engine has been configured for it yet,
      * one will be automatically created using PhpConfig
@@ -279,11 +282,15 @@ class Configure
      * Given that the 'default' engine is an instance of PhpConfig.
      * Save all data in Configure to the file `my_config.php`:
      *
-     * `Configure::dump('my_config', 'default');`
+     * ```
+     * Configure::dump('my_config', 'default');
+     * ```
      *
      * Save only the error handling configuration:
      *
-     * `Configure::dump('error', 'default', ['Error', 'Exception'];`
+     * ```
+     * Configure::dump('error', 'default', ['Error', 'Exception'];
+     * ```
      *
      * @param string $key The identifier to create in the config adapter.
      *   This could be a filename or a cache key depending on the adapter being used.
@@ -298,9 +305,6 @@ class Configure
         $engine = static::_getEngine($config);
         if (!$engine) {
             throw new Exception(sprintf('There is no "%s" config engine.', $config));
-        }
-        if (!method_exists($engine, 'dump')) {
-            throw new Exception(sprintf('The "%s" config engine, does not have a dump() method.', $config));
         }
         $values = static::$_values;
         if (!empty($keys) && is_array($keys)) {
@@ -330,14 +334,17 @@ class Configure
     /**
      * Used to determine the current version of CakePHP.
      *
-     * Usage `Configure::version();`
+     * Usage
+     * ```
+     * Configure::version();
+     * ```
      *
      * @return string Current version of CakePHP
      */
     public static function version()
     {
         if (!isset(static::$_values['Cake']['version'])) {
-            require CORE_PATH . 'config/config.php';
+            $config = require CORE_PATH . 'config/config.php';
             static::write($config);
         }
         return static::$_values['Cake']['version'];

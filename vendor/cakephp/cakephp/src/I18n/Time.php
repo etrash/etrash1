@@ -15,6 +15,8 @@
 namespace Cake\I18n;
 
 use Carbon\Carbon;
+use DateTime;
+use DateTimeZone;
 use IntlDateFormatter;
 use JsonSerializable;
 
@@ -38,10 +40,26 @@ class Time extends Carbon implements JsonSerializable
      * will be used for formatting the date part of the object and the second position
      * will be used to format the time part.
      *
-     * @var mixed
+     * @var string|array|int
      * @see \Cake\I18n\Time::i18nFormat()
      */
     protected static $_toStringFormat = [IntlDateFormatter::SHORT, IntlDateFormatter::SHORT];
+
+    /**
+     * The format to use when when converting this object to json
+     *
+     * The format should be either the formatting constants from IntlDateFormatter as
+     * described in (http://www.php.net/manual/en/class.intldateformatter.php) or a pattern
+     * as specified in (http://www.icu-project.org/apiref/icu4c/classSimpleDateFormat.html#details)
+     *
+     * It is possible to provide an array of 2 constants. In this case, the first position
+     * will be used for formatting the date part of the object and the second position
+     * will be used to format the time part.
+     *
+     * @var string|array|int
+     * @see \Cake\I18n\Time::i18nFormat()
+     */
+    protected static $_jsonEncodeFormat = "yyyy-MM-dd'T'HH:mm:ssZ";
 
     /**
      * The format to use when formatting a time using `Cake\I18n\Time::nice()`
@@ -54,7 +72,7 @@ class Time extends Carbon implements JsonSerializable
      * will be used for formatting the date part of the object and the second position
      * will be used to format the time part.
      *
-     * @var mixed
+     * @var string|array|int
      * @see \Cake\I18n\Time::nice()
      */
     public static $niceFormat = [IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT];
@@ -112,7 +130,7 @@ class Time extends Carbon implements JsonSerializable
      */
     public function __construct($time = null, $tz = null)
     {
-        if ($time instanceof \DateTime) {
+        if ($time instanceof DateTime) {
             $tz = $time->getTimeZone();
             $time = $time->format('Y-m-d H:i:s');
         }
@@ -245,6 +263,8 @@ class Time extends Carbon implements JsonSerializable
      */
     public function timeAgoInWords(array $options = [])
     {
+        $time = $this;
+
         $timezone = null;
         $format = static::$wordFormat;
         $end = static::$wordEnd;
@@ -271,8 +291,13 @@ class Time extends Carbon implements JsonSerializable
             }
         }
 
+        if ($timezone) {
+            $time = clone $this;
+            $time->timezone($timezone);
+        }
+
         $now = $from->format('U');
-        $inSeconds = $this->format('U');
+        $inSeconds = $time->format('U');
         $backwards = ($inSeconds > $now);
 
         $futureTime = $now;
@@ -288,7 +313,7 @@ class Time extends Carbon implements JsonSerializable
         }
 
         if ($diff > abs($now - (new static($end))->format('U'))) {
-            return sprintf($absoluteString, $this->i18nFormat($format));
+            return sprintf($absoluteString, $time->i18nFormat($format));
         }
 
         // If more than a week, then take into account the length of months
@@ -574,15 +599,26 @@ class Time extends Carbon implements JsonSerializable
             $pattern = $format;
         }
 
+        if (preg_match('/@calendar=(japanese|buddhist|chinese|persian|indian|islamic|hebrew|coptic|ethiopic)/', $locale)) {
+            $calendar = IntlDateFormatter::TRADITIONAL;
+        } else {
+            $calendar = IntlDateFormatter::GREGORIAN;
+        }
+
         $timezone = $date->getTimezone()->getName();
         $key = "{$locale}.{$dateFormat}.{$timeFormat}.{$timezone}.{$calendar}.{$pattern}";
 
         if (!isset(static::$_formatters[$key])) {
+            if ($timezone === '+00:00') {
+                $timezone = 'UTC';
+            } elseif ($timezone[0] === '+' || $timezone[0] === '-') {
+                $timezone = 'GMT' . $timezone;
+            }
             static::$_formatters[$key] = datefmt_create(
                 $locale,
                 $dateFormat,
                 $timeFormat,
-                $timezone === '+00:00' ? 'UTC' : $timezone,
+                $timezone,
                 $calendar,
                 $pattern
             );
@@ -606,21 +642,39 @@ class Time extends Carbon implements JsonSerializable
      *   Or one of DateTimeZone class constants
      * @param string $country A two-letter ISO 3166-1 compatible country code.
      *   This option is only used when $filter is set to DateTimeZone::PER_COUNTRY
-     * @param bool $group If true (default value) groups the identifiers list by primary region
+     * @param bool|array $options If true (default value) groups the identifiers list by primary region.
+     *   Otherwise, an array containing `group`, `abbr`, `before`, and `after`
+     *   keys. Setting `group` and `abbr` to true will group results and append
+     *   timezone abbreviation in the display value. Set `before` and `after`
+     *   to customize the abbreviation wrapper.
      * @return array List of timezone identifiers
      * @since 2.2
      */
-    public static function listTimezones($filter = null, $country = null, $group = true)
+    public static function listTimezones($filter = null, $country = null, $options = [])
     {
+        if (is_bool($options)) {
+            $options = [
+                'group' => $options,
+            ];
+        }
+        $defaults = [
+            'group' => true,
+            'abbr' => false,
+            'before' => ' - ',
+            'after' => null,
+        ];
+        $options += $defaults;
+        $group = $options['group'];
+
         $regex = null;
         if (is_string($filter)) {
             $regex = $filter;
             $filter = null;
         }
         if ($filter === null) {
-            $filter = \DateTimeZone::ALL;
+            $filter = DateTimeZone::ALL;
         }
-        $identifiers = \DateTimeZone::listIdentifiers($filter, $country);
+        $identifiers = DateTimeZone::listIdentifiers($filter, $country);
 
         if ($regex) {
             foreach ($identifiers as $key => $tz) {
@@ -632,12 +686,23 @@ class Time extends Carbon implements JsonSerializable
 
         if ($group) {
             $groupedIdentifiers = [];
+            $now = time();
+            $before = $options['before'];
+            $after = $options['after'];
             foreach ($identifiers as $key => $tz) {
+                $abbr = null;
+                if ($options['abbr']) {
+                    $dateTimeZone = new DateTimeZone($tz);
+                    $trans = $dateTimeZone->getTransitions($now, $now);
+                    $abbr = isset($trans[0]['abbr']) ?
+                        $before . $trans[0]['abbr'] . $after :
+                        null;
+                }
                 $item = explode('/', $tz, 2);
                 if (isset($item[1])) {
-                    $groupedIdentifiers[$item[0]][$tz] = $item[1];
+                    $groupedIdentifiers[$item[0]][$tz] = $item[1] . $abbr;
                 } else {
-                    $groupedIdentifiers[$item[0]] = [$tz => $item[0]];
+                    $groupedIdentifiers[$item[0]] = [$tz => $item[0] . $abbr];
                 }
             }
             return $groupedIdentifiers;
@@ -665,6 +730,17 @@ class Time extends Carbon implements JsonSerializable
     public static function setToStringFormat($format)
     {
         static::$_toStringFormat = $format;
+    }
+
+    /**
+     * Sets the default format used when converting this object to json
+     *
+     * @param string|array|int $format Format.
+     * @return void
+     */
+    public static function setJsonEncodeFormat($format)
+    {
+        static::$_jsonEncodeFormat = $format;
     }
 
     /**
@@ -706,7 +782,7 @@ class Time extends Carbon implements JsonSerializable
             static::$defaultLocale,
             $dateFormat,
             $timeFormat,
-            null,
+            date_default_timezone_get(),
             null,
             $pattern
         );
@@ -780,13 +856,25 @@ class Time extends Carbon implements JsonSerializable
     }
 
     /**
+     * Convenience method for getting the remaining time from a given time.
+     *
+     * @param \DateTime|\DateTimeImmutable $datetime The date to get the remaining time from.
+     * @return \DateInterval|bool The DateInterval object representing the difference between the two dates or FALSE on failure.
+     */
+    public static function fromNow($datetime)
+    {
+        $timeNow = new Time();
+        return $timeNow->diff($datetime);
+    }
+
+    /**
      * Returns a string that should be serialized when converting this object to json
      *
      * @return string
      */
     public function jsonSerialize()
     {
-        return $this->format(static::ISO8601);
+        return $this->i18nFormat(static::$_jsonEncodeFormat);
     }
 
     /**

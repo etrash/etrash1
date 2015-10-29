@@ -20,10 +20,11 @@ specify a driver to use:
 ```php
 use Cake\Datasource\ConnectionManager;
 
-ConnectionManager::create('default', [
+ConnectionManager::config('default', [
+	'className' => 'Cake\Database\Connection',
 	'driver' => 'Cake\Database\Driver\Mysql',
 	'database' => 'test',
-	'login' => 'root',
+	'username' => 'root',
 	'password' => 'secret'
 ]);
 ```
@@ -33,7 +34,7 @@ mappers if no explicit connection is defined.
 
 ## Creating Associations
 
-In your table classes you can define the relations between your tables. CakePHP
+In your table classes you can define the relations between your tables. CakePHP's ORM 
 supports 4 association types out of the box:
 
 * belongsTo - E.g. Many articles belong to a user.
@@ -84,7 +85,7 @@ $data = [
 ];
 
 $articles = TableRegistry::get('Articles');
-$article = $articles->newEnitity($data, [
+$article = $articles->newEntity($data, [
 	'associated' => ['Tags', 'Comments']
 ]);
 $articles->save($article, [
@@ -108,5 +109,5 @@ $articles->delete($article);
 
 ## Additional Documentation
 
-Consult [the CakePHP documentation](http://book.cakephp.org/3.0/en/orm.html)
+Consult [the CakePHP ORM documentation](http://book.cakephp.org/3.0/en/orm.html)
 for more in-depth documentation.

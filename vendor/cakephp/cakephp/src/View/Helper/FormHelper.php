@@ -17,8 +17,8 @@ namespace Cake\View\Helper;
 use Cake\Collection\Collection;
 use Cake\Core\Configure;
 use Cake\Core\Exception\Exception;
+use Cake\Datasource\EntityInterface;
 use Cake\Form\Form;
-use Cake\ORM\Entity;
 use Cake\Routing\Router;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
@@ -29,11 +29,12 @@ use Cake\View\Form\EntityContext;
 use Cake\View\Form\FormContext;
 use Cake\View\Form\NullContext;
 use Cake\View\Helper;
-use Cake\View\Helper\IdGeneratorTrait;
+use Cake\View\Helper\SecureFieldTokenTrait;
 use Cake\View\StringTemplateTrait;
 use Cake\View\View;
 use Cake\View\Widget\WidgetRegistry;
 use DateTime;
+use RuntimeException;
 use Traversable;
 
 /**
@@ -41,13 +42,15 @@ use Traversable;
  *
  * Automatic generation of HTML FORMs from given data.
  *
- * @property      HtmlHelper $Html
+ * @property HtmlHelper $Html
+ * @property UrlHelper $Url
  * @link http://book.cakephp.org/3.0/en/views/helpers/form.html
  */
 class FormHelper extends Helper
 {
 
     use IdGeneratorTrait;
+    use SecureFieldTokenTrait;
     use StringTemplateTrait;
 
     /**
@@ -80,6 +83,7 @@ class FormHelper extends Helper
      * @var array
      */
     protected $_defaultConfig = [
+        'idPrefix' => null,
         'errorClass' => 'form-error',
         'typeMap' => [
             'string' => 'text', 'datetime' => 'datetime', 'boolean' => 'checkbox',
@@ -102,8 +106,8 @@ class FormHelper extends Helper
             'formEnd' => '</form>',
             'formGroup' => '{{label}}{{input}}',
             'hiddenBlock' => '<div style="display:none;">{{content}}</div>',
-            'input' => '<input type="{{type}}" name="{{name}}"{{attrs}}>',
-            'inputSubmit' => '<input type="{{type}}"{{attrs}}>',
+            'input' => '<input type="{{type}}" name="{{name}}"{{attrs}}/>',
+            'inputSubmit' => '<input type="{{type}}"{{attrs}}/>',
             'inputContainer' => '<div class="input {{type}}{{required}}">{{content}}</div>',
             'inputContainerError' => '<div class="input {{type}}{{required}} error">{{content}}{{error}}</div>',
             'label' => '<label{{attrs}}>{{text}}</label>',
@@ -227,6 +231,7 @@ class FormHelper extends Helper
 
         $this->widgetRegistry($registry, $widgets);
         $this->_addDefaultContextProviders();
+        $this->_idPrefix = $this->config('idPrefix');
     }
 
     /**
@@ -262,7 +267,7 @@ class FormHelper extends Helper
                     return new EntityContext($request, $data);
                 }
             }
-            if ($data['entity'] instanceof Entity) {
+            if ($data['entity'] instanceof EntityInterface) {
                 return new EntityContext($request, $data);
             }
             if (is_array($data['entity']) && empty($data['entity']['schema'])) {
@@ -352,7 +357,9 @@ class FormHelper extends Helper
             'idPrefix' => null,
         ];
 
-        $this->_idPrefix = $options['idPrefix'];
+        if ($options['idPrefix'] !== null) {
+            $this->_idPrefix = $options['idPrefix'];
+        }
         $templater = $this->templater();
 
         if (!empty($options['templates'])) {
@@ -362,11 +369,16 @@ class FormHelper extends Helper
         }
         unset($options['templates']);
 
-        $url = $this->_formUrl($context, $options);
-        $action = $this->Url->build($url);
-        unset($options['url'], $options['action'], $options['idPrefix']);
+        if ($options['action'] === false || $options['url'] === false) {
+            $url = $this->request->here(false);
+            $action = null;
+        } else {
+            $url = $this->_formUrl($context, $options);
+            $action = $this->Url->build($url);
+        }
 
         $this->_lastAction($url);
+        unset($options['url'], $options['action'], $options['idPrefix']);
 
         $htmlAttributes = [];
         switch (strtolower($options['type'])) {
@@ -500,7 +512,7 @@ class FormHelper extends Helper
      * Closes an HTML form, cleans up values set by FormHelper::create(), and writes hidden
      * input fields where appropriate.
      *
-     * @param array $secureAttributes Secure attibutes which will be passed as HTML attributes
+     * @param array $secureAttributes Secure attributes which will be passed as HTML attributes
      *   into the hidden input elements generated for the Security Component.
      * @return string A closing FORM tag.
      * @link http://book.cakephp.org/3.0/en/views/helpers/form.html#closing-the-form
@@ -520,7 +532,7 @@ class FormHelper extends Helper
         $templater->pop();
         $this->requestType = null;
         $this->_context = null;
-        $this->_idPrefix = null;
+        $this->_idPrefix = $this->config('idPrefix');
         return $out;
     }
 
@@ -536,44 +548,26 @@ class FormHelper extends Helper
      *    generating the hash, else $this->fields is being used.
      * @param array $secureAttributes will be passed as HTML attributes into the hidden
      *    input elements generated for the Security Component.
-     * @return void|string A hidden input field with a security hash
+     * @return string|null A hidden input field with a security hash
      */
     public function secure(array $fields = [], array $secureAttributes = [])
     {
-        if (!isset($this->request['_Token']) || empty($this->request['_Token'])) {
-            return;
+        if (empty($this->request['_Token'])) {
+            return null;
         }
         $locked = [];
-        $unlockedFields = $this->_unlockedFields;
 
-        foreach ($fields as $key => $value) {
-            if (!is_int($key)) {
-                $locked[$key] = $value;
-                unset($fields[$key]);
-            }
-        }
-
-        sort($unlockedFields, SORT_STRING);
-        sort($fields, SORT_STRING);
-        ksort($locked, SORT_STRING);
-        $fields += $locked;
-
-        $locked = implode(array_keys($locked), '|');
-        $unlocked = implode($unlockedFields, '|');
-        $hashParts = [
+        $tokenData = $this->_buildFieldToken(
             $this->_lastAction,
-            serialize($fields),
-            $unlocked,
-            Security::salt()
-        ];
-        $fields = Security::hash(implode('', $hashParts), 'sha1');
-
+            $fields,
+            $this->_unlockedFields
+        );
         $tokenFields = array_merge($secureAttributes, [
-            'value' => urlencode($fields . ':' . $locked),
+            'value' => $tokenData['fields'],
         ]);
         $out = $this->hidden('_Token.fields', $tokenFields);
         $tokenUnlocked = array_merge($secureAttributes, [
-            'value' => urlencode($unlocked),
+            'value' => $tokenData['unlocked'],
         ]);
         $out .= $this->hidden('_Token.unlocked', $tokenUnlocked);
         return $this->formatTemplate('hiddenBlock', ['content' => $out]);
@@ -613,10 +607,14 @@ class FormHelper extends Helper
      * @param string|array $field Reference to field to be secured. Can be dot
      *   separated string to indicate nesting or array of fieldname parts.
      * @param mixed $value Field value, if value should not be tampered with.
-     * @return mixed|null Not used yet
+     * @return void
      */
     protected function _secure($lock, $field, $value = null)
     {
+        if (empty($field) && $field !== '0') {
+            return;
+        }
+
         if (is_string($field)) {
             $field = Hash::filter(explode('.', $field));
         }
@@ -635,6 +633,8 @@ class FormHelper extends Helper
             if (!in_array($field, $this->fields)) {
                 if ($value !== null) {
                     return $this->fields[$field] = $value;
+                } elseif (isset($this->fields[$field]) && $value === null) {
+                    unset($this->fields[$field]);
                 }
                 $this->fields[] = $field;
             }
@@ -964,6 +964,9 @@ class FormHelper extends Helper
      * - `nestedInput` - Used with checkbox and radio inputs. Set to false to render inputs outside of label
      *   elements. Can be set to true on any input to force the input inside the label. If you
      *   enable this option for radio buttons you will also need to modify the default `radioWrapper` template.
+     * - `templates` - The templates you want to use for this input. Any templates will be merged on top of
+     *   the already loaded templates. This option can either be a filename in /config that contains
+     *   the templates you want to load, or an array of templates to use.
      *
      * @param string $fieldName This should be "modelname.fieldname"
      * @param array $options Each type of input takes different options.
@@ -979,6 +982,7 @@ class FormHelper extends Helper
             'required' => null,
             'options' => null,
             'templates' => [],
+            'templateVars' => []
         ];
         $options = $this->_parseOptions($fieldName, $options);
         $options += ['id' => $this->_domId($fieldName)];
@@ -1003,6 +1007,7 @@ class FormHelper extends Helper
 
         $label = $options['label'];
         unset($options['label']);
+
         $nestedInput = false;
         if ($options['type'] === 'checkbox') {
             $nestedInput = true;
@@ -1014,7 +1019,7 @@ class FormHelper extends Helper
         }
 
         $input = $this->_getInput($fieldName, $options);
-        if ($options['type'] === 'hidden') {
+        if ($options['type'] === 'hidden' || $options['type'] === 'submit') {
             if ($newTemplates) {
                 $templater->pop();
             }
@@ -1045,11 +1050,15 @@ class FormHelper extends Helper
      */
     protected function _groupTemplate($options)
     {
-        $groupTemplate = $options['options']['type'] === 'checkbox' ? 'checkboxFormGroup' : 'formGroup';
+        $groupTemplate = $options['options']['type'] . 'FormGroup';
+        if (!$this->templater()->get($groupTemplate)) {
+            $groupTemplate = 'formGroup';
+        }
         return $this->templater()->format($groupTemplate, [
             'input' => $options['input'],
             'label' => $options['label'],
-            'error' => $options['error']
+            'error' => $options['error'],
+            'templateVars' => isset($options['options']['templateVars']) ? $options['options']['templateVars'] : []
         ]);
     }
 
@@ -1070,7 +1079,8 @@ class FormHelper extends Helper
             'content' => $options['content'],
             'error' => $options['error'],
             'required' => $options['options']['required'] ? ' required' : '',
-            'type' => $options['options']['type']
+            'type' => $options['options']['type'],
+            'templateVars' => isset($options['options']['templateVars']) ? $options['options']['templateVars'] : []
         ]);
     }
 
@@ -1322,7 +1332,8 @@ class FormHelper extends Helper
      */
     protected function _inputLabel($fieldName, $label, $options)
     {
-        $labelAttributes = [];
+        $options += ['id' => null, 'input' => null, 'nestedInput' => false, 'templateVars' => []];
+        $labelAttributes = ['templateVars' => $options['templateVars']];
         if (is_array($label)) {
             $labelText = null;
             if (isset($label['text'])) {
@@ -1333,7 +1344,6 @@ class FormHelper extends Helper
         } else {
             $labelText = $label;
         }
-        $options += ['id' => null, 'input' => null, 'nestedInput' => false];
 
         $labelAttributes['for'] = $options['id'];
         $groupTypes = ['radio', 'multicheckbox', 'date', 'time', 'datetime'];
@@ -1412,7 +1422,7 @@ class FormHelper extends Helper
      *
      * @param string $fieldName Name of a field, like this "modelname.fieldname"
      * @param array|\Traversable $options Radio button options array.
-     * @param array $attributes Array of HTML attributes, and special attributes above.
+     * @param array $attributes Array of attributes.
      * @return string Completed radio widget set.
      * @link http://book.cakephp.org/3.0/en/views/helpers/form.html#creating-radio-buttons
      */
@@ -1422,14 +1432,13 @@ class FormHelper extends Helper
         $attributes['idPrefix'] = $this->_idPrefix;
         $attributes = $this->_initInputField($fieldName, $attributes);
 
-        $value = $attributes['val'];
         $hiddenField = isset($attributes['hiddenField']) ? $attributes['hiddenField'] : true;
         unset($attributes['hiddenField']);
 
         $radio = $this->widget('radio', $attributes);
 
         $hidden = '';
-        if ($hiddenField && (!isset($value) || $value === '')) {
+        if ($hiddenField) {
             $hidden = $this->hidden($fieldName, [
                 'value' => '',
                 'form' => isset($attributes['form']) ? $attributes['form'] : null,
@@ -1447,7 +1456,9 @@ class FormHelper extends Helper
      *
      * ### Usage
      *
-     * `$this->Form->search('User.query', ['value' => 'test']);`
+     * ```
+     * $this->Form->search('User.query', ['value' => 'test']);
+     * ```
      *
      * Will make an input like:
      *
@@ -1634,7 +1645,6 @@ class FormHelper extends Helper
 
         $formName = str_replace('.', '', uniqid('post_', true));
         $formOptions = [
-            'action' => $this->Url->build($url),
             'name' => $formName,
             'style' => 'display:none;',
             'method' => 'post',
@@ -1643,11 +1653,16 @@ class FormHelper extends Helper
             $formOptions['target'] = $options['target'];
             unset($options['target']);
         }
+        $templater = $this->templater();
 
         $this->_lastAction($url);
+        $action = $templater->formatAttributes([
+            'action' => $this->Url->build($url),
+            'escape' => false
+        ]);
 
-        $out = $this->formatTemplate('formStart', [
-            'attrs' => $this->templater()->formatAttributes($formOptions)
+        $out = $templater->format('formStart', [
+            'attrs' => $templater->formatAttributes($formOptions) . $action
         ]);
         $out .= $this->hidden('_method', ['value' => $requestMethod]);
         $out .= $this->_csrfField();
@@ -1661,7 +1676,7 @@ class FormHelper extends Helper
             unset($options['data']);
         }
         $out .= $this->secure($fields);
-        $out .= $this->formatTemplate('formEnd', []);
+        $out .= $templater->format('formEnd', []);
 
         if ($options['block']) {
             if ($options['block'] === true) {
@@ -2176,7 +2191,10 @@ class FormHelper extends Helper
     protected function _datetimeOptions($options)
     {
         foreach ($this->_datetimeParts as $type) {
-            if (!isset($options[$type])) {
+            if (!array_key_exists($type, $options)) {
+                $options[$type] = [];
+            }
+            if ($options[$type] === true) {
                 $options[$type] = [];
             }
 
@@ -2192,7 +2210,6 @@ class FormHelper extends Helper
                 $options[$type]['empty'] = $options['empty'][$type];
             }
         }
-        unset($options['empty']);
 
         $hasYear = is_array($options['year']);
         if ($hasYear && isset($options['minYear'])) {
@@ -2222,14 +2239,16 @@ class FormHelper extends Helper
         }
         unset($options['interval'], $options['round']);
 
-        if (!isset($options['val'])) {
-            $val = new \DateTime();
+        if ($options['val'] === true || $options['val'] === null && isset($options['empty']) && $options['empty'] === false) {
+            $val = new DateTime();
             $currentYear = $val->format('Y');
             if (isset($options['year']['end']) && $options['year']['end'] < $currentYear) {
                 $val->setDate($options['year']['end'], $val->format('n'), $val->format('j'));
             }
             $options['val'] = $val;
         }
+
+        unset($options['empty']);
 
         return $options;
     }
@@ -2357,7 +2376,7 @@ class FormHelper extends Helper
                 $options['disabled'] === 'disabled' ||
                 (is_array($options['disabled']) &&
                     !empty($options['options']) &&
-                    array_diff($options['options'], $options['disabled']) === array()
+                    array_diff($options['options'], $options['disabled']) === []
                 )
             );
         }
@@ -2381,11 +2400,15 @@ class FormHelper extends Helper
      * fieldname parts like ['Model', 'field'] is returned.
      *
      * @param string $name The form inputs name attribute.
-     * @return string|array|null Dot separated string like Foo.bar, array of filename
-     *   params like ['Model', 'field'] or null if options does not contain name.
+     * @return array Array of field name params like ['Model.field'] or
+     *   ['Model', 'field'] for array fields or empty array if $name is empty.
      */
     protected function _secureFieldName($name)
     {
+        if (empty($name) && $name !== '0') {
+            return [];
+        }
+
         if (strpos($name, '[') === false) {
             return [$name];
         }
@@ -2465,7 +2488,7 @@ class FormHelper extends Helper
             $context = new NullContext($this->request, $data);
         }
         if (!($context instanceof ContextInterface)) {
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 'Context objects must implement Cake\View\Form\ContextInterface'
             );
         }
@@ -2501,17 +2524,19 @@ class FormHelper extends Helper
      */
     public function widget($name, array $data = [])
     {
+        $secure = null;
+        if (isset($data['secure'])) {
+            $secure = $data['secure'];
+            unset($data['secure']);
+        }
         $widget = $this->_registry->get($name);
-        if (isset($data['secure'], $data['name']) &&
-            $data['secure'] !== self::SECURE_SKIP
-        ) {
+        $out = $widget->render($data, $this->context());
+        if (isset($data['name']) && $secure !== null && $secure !== self::SECURE_SKIP) {
             foreach ($widget->secureFields($data) as $field) {
-                $this->_secure($data['secure'], $this->_secureFieldName($field));
+                $this->_secure($secure, $this->_secureFieldName($field));
             }
         }
-        unset($data['secure']);
-
-        return $widget->render($data, $this->context());
+        return $out;
     }
 
     /**

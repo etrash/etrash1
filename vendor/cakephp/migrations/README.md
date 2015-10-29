@@ -1,22 +1,25 @@
-# cakephp/migrations [![Build Status](https://travis-ci.org/cakephp/migrations.svg?branch=master)](https://travis-ci.org/cakephp/migrations) [![License](https://poser.pugx.org/cakephp/migrations/license.svg)](https://packagist.org/packages/cakephp/migrations)
+# cakephp/migrations
+
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.txt)
+[![Build Status](https://img.shields.io/travis/cakephp/migrations/master.svg?style=flat-square)](https://travis-ci.org/cakephp/migrations)
+[![Coverage Status](https://img.shields.io/coveralls/cakephp/migrations/master.svg?style=flat-square)](https://coveralls.io/r/cakephp/migrations?branch=master)
+[![Total Downloads](https://img.shields.io/packagist/dt/cakephp/migrations.svg?style=flat-square)](https://packagist.org/packages/cakephp/migrations)
 
 This is a Database Migrations system for CakePHP 3.0.
 
 The plugin consists of a wrapper for the [phinx](http://phinx.org) migrations library.
 
+Full documentation of the plugin can be found on the [CakePHP Cookbook](http://book.cakephp.org/3.0/en/migrations.html).
+
 ## Installation
 
 You can install this plugin into your CakePHP application using
-[composer](http://getcomposer.org). For existing applications you can add the
-following to your `composer.json` file:
+[composer](http://getcomposer.org). 
 
-```javascript
-"require": {
-	"cakephp/migrations": "dev-master"
-}
-```
-
-And run `php composer.phar update`
+Run the following command
+```sh
+composer require cakephp/migrations
+ ```
 
 ## Configuration
 
@@ -48,6 +51,24 @@ bin/cake migrations status -p PluginName
 
 # You can also scope a command to a connection via the `--connection` or `-c` option
 bin/cake migrations status -c my_datasource
+
+# The following will mark migrations as marked without actually running it.
+bin/cake migrations mark_migrated
+
+# DEPRECATED: The use of the argument `all` will have the same effect as above
+bin/cake migrations mark_migrated all
+
+# Using the option `--target` it will try to mark every migration from beginning up to the given VERSION
+bin/cake migrations mark_migrated --target=VERSION
+
+# When using the `--target` option you can also use `--exclude` or `--only`:
+# `--exclude` will try to mark every migration from beginning until the given VERSION (excluding it from marking)
+# `--only` will try to mark only the given VERSION
+bin/cake migrations mark_migrated --target=VERSION --exclude
+bin/cake migrations mark_migrated --target=VERSION --only
+
+# DEPRECATED: Using the VERSION argument will try to mark only the given VERSION
+bin/cake migrations mark_migrated VERSION
 ```
 
 ### Creating Migrations
@@ -122,6 +143,29 @@ $table->addColumn('id', 'char', ['limit' => 36])
 
 > Phinx automatically creates an auto-increment `id` field for *every* table. This will hopefully be fixed in the future.
 
+#### Collations
+
+If you need to create a table with a different collation than the database default one, you can define it
+with the ``table`` method, as an option : 
+
+```php
+$table = $this
+    ->table('categories', [
+        'collation' => 'latin1_german1_ci'
+    ])
+    ->addColumn('title', 'string', [
+        'default' => null,
+        'limit' => 255,
+        'null' => false,
+    ])
+    ->create();
+```
+
+Note however this can only be done on table creation : there is currently
+no way of adding a column to an existing table with a different collation than the table or
+the database.
+Only MySQL and SqlServer supports this configuration key for the time being.
+
 #### Generating Migrations from the CLI
 
 > When using this option, you can still modify the migration before running them if so desired.
@@ -173,12 +217,14 @@ name you are specifying.
 
 Fields are verified via the following the following regular expression:
 
-    /^(\w*)(?::(\w*))?(?::(\w*))?(?::(\w*))?/
+    /^(\w*)(?::(\w*\[?\d*\]?))?(?::(\w*))?(?::(\w*))?/
 
 They follow the format:
 
-    field:fieldType:indexType:indexName
+    field:fieldType[length]:indexType:indexName
 
+The length parameter for the ``fieldType`` is optional and should always be
+written between bracket.
 For instance, the following are all valid ways of specifying the primary key `id`:
 
 - `id:primary_key`
@@ -194,7 +240,11 @@ There are some heuristics to choosing fieldtypes when left unspecified or set to
 - `created`, `modified`, `updated`: *datetime*
 - Default *string*
 
-Lengths for certain columns are also defaulted:
+You can specify the wanted length for a field type by writing it between bracket:
+
+    username:string[128]
+
+If no length is specified, lengths for certain columns are defaulted:
 
 - *string*: `255`
 - *integer*: `11`

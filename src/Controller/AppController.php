@@ -28,7 +28,7 @@ use Cake\Routing\Router;
  */
 class AppController extends Controller
 {
-
+    public $components = array('RequestHandler');
     /**
      * Initialization hook method.
      *
@@ -36,7 +36,6 @@ class AppController extends Controller
      *
      * @return void
      */
-    
 
     public function initialize()
     {
@@ -57,6 +56,8 @@ class AppController extends Controller
         $this->Auth->allow();   
         // // Deny one action
         $this->Auth->deny(['editar','deletar', 'index', 'excluir']);
+        
+        $this->loadComponent('RequestHandler');
 
         //MENU SUPERIOR
         if(is_null($this->Auth->user()))

@@ -20,6 +20,7 @@ use Cake\Network\Request;
 use Cake\Network\Response;
 use Cake\Utility\Hash;
 use Cake\Utility\Security;
+use RuntimeException;
 
 /**
  * Cookie Component.
@@ -106,13 +107,6 @@ class CookieComponent extends Component
     protected $_response = null;
 
     /**
-     * The request from the controller.
-     *
-     * @var \Cake\Network\Request
-     */
-    protected $_request;
-
-    /**
      * Valid cipher names for encrypted cookies.
      *
      * @var array
@@ -132,20 +126,18 @@ class CookieComponent extends Component
         }
 
         $controller = $this->_registry->getController();
-        if ($controller && isset($controller->request)) {
-            $this->_request = $controller->request;
-        } else {
-            $this->_request = Request::createFromGlobals();
+
+        if ($controller !== null) {
+            $this->_response =& $controller->response;
+        }
+
+        if ($controller === null) {
+            $this->request = Request::createFromGlobals();
+            $this->_response = new Response();
         }
 
         if (empty($this->_config['path'])) {
-            $this->config('path', $this->_request->webroot);
-        }
-
-        if ($controller && isset($controller->response)) {
-            $this->_response = $controller->response;
-        } else {
-            $this->_response = new Response();
+            $this->config('path', $this->request->webroot);
         }
     }
 
@@ -260,10 +252,10 @@ class CookieComponent extends Component
         if (isset($this->_loaded[$first])) {
             return;
         }
-        if (!isset($this->_request->cookies[$first])) {
+        if (!isset($this->request->cookies[$first])) {
             return;
         }
-        $cookie = $this->_request->cookies[$first];
+        $cookie = $this->request->cookies[$first];
         $config = $this->configKey($first);
         $this->_loaded[$first] = true;
         $this->_values[$first] = $this->_decrypt($cookie, $config['encryption']);
@@ -371,7 +363,7 @@ class CookieComponent extends Component
         if (is_array($value)) {
             $value = $this->_implode($value);
         }
-        if (!$encrypt) {
+        if ($encrypt === false) {
             return $value;
         }
         $this->_checkCipher($encrypt);
@@ -399,7 +391,7 @@ class CookieComponent extends Component
                 'Invalid encryption cipher. Must be one of %s.',
                 implode(', ', $this->_validCiphers)
             );
-            throw new \RuntimeException($msg);
+            throw new RuntimeException($msg);
         }
     }
 

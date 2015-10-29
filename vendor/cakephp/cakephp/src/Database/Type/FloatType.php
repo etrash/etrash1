@@ -15,14 +15,16 @@
 namespace Cake\Database\Type;
 
 use Cake\Database\Driver;
+use Cake\Database\Type;
 use PDO;
+use RuntimeException;
 
 /**
  * Float type converter.
  *
  * Use to convert float/decimal data between PHP and the database types.
  */
-class FloatType extends \Cake\Database\Type
+class FloatType extends Type
 {
 
     /**

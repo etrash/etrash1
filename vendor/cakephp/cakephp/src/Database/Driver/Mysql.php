@@ -15,11 +15,12 @@
 namespace Cake\Database\Driver;
 
 use Cake\Database\Dialect\MysqlDialectTrait;
+use Cake\Database\Driver;
 use Cake\Database\Query;
 use Cake\Database\Statement\MysqlStatement;
 use PDO;
 
-class Mysql extends \Cake\Database\Driver
+class Mysql extends Driver
 {
 
     use MysqlDialectTrait;
@@ -62,6 +63,9 @@ class Mysql extends \Cake\Database\Driver
         if (!empty($config['timezone'])) {
             $config['init'][] = sprintf("SET time_zone = '%s'", $config['timezone']);
         }
+        if (!empty($config['encoding'])) {
+            $config['init'][] = sprintf("SET NAMES %s", $config['encoding']);
+        }
 
         $config['flags'] += [
             PDO::ATTR_PERSISTENT => $config['persistent'],
@@ -86,8 +90,9 @@ class Mysql extends \Cake\Database\Driver
         $this->_connect($dsn, $config);
 
         if (!empty($config['init'])) {
+            $connection = $this->connection();
             foreach ((array)$config['init'] as $command) {
-                $this->connection()->exec($command);
+                $connection->exec($command);
             }
         }
         return true;
@@ -119,5 +124,13 @@ class Mysql extends \Cake\Database\Driver
             $result->bufferResults(false);
         }
         return $result;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function supportsDynamicConstraints()
+    {
+        return true;
     }
 }

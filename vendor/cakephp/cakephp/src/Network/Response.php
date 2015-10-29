@@ -17,6 +17,8 @@ namespace Cake\Network;
 use Cake\Core\Configure;
 use Cake\Filesystem\File;
 use Cake\Network\Exception\NotFoundException;
+use DateTime;
+use DateTimeZone;
 use InvalidArgumentException;
 
 /**
@@ -69,6 +71,7 @@ class Response
         415 => 'Unsupported Media Type',
         416 => 'Requested range not satisfiable',
         417 => 'Expectation Failed',
+        429 => 'Too Many Requests',
         500 => 'Internal Server Error',
         501 => 'Not Implemented',
         502 => 'Bad Gateway',
@@ -122,6 +125,7 @@ class Response
         'ips' => 'application/x-ipscript',
         'ipx' => 'application/x-ipix',
         'js' => 'application/javascript',
+        'jsonapi' => 'application/vnd.api+json',
         'latex' => 'application/x-latex',
         'lha' => 'application/octet-stream',
         'lsp' => 'application/x-lisp',
@@ -334,7 +338,7 @@ class Response
     protected $_headers = [];
 
     /**
-     * Buffer string for response message
+     * Buffer string or callable for response message
      *
      * @var string
      */
@@ -538,11 +542,19 @@ class Response
     /**
      * Sends a content string to the client.
      *
-     * @param string $content string to send as response body
+     * If the content is a callable, it is invoked. The callable should either
+     * return a string or output content directly and have no return value.
+     *
+     * @param string|callable $content String to send as response body or callable
+     *  which returns/outputs content.
      * @return void
      */
     protected function _sendContent($content)
     {
+        if (!is_string($content) && is_callable($content)) {
+            $content = $content();
+        }
+
         echo $content;
     }
 
@@ -551,21 +563,35 @@ class Response
      * Returns the complete list of buffered headers
      *
      * ### Single header
-     * e.g `header('Location', 'http://example.com');`
+     * ```
+     * header('Location', 'http://example.com');
+     * ```
      *
      * ### Multiple headers
-     * e.g `header(['Location' => 'http://example.com', 'X-Extra' => 'My header']);`
+     * ```
+     * header(['Location' => 'http://example.com', 'X-Extra' => 'My header']);
+     * ```
      *
      * ### String header
-     * e.g `header('WWW-Authenticate: Negotiate');`
+     * ```
+     * header('WWW-Authenticate: Negotiate');
+     * ```
      *
      * ### Array of string headers
-     * e.g `header(['WWW-Authenticate: Negotiate', 'Content-type: application/pdf']);`
+     * ```
+     * header(['WWW-Authenticate: Negotiate', 'Content-type: application/pdf']);
+     * ```
      *
      * Multiple calls for setting the same header name will have the same effect as setting the header once
      * with the last value sent for it
-     *  e.g `header('WWW-Authenticate: Negotiate'); header('WWW-Authenticate: Not-Negotiate');`
-     * will have the same effect as only doing `header('WWW-Authenticate: Not-Negotiate');`
+     * ```
+     * header('WWW-Authenticate: Negotiate');
+     * header('WWW-Authenticate: Not-Negotiate');
+     * ```
+     * will have the same effect as only doing
+     * ```
+     * header('WWW-Authenticate: Not-Negotiate');
+     * ```
      *
      * @param string|array|null $header An array of header strings or a single header string
      *  - an associative array of "header name" => "header value" is also accepted
@@ -614,7 +640,7 @@ class Response
      * Buffers the response message to be sent
      * if $content is null the current buffer is returned
      *
-     * @param string|null $content the string message to be sent
+     * @param string|callable|null $content the string or callable message to be sent
      * @return string Current message buffer if $content param is passed as null
      */
     public function body($content = null)
@@ -703,19 +729,27 @@ class Response
      *
      * ### Setting the content type
      *
-     * e.g `type('jpg');`
+     * ```
+     * type('jpg');
+     * ```
      *
      * ### Returning the current content type
      *
-     * e.g `type();`
+     * ```
+     * type();
+     * ```
      *
      * ### Storing content type definitions
      *
-     * e.g `type(['keynote' => 'application/keynote', 'bat' => 'application/bat']);`
+     * ```
+     * type(['keynote' => 'application/keynote', 'bat' => 'application/bat']);
+     * ```
      *
      * ### Replacing a content type definition
      *
-     * e.g `type(['jpg' => 'text/plain']);`
+     * ```
+     * type(['jpg' => 'text/plain']);
+     * ```
      *
      * @param string|null $contentType Content type key.
      * @return mixed Current content type or false if supplied an invalid content type
@@ -849,7 +883,7 @@ class Response
             if (!$public && !$private && !$noCache) {
                 return null;
             }
-            $sharable = $public || ! ($private || $noCache);
+            $sharable = $public || !($private || $noCache);
             return $sharable;
         }
         if ($public) {
@@ -1088,14 +1122,14 @@ class Response
      */
     protected function _getUTCDate($time = null)
     {
-        if ($time instanceof \DateTime) {
+        if ($time instanceof DateTime) {
             $result = clone $time;
         } elseif (is_int($time)) {
-            $result = new \DateTime(date('Y-m-d H:i:s', $time));
+            $result = new DateTime(date('Y-m-d H:i:s', $time));
         } else {
-            $result = new \DateTime($time);
+            $result = new DateTime($time);
         }
-        $result->setTimeZone(new \DateTimeZone('UTC'));
+        $result->setTimeZone(new DateTimeZone('UTC'));
         return $result;
     }
 
@@ -1205,11 +1239,15 @@ class Response
     /**
      * String conversion. Fetches the response body as a string.
      * Does *not* send headers.
+     * If body is a callable, a blank string is returned.
      *
      * @return string
      */
     public function __toString()
     {
+        if (!is_string($this->_body) && is_callable($this->_body)) {
+            return '';
+        }
         return (string)$this->_body;
     }
 
@@ -1285,19 +1323,29 @@ class Response
      * This method allow multiple ways to setup the domains, see the examples
      *
      * ### Full URI
-     * e.g `cors($request, 'http://www.cakephp.org');`
+     * ```
+     * cors($request, 'http://www.cakephp.org');
+     * ```
      *
      * ### URI with wildcard
-     * e.g `cors($request, 'http://*.cakephp.org');`
+     * ```
+     * cors($request, 'http://*.cakephp.org');
+     * ```
      *
      * ### Ignoring the requested protocol
-     * e.g `cors($request, 'www.cakephp.org');`
+     * ```
+     * cors($request, 'www.cakephp.org');
+     * ```
      *
      * ### Any URI
-     * e.g `cors($request, '*');`
+     * ```
+     * cors($request, '*');
+     * ```
      *
      * ### Whitelist of URIs
-     * e.g `cors($request, ['http://www.cakephp.org', '*.google.com', 'https://myproject.github.io']);`
+     * ```
+     * cors($request, ['http://www.cakephp.org', '*.google.com', 'https://myproject.github.io']);
+     * ```
      *
      * @param \Cake\Network\Request $request Request object
      * @param string|array $allowedDomains List of allowed domains, see method description for more details
@@ -1374,7 +1422,7 @@ class Response
             'download' => null
         ];
 
-        if (strpos($path, '..') !== false) {
+        if (strpos($path, '../') !== false || strpos($path, '..\\') !== false) {
             throw new NotFoundException('The requested file contains `..` and will not be read.');
         }
 

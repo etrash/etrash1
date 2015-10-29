@@ -15,8 +15,6 @@
 namespace Cake\Database\Expression;
 
 use Cake\Database\ExpressionInterface;
-use Cake\Database\Expression\FieldInterface;
-use Cake\Database\Expression\FieldTrait;
 use Cake\Database\ValueBinder;
 
 /**
@@ -151,6 +149,22 @@ class Comparison implements ExpressionInterface, FieldInterface
         if ($this->_value instanceof ExpressionInterface) {
             $callable($this->_value);
             $this->_value->traverse($callable);
+        }
+    }
+
+    /**
+     * Create a deep clone.
+     *
+     * Clones the field and value if they are expression objects.
+     *
+     * @return void
+     */
+    public function __clone()
+    {
+        foreach (['_value', '_field'] as $prop) {
+            if ($prop instanceof ExpressionInterface) {
+                $this->{$prop} = clone $this->{$prop};
+            }
         }
     }
 

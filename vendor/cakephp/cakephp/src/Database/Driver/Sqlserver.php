@@ -15,6 +15,7 @@
 namespace Cake\Database\Driver;
 
 use Cake\Database\Dialect\SqlserverDialectTrait;
+use Cake\Database\Driver;
 use Cake\Database\Query;
 use Cake\Database\Statement\SqlserverStatement;
 use PDO;
@@ -22,7 +23,7 @@ use PDO;
 /**
  * SQLServer driver.
  */
-class Sqlserver extends \Cake\Database\Driver
+class Sqlserver extends Driver
 {
 
     use PDODriverTrait;
@@ -39,7 +40,8 @@ class Sqlserver extends \Cake\Database\Driver
         'username' => '',
         'password' => '',
         'database' => 'cake',
-        'encoding' => PDO::SQLSRV_ENCODING_UTF8,
+        // PDO::SQLSRV_ENCODING_UTF8
+        'encoding' => 65001,
         'flags' => [],
         'init' => [],
         'settings' => [],
@@ -108,5 +110,13 @@ class Sqlserver extends \Cake\Database\Driver
         }
         $statement = $this->_connection->prepare($isObject ? $query->sql() : $query, $options);
         return new SqlserverStatement($statement, $this);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function supportsDynamicConstraints()
+    {
+        return true;
     }
 }

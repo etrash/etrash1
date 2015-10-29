@@ -15,7 +15,6 @@
 namespace Cake\Datasource;
 
 use ArrayAccess;
-use Cake\Validation\Validator;
 use JsonSerializable;
 
 /**
@@ -70,7 +69,7 @@ interface EntityInterface extends ArrayAccess, JsonSerializable
      * will be returned. Otherwise the hidden properties will be set.
      *
      * @param null|array $properties Either an array of properties to hide or null to get properties
-     * @return array|\Cake\DataSource\EntityInterface
+     * @return array|\Cake\Datasource\EntityInterface
      */
     public function hiddenProperties($properties = null);
 
@@ -81,7 +80,7 @@ interface EntityInterface extends ArrayAccess, JsonSerializable
      * will be returned. Otherwise the virtual properties will be set.
      *
      * @param null|array $properties Either an array of properties to treat as virtual or null to get properties
-     * @return array|\Cake\DataSource\EntityInterface
+     * @return array|\Cake\Datasource\EntityInterface
      */
     public function virtualProperties($properties = null);
 
@@ -168,7 +167,7 @@ interface EntityInterface extends ArrayAccess, JsonSerializable
 
     /**
      * Stores whether or not a property value can be changed or set in this entity.
-     * The special property '*' can also be marked as accessible or protected, meaning
+     * The special property `*` can also be marked as accessible or protected, meaning
      * that any other property specified before will take its value. For example
      * `$entity->accessible('*', true)`  means that any property not specified already
      * will be accessible by default.

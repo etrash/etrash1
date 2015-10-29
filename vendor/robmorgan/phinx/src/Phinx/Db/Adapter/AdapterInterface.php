@@ -54,8 +54,10 @@ interface AdapterInterface
     const PHINX_TYPE_TIME           = 'time';
     const PHINX_TYPE_DATE           = 'date';
     const PHINX_TYPE_BINARY         = 'binary';
+    const PHINX_TYPE_BLOB           = 'blob';
     const PHINX_TYPE_BOOLEAN        = 'boolean';
     const PHINX_TYPE_JSON           = 'json';
+    const PHINX_TYPE_JSONB          = 'jsonb';
     const PHINX_TYPE_UUID           = 'uuid';
     const PHINX_TYPE_FILESTREAM     = 'filestream';
 
@@ -229,6 +231,15 @@ interface AdapterInterface
      * @return array
      */
     public function fetchAll($sql);
+
+    /**
+     * Inserts data into the table
+     *
+     * @param Table $table where to insert data
+     * @param array $columns column names
+     * @param $data
+     */
+    public function insert(Table $table, $columns, $data);
 
     /**
      * Quotes a table name for use in a query.

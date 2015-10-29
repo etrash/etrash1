@@ -16,6 +16,7 @@ namespace Cake\Datasource;
 
 use Cake\Collection\Collection;
 use Cake\Utility\Inflector;
+use InvalidArgumentException;
 use Traversable;
 
 /**
@@ -99,8 +100,8 @@ trait EntityTrait
      * property name points to a boolean indicating its status. An empty array
      * means no properties are accessible
      *
-     * The special property '*' can also be mapped, meaning that any other property
-     * not defined in the map will take its value. For example, `'*' => true`
+     * The special property '\*' can also be mapped, meaning that any other property
+     * not defined in the map will take its value. For example, `'\*' => true`
      * means that any property not defined in the map will be accessible by default
      *
      * @var array
@@ -225,7 +226,7 @@ trait EntityTrait
         }
 
         if (!is_array($property)) {
-            throw new \InvalidArgumentException('Cannot set an empty property');
+            throw new InvalidArgumentException('Cannot set an empty property');
         }
         $options += ['setter' => true, 'guard' => $guard];
 
@@ -236,8 +237,8 @@ trait EntityTrait
 
             $this->dirty($p, true);
 
-            if (!isset($this->_original[$p]) &&
-                isset($this->_properties[$p]) &&
+            if (!array_key_exists($p, $this->_original) &&
+                array_key_exists($p, $this->_properties) &&
                 $this->_properties[$p] !== $value
             ) {
                 $this->_original[$p] = $this->_properties[$p];
@@ -254,6 +255,7 @@ trait EntityTrait
             }
             $this->_properties[$p] = $value;
         }
+
         return $this;
     }
 
@@ -267,7 +269,7 @@ trait EntityTrait
     public function &get($property)
     {
         if (!strlen((string)$property)) {
-            throw new \InvalidArgumentException('Cannot get an empty property');
+            throw new InvalidArgumentException('Cannot get an empty property');
         }
 
         $value = null;
@@ -294,9 +296,9 @@ trait EntityTrait
     public function getOriginal($property)
     {
         if (!strlen((string)$property)) {
-            throw new \InvalidArgumentException('Cannot get an empty property');
+            throw new InvalidArgumentException('Cannot get an empty property');
         }
-        if (isset($this->_original[$property])) {
+        if (array_key_exists($property, $this->_original)) {
             return $this->_original[$property];
         }
         return $this->get($property);
@@ -421,10 +423,14 @@ trait EntityTrait
         $result = [];
         foreach ($this->visibleProperties() as $property) {
             $value = $this->get($property);
-            if (is_array($value) && isset($value[0]) && $value[0] instanceof EntityInterface) {
+            if (is_array($value)) {
                 $result[$property] = [];
                 foreach ($value as $k => $entity) {
-                    $result[$property][$k] = $entity->toArray();
+                    if ($entity instanceof EntityInterface) {
+                        $result[$property][$k] = $entity->toArray();
+                    } else {
+                        $result[$property][$k] = $entity;
+                    }
                 }
             } elseif ($value instanceof EntityInterface) {
                 $result[$property] = $value->toArray();
@@ -525,7 +531,10 @@ trait EntityTrait
 
     /**
      * Returns an array with the requested original properties
-     * stored in this entity, indexed by property name
+     * stored in this entity, indexed by property name.
+     *
+     * Properties that are unchanged from their original value will be included in the
+     * return of this method.
      *
      * @param array $properties List of properties to be returned
      * @return array
@@ -534,8 +543,27 @@ trait EntityTrait
     {
         $result = [];
         foreach ($properties as $property) {
+            $result[$property] = $this->getOriginal($property);
+        }
+        return $result;
+    }
+
+    /**
+     * Returns an array with only the original properties
+     * stored in this entity, indexed by property name.
+     *
+     * This method will only return properties that have been modified since
+     * the entity was built. Unchanged properties will be omitted.
+     *
+     * @param array $properties List of properties to be returned
+     * @return array
+     */
+    public function extractOriginalChanged(array $properties)
+    {
+        $result = [];
+        foreach ($properties as $property) {
             $original = $this->getOriginal($property);
-            if ($original !== null && $original !== $this->get($property)) {
+            if ($original !== $this->get($property)) {
                 $result[$property] = $original;
             }
         }
@@ -554,7 +582,7 @@ trait EntityTrait
      * @param null|bool $isDirty true means the property was changed, false means
      * it was not changed and null will make the function return current state
      * for that property
-     * @return bool whether the property was changed or not
+     * @return bool Whether the property was changed or not
      */
     public function dirty($property = null, $isDirty = null)
     {
@@ -753,7 +781,7 @@ trait EntityTrait
 
     /**
      * Stores whether or not a property value can be changed or set in this entity.
-     * The special property '*' can also be marked as accessible or protected, meaning
+     * The special property `*` can also be marked as accessible or protected, meaning
      * that any other property specified before will take its value. For example
      * `$entity->accessible('*', true)`  means that any property not specified already
      * will be accessible by default.
@@ -816,7 +844,7 @@ trait EntityTrait
      * this entity came from if it is known.
      *
      * @param string $alias the alias of the repository
-     * @return string
+     * @return string|$this
      */
     public function source($alias = null)
     {
@@ -824,6 +852,8 @@ trait EntityTrait
             return $this->_registryAlias;
         }
         $this->_registryAlias = $alias;
+
+        return $this;
     }
 
     /**
@@ -844,15 +874,14 @@ trait EntityTrait
      */
     public function __debugInfo()
     {
-        return [
-            'new' => $this->isNew(),
-            'accessible' => array_filter($this->_accessible),
-            'properties' => $this->_properties,
-            'dirty' => $this->_dirty,
-            'original' => $this->_original,
-            'virtual' => $this->_virtual,
-            'errors' => $this->_errors,
-            'repository' => $this->_registryAlias
+        return $this->_properties + [
+            '[new]' => $this->isNew(),
+            '[accessible]' => array_filter($this->_accessible),
+            '[dirty]' => $this->_dirty,
+            '[original]' => $this->_original,
+            '[virtual]' => $this->_virtual,
+            '[errors]' => $this->_errors,
+            '[repository]' => $this->_registryAlias
         ];
     }
 }

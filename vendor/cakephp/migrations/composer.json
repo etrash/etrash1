@@ -19,12 +19,12 @@
     },
     "require": {
         "php": ">=5.4",
-        "robmorgan/phinx": "~0.4",
-        "cakephp/cakephp": "~3.0"
+        "robmorgan/phinx": "dev-master",
+        "cakephp/cakephp": "~3.1"
     },
     "require-dev": {
         "phpunit/phpunit": "*",
-        "cakephp/bake": "dev-master"
+        "cakephp/bake": "@stable"
     },
     "autoload": {
         "psr-4": {
@@ -39,5 +39,7 @@
     },
     "suggest": {
         "cakephp/bake": "Required if you want to generate migrations."
-    }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }

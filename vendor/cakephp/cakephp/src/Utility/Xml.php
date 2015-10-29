@@ -16,6 +16,10 @@ namespace Cake\Utility;
 
 use Cake\Utility\Exception\XmlException;
 use DOMDocument;
+use DOMNode;
+use DOMText;
+use Exception;
+use SimpleXMLElement;
 
 /**
  * XML handling for CakePHP.
@@ -33,19 +37,31 @@ class Xml
      *
      * Building XML from a string:
      *
-     * `$xml = Xml::build('<example>text</example>');`
+     * ```
+     * $xml = Xml::build('<example>text</example>');
+     * ```
      *
      * Building XML from string (output DOMDocument):
      *
-     * `$xml = Xml::build('<example>text</example>', ['return' => 'domdocument']);`
+     * ```
+     * $xml = Xml::build('<example>text</example>', ['return' => 'domdocument']);
+     * ```
      *
      * Building XML from a file path:
      *
-     * `$xml = Xml::build('/path/to/an/xml/file.xml');`
+     * ```
+     * $xml = Xml::build('/path/to/an/xml/file.xml');
+     * ```
      *
-     * Building from a remote URL:
+     * Building XML from a remote URL:
      *
-     * `$xml = Xml::build('http://example.com/example.xml');`
+     * ```
+     * use Cake\Network\Http\Client;
+     *
+     * $http = new Client();
+     * $response = $http->get('http://example.com/example.xml');
+     * $xml = Xml::build($response->body());
+     * ```
      *
      * Building from an array:
      *
@@ -74,6 +90,9 @@ class Xml
      * - `return` Can be 'simplexml' to return object of SimpleXMLElement or 'domdocument' to return DOMDocument.
      * - `loadEntities` Defaults to false. Set to true to enable loading of `<!ENTITY` definitions. This
      *   is disabled by default for security reasons.
+     * - `readFile` Set to false to disable file reading. This is important to disable when
+     *   putting user data into Xml::build(). If enabled local files will be read if they exist.
+     *   Defaults to true for backwards compatibility reasons.
      * - If using array as input, you can pass `options` from Xml::fromArray.
      *
      * @param string|array $input XML string, a path to a file, a URL or an array
@@ -86,6 +105,7 @@ class Xml
         $defaults = [
             'return' => 'simplexml',
             'loadEntities' => false,
+            'readFile' => true
         ];
         $options += $defaults;
 
@@ -97,7 +117,7 @@ class Xml
             return static::_loadXml($input, $options);
         }
 
-        if (file_exists($input)) {
+        if ($options['readFile'] && file_exists($input)) {
             return static::_loadXml(file_get_contents($input), $options);
         }
 
@@ -125,12 +145,12 @@ class Xml
         }
         try {
             if ($options['return'] === 'simplexml' || $options['return'] === 'simplexmlelement') {
-                $xml = new \SimpleXMLElement($input, LIBXML_NOCDATA);
+                $xml = new SimpleXMLElement($input, LIBXML_NOCDATA);
             } else {
-                $xml = new \DOMDocument();
+                $xml = new DOMDocument();
                 $xml->loadXML($input);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $xml = null;
         }
         if ($hasDisable && !$options['loadEntities']) {
@@ -148,7 +168,7 @@ class Xml
      *
      * ### Options
      *
-     * - `format` If create childs ('tags') or attributes ('attribute').
+     * - `format` If create childs ('tags') or attributes ('attributes').
      * - `pretty` Returns formatted Xml when set to `true`. Defaults to `false`
      * - `version` Version of XML document. Default is 1.0.
      * - `encoding` Encoding of XML document. If null remove from XML header. Default is the some of application.
@@ -172,7 +192,7 @@ class Xml
      *
      * `<root><tag><id>1</id><value>defect</value>description</tag></root>`
      *
-     * And calling `Xml::fromArray($value, 'attribute');` Will generate:
+     * And calling `Xml::fromArray($value, 'attributes');` Will generate:
      *
      * `<root><tag id="1" value="defect">description</tag></root>`
      *
@@ -214,7 +234,7 @@ class Xml
 
         $options['return'] = strtolower($options['return']);
         if ($options['return'] === 'simplexml' || $options['return'] === 'simplexmlelement') {
-            return new \SimpleXMLElement($dom->saveXML());
+            return new SimpleXMLElement($dom->saveXML());
         }
         return $dom;
     }
@@ -225,7 +245,7 @@ class Xml
      * @param \DOMDocument $dom Handler to DOMDocument
      * @param \DOMElement $node Handler to DOMElement (child)
      * @param array $data Array of data to append to the $node.
-     * @param string $format Either 'attribute' or 'tags'. This determines where nested keys go.
+     * @param string $format Either 'attributes' or 'tags'. This determines where nested keys go.
      * @return void
      * @throws \Cake\Utility\Exception\XmlException
      */
@@ -252,13 +272,12 @@ class Xml
                         continue;
                     }
                     if ($key[0] !== '@' && $format === 'tags') {
-                        $child = null;
                         if (!is_numeric($value)) {
                             // Escape special characters
                             // http://www.w3.org/TR/REC-xml/#syntax
                             // https://bugs.php.net/bug.php?id=36795
                             $child = $dom->createElement($key, '');
-                            $child->appendChild(new \DOMText($value));
+                            $child->appendChild(new DOMText($value));
                         } else {
                             $child = $dom->createElement($key, $value);
                         }
@@ -340,10 +359,10 @@ class Xml
      */
     public static function toArray($obj)
     {
-        if ($obj instanceof \DOMNode) {
+        if ($obj instanceof DOMNode) {
             $obj = simplexml_import_dom($obj);
         }
-        if (!($obj instanceof \SimpleXMLElement)) {
+        if (!($obj instanceof SimpleXMLElement)) {
             throw new XmlException('The input is not instance of SimpleXMLElement, DOMDocument or DOMNode.');
         }
         $result = [];

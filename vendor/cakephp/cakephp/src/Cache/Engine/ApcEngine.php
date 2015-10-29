@@ -42,8 +42,12 @@ class ApcEngine extends CacheEngine
      */
     public function init(array $config = [])
     {
+        if (!extension_loaded('apc')) {
+            return false;
+        }
+
         parent::init($config);
-        return function_exists('apc_dec');
+        return true;
     }
 
     /**
@@ -154,6 +158,28 @@ class ApcEngine extends CacheEngine
             }
         }
         return true;
+    }
+
+    /**
+     * Write data for key into cache if it doesn't exist already.
+     * If it already exists, it fails and returns false.
+     *
+     * @param string $key Identifier for the data.
+     * @param mixed $value Data to be cached.
+     * @return bool True if the data was successfully cached, false on failure.
+     * @link http://php.net/manual/en/function.apc-add.php
+     */
+    public function add($key, $value)
+    {
+        $key = $this->_key($key);
+
+        $expires = 0;
+        $duration = $this->_config['duration'];
+        if ($duration) {
+            $expires = time() + $duration;
+        }
+        apc_add($key . '_expires', $expires, $duration);
+        return apc_add($key, $value, $duration);
     }
 
     /**

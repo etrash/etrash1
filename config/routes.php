@@ -41,6 +41,9 @@ use Cake\Routing\Router;
  */
 Router::defaultRouteClass('Route');
 
+    
+
+Router::extensions(['pdf']);
 Router::scope('/', function ($routes) {
     /**
      * Here, we are connecting '/' (base path) to a controller called 'Pages',
@@ -71,6 +74,9 @@ Router::scope('/', function ($routes) {
      * routes you want in your application.
      */
     $routes->fallbacks('InflectedRoute');
+
+    $routes->extensions(['pdf']);
+    $routes->resources('Pedidoscoleta');
 });
 
 /**

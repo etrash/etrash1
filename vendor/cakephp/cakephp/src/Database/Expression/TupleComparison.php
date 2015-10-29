@@ -15,7 +15,6 @@
 namespace Cake\Database\Expression;
 
 use Cake\Database\ExpressionInterface;
-use Cake\Database\Expression\Comparison;
 use Cake\Database\ValueBinder;
 
 /**
@@ -92,7 +91,7 @@ class TupleComparison extends Comparison
 
             $type = $this->_type;
             $multiType = is_array($type);
-            $isMulti = $this->isMulti($i, $type);
+            $isMulti = $this->isMulti();
             $type = $multiType ? $type : str_replace('[]', '', $type);
             $type = $type ?: null;
 
