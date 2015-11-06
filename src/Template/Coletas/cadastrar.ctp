@@ -10,8 +10,8 @@
 		<legend>Nova Coleta</legend>
 
 	            <div class="form-group">
-	                <div class='input-group date' id='pedido_datahora'>
-	                    <input type='text' name="pedido_datahora" class="form-control" />
+	                <div class='input-group date' id='coleta_datahora'>
+	                    <input type='text' name="coleta_datahora" class="form-control"/>
 	                    <span class="input-group-addon">
 	                        <span class="glyphicon glyphicon-calendar"></span>
 	                    </span>
@@ -19,7 +19,7 @@
 	            </div>
 		        <script type="text/javascript">
 		            $(function () {
-		                $('#pedido_datahora').datetimepicker();
+		                $('#coleta_datahora').datetimepicker();
 		                locale: 'pt-br'
 		            });
 		        </script>

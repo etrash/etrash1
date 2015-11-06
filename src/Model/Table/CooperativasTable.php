@@ -98,7 +98,7 @@
 
 	    		if($data['regiao'] != null)
 	    			$where['cooperativa_regiao LIKE '] = $data['regiao'];
-
+		    		
 	    		if($data['material'] != null)
 	    		{
 	    			$whereM = array();

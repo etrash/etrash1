@@ -8,6 +8,15 @@
       // Set a callback to run when the Google Visualization API is loaded.
       google.setOnLoadCallback(drawChart);
 
+      function errorHandler(errorMessage) {
+          //curisosity, check out the error in the console
+          console.log(errorMessage);
+
+          //simply remove the error, the user never see it
+          google.visualization.errors.removeError(errorMessage.id);
+          $( '#chart_div' ).html( '<b>Nenhum dado.</b>');
+      }
+
       // Callback that creates and populates a data table,
       // instantiates the pie chart, passes in the data and
       // draws it.
@@ -25,6 +34,10 @@
 
         // Instantiate and draw our chart, passing in some options.
         var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+
+        //attach the error handler here, before draw()
+        google.visualization.events.addListener(chart, 'error', errorHandler);  
+        
         ".$draw."
       }
 ", ['block' => true]); ?>

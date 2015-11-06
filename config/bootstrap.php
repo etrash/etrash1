@@ -183,7 +183,7 @@ Plugin::load('Migrations');
 Plugin::load('CakePdf', array('bootstrap' => true, 'routes' => true));
 
 Configure::write('CakePdf', [
-'engine' => 'CakePdf.tcpdf',
+'engine' => 'CakePdf.Mpdf',
 'margin' => [
     'bottom' => 15,
     'left' => 50,

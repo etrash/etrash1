@@ -9,6 +9,7 @@ use Cake\Routing\Router;
 
 use Cake\View\CellTrait;
 use Cake\Core\Configure;
+use Cake\I18n\Number;
 
 
 class PedidoscoletaController extends AppController
@@ -125,6 +126,7 @@ class PedidoscoletaController extends AppController
 
 		$this->set('pedido_div', $pedido_div);
 		$this->set('id', $id);
+        $this->set('user', $this->Auth->user());
 	}
 
 
@@ -167,6 +169,22 @@ class PedidoscoletaController extends AppController
         	return $this->redirect(['action' => 'visualizar', $id]);
  		}
 
+	}
+
+	public function sheet($id)
+	{
+		$Pedidoscoleta = $this->Pedidoscoleta->get($id);
+        $this->loadModel('Coletas');
+
+        $coletas = $this->Coletas->montaExcel($id);
+
+		$total_valor = Number::currency($this->Coletas->totalValor($id));
+		$total_qtde =  Number::precision($this->Coletas->totalQtde($id), 2);
+
+
+        $this->set('coletas', utf8_decode($coletas));
+        $this->set('total_valor', $total_valor);
+        $this->set('total_qtde', $total_qtde);
 	}
 
 	public function ver($id)
@@ -348,6 +366,16 @@ class PedidoscoletaController extends AppController
 		$this->loadModel('Cooperativas');
 
 		$cooperativas = $this->Cooperativas->listaCandidatas($id);
+
+		//PEGA ID DO PEDIDO DE COLETA
+		$pedidocoleta = $this->Pedidoscoleta->get($id);
+
+		//VERIFICA SE PEDIDO DE COLETA JÁ NÃO FOI ESCOLHIDO OU CANCELADO
+		if($pedidocoleta->get('cooperativa_id') > 0 || $pedidocoleta->get('status_id') != 1)
+		{
+        	$this->Flash->error('Infelizmente esse pedido não está mais disponível.');
+	        return $this->redirect(['action' => 'index']);
+		}
 
 		//CHECA SE HÁ COOPERATIVAS INTERESSADAS
 		if(is_null($cooperativas))

@@ -111,21 +111,58 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
         <div class="container">
             <div class="row">
                 <div class="col-xs-12 col-sm-8 col-sm-offset-2 text-center">
-                    <h1>Encontre um ponto de coleta perto de você dentre os 19.844 pontos cadastrados</h1>
+                    <h1>Encontre um ponto de coleta perto de você dentre os <?= $n_cooperativas; ?> pontos cadastrados</h1>
                     <p>
-                        procure por <a href="#">Zona Leste</a>, <a href="#">Zona Sul</a>, <a href="#">Zona Norte</a>, <a href="#">Zona Oeste</a><br>ou digite o nome do bairro no campo abaixo
+                        procure por <?= $this->Html->link(
+                            'Centro',
+                            ['controller' => 'cooperativas', 'action' => 'consultar?regiao=Centro#coops']
+                            );
+                        ?>, <?= $this->Html->link(
+                            'Zona Leste',
+                            ['controller' => 'cooperativas', 'action' => 'consultar?regiao=Leste#coops']
+                            );
+                        ?>, <?= $this->Html->link(
+                            'Zona Sul',
+                            ['controller' => 'cooperativas', 'action' => 'consultar?regiao=Sul#coops']
+                            );
+                        ?>, <?= $this->Html->link(
+                            'Zona Norte',
+                            ['controller' => 'cooperativas', 'action' => 'consultar?regiao=Norte#coops']
+                            );
+                        ?>, <?= $this->Html->link(
+                            'Zona Oeste',
+                            ['controller' => 'cooperativas', 'action' => 'consultar?regiao=Oeste#coops']
+                            );
+                        ?><br>ou digite escolha o tipo de material no campo abaixo
                     </p>
-                    <form id="form-search" action="">
+                    <?= $this->Form->create(null,['url' => ['controller' => 'Cooperativas', 'action' => 'consultar/?#coops'], 'id' => 'formBuscaCoop']); ?>
                         <div class="input-group input-group-lg">
-                            <input type="text" class="form-control" placeholder="Ex.: Mooca" aria-describedby="basic-addon2">
-                            <span class="input-group-addon" id="basic-addon2" onclick="document.getElementById('form-search').submit();"><span class="glyphicon glyphicon-search"></span></span>
+                            <!-- <input type="text" class="form-control" placeholder="Ex.: Mooca" aria-describedby="basic-addon2"> -->
+                            <?php
+                        echo  $this->Form->select(
+                                            'material[]',
+                                            $materiais_options,
+                                            ['empty' => '(Escolha o tipo de material)', 'id' => 'material_nome',
+                                            'class' => 'form-control', 'aria-describedby' => 'basic-addon2']
+                                        );
+                    ?>
+                            <span class="input-group-addon" id="basic-addon2" onclick="document.getElementById('formBuscaCoop').submit();"><span class="glyphicon glyphicon-search"></span></span>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-
+    <div class="container">
+        <div class="row" style="margin-top: 15px;">
+            <div class="text-center col-xs-12 col-sm-8 col-sm-offset-2">
+                <iframe src="calc/index.php" frameborder="0" style="height: 332px;">
+                  <p>Seu navegador não suporta iframes.</p>
+                </iframe>
+            </div>
+        </div>
+    </div>
+<!--
     <div class="section-list">
         <div class="container">
             <h2 class="text-center col-xs-12 col-sm-8 col-sm-offset-2">Cooperativa, localize coletas que encaixem em sua rotina e aumente seu faturamento!</h2>
@@ -187,7 +224,7 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
             </div>
         </div>
     </div>
-
+-->
     <div class="section-media text-center">
         <div class="container">
             <h2><span>E-Trash na mídia</span></h2>

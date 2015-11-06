@@ -11,6 +11,20 @@ use Cake\I18n\Number;
 
 	class ColetasTable extends Table
 	{
+
+		public function validationDefault(Validator $validator)
+	    {
+	       $validator
+		    ->add('coleta_datahora', 'datetime',
+		    		[
+		            'rule' =>  'datetime',
+		            'message' => 'Insira uma data válida',
+		       	    ]	
+		    );
+
+		    return $validator;
+	    }
+
 		public function initialize(array $config)
 	    {
 	        $this->addBehavior('Timestamp', [
@@ -27,7 +41,7 @@ use Cake\I18n\Number;
 		{
 	    	$coleta = $this->newEntity();
 	    	
- 	    	$datahora = Time::createFromFormat('d/m/Y H:i', $data['pedido_datahora']);
+ 	    	$datahora = Time::createFromFormat('d/m/Y H:i', $data['coleta_datahora']);
 
 	    	$coleta->set('pedido_id'         , $data['pedido_id']);
 		 	$coleta->set('coleta_datahora', $datahora->i18nFormat('YYYY-MM-dd HH:mm:ss'));
@@ -142,11 +156,78 @@ use Cake\I18n\Number;
 			return $coletas;
 		}
 
+		public function montaExcel($pedido_id)
+		{
+			$query = $this->find('all', [
+			    'order' => ['coleta_datahora' => 'DESC']
+			])
+		    ->where(['pedido_id = ' => $pedido_id]);
+
+		    $Cs = $query->all();
+		    $dataC = $Cs->toArray();
+
+		    $coletas ="";
+
+			foreach ($dataC as $row) 
+			{
+            	$this->Coletas_materiais = TableRegistry::get('Coletas_materiais');
+
+            	$materiais_coleta = $this->Coletas_materiais->materiaisPorColeta($row['coleta_id']);
+
+	            //MONTA OPTIONS DO SELECT DE MATERIAIS
+	            $this->Materiais = TableRegistry::get('Materiais');
+	            $materiais_options = $this->Materiais->montaSelect();
+
+            	$material_valor_total = 0;
+            	$material_qtde_total = 0;
+				
+				$materiais_trs = "
+								<tr>
+									<td><b>Materiais coletados</b></td>
+									<td><b>Valor pago (Por KG)</b></td>
+									<td><b>Quantidade (KG)</b></td>
+								</tr>";
+
+            	foreach ($materiais_coleta as $rowM) 
+	            {
+
+	            	$materiais_trs .= "
+	            	<tr>
+						<td>".$materiais_options[$rowM['material_id']]."</td>
+						<td>".Number::currency($rowM['material_valor'])."</td>
+						<td>".$rowM['material_quantidade']."</td>
+					</tr>";
+
+	            	$material_valor_total += ($rowM['material_valor'] * $rowM['material_quantidade']);
+	            	$material_qtde_total += $rowM['material_quantidade'];
+	            }
+
+				$coletas .= 
+								"
+									<tr>
+										<td colspan='3'><b>Coleta Nº ".$row['coleta_id']."</b></td>
+									</tr>
+									<tr>
+										<td><b>Data<b></td>
+										<td colspan='2'>".$row['coleta_datahora']."</td>
+									</tr>
+									".$materiais_trs."
+									<tr>
+										<td><b>Total</b></td>
+										<td>".Number::currency($material_valor_total)."</td>
+										<td>$material_qtde_total</td>
+									</tr>";
+			}
+
+
+			return $coletas;
+		}
+
 		public function alteraCadastro($id, $coleta, $data)
 		{
 			//FORMATA DATA/HORA
 			$data['coleta_datahora'] = Time::parseDateTime($data['coleta_datahora']);
-			debug($data['coleta_datahora']);
+			//debug($data['coleta_datahora']);
 			//die;
 			$coleta = $this->patchEntity($coleta, $data);
 
@@ -213,5 +294,18 @@ use Cake\I18n\Number;
 			$row = $query->first();
 
 			return $row['TotalQtde'];
+		}
+
+		public function porPedidoId($pedido_id)
+		{
+			$query = $this->find('all', [
+			    'order' => ['coleta_datahora' => 'DESC']
+			])
+		    ->where(['pedido_id = ' => $pedido_id]);
+
+		    $Cs = $query->all();
+		    $dataC = $Cs->toArray();
+
+		    return $dataC;
 		}
 	}

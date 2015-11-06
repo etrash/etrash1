@@ -8,6 +8,15 @@
       // Set a callback to run when the Google Visualization API is loaded.
       google.setOnLoadCallback(drawCurveTypes);
 
+      function errorHandler(errorMessage) {
+          //curisosity, check out the error in the console
+          console.log(errorMessage);
+
+          //simply remove the error, the user never see it
+          google.visualization.errors.removeError(errorMessage.id);
+          $( '#chart_div' ).html( '<b>Nenhum dado.</b>');
+      }
+
       // Callback that creates and populates a data table,
       // instantiates the pie chart, passes in the data and
       // draws it.
@@ -35,6 +44,10 @@
       };
 
       var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+
+        //attach the error handler here, before draw()
+        google.visualization.events.addListener(chart, 'error', errorHandler);  
+        
       chart.draw(data, options);
     }
 
@@ -50,10 +63,10 @@
 	</div>
 	<div style='float:right;height:50px;width:50px;'>
         <?php 
-			echo $this->Html->link($this->Html->image('icone-pdf.png',
-        						['alt' => 'Exportar para PDF',
-        						'title' => 'Exportar para PDF']),
-    			 ['action' => 'pdf', $id], ['escape' => false, 'target' => '_blank']);?>
+			echo $this->Html->link($this->Html->image('excel-icon.png',
+        						['alt' => 'Exportar para formato Excel',
+        						'title' => 'Exportar para formato Excel']),
+    			 ['action' => 'sheet', $id], ['escape' => false]);?>
 	</div>
 	<fieldset>
 		<legend>Materiais do pedido</legend>
@@ -84,6 +97,16 @@
 	<h1>Informações da Cooperativa</h1><br/>
 	<?= $pedido_div['cooperativa_div']; ?>
 </div>
+
+<?php 
+	if(!is_null($user['cooperativa_id']))
+		echo "<div>". 
+			$this->Html->link(
+		    'Cadastrar Coleta',
+		    ['controller' => 'coletas', 'action' => 'cadastrar', $id]
+		)."<div>";
+	 
+?>
 <div>
 	<h1>Informações efetivas sobre as coletas já realizadas</h1><br/>
 	Remuneração Total: <?= $pedido_div['coletas_totalvalor']; ?><br/>

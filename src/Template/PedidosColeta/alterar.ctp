@@ -1,9 +1,10 @@
+<?= $this->Html->script('jquery.maskedinput.min', ['block' => true]); ?>
 <?= $this->Html->script('funcoes', ['block' => true]);?>
 
 <div class="doadores form">
-	<?= $this->Form->create($pedidoColeta, ['id' => 'pedidoForm']); ?>
+	<?= $this->Form->create(null, ['id' => 'pedidoForm']); ?>
 	<fieldset>
-		<legend>Pedido de Coleta</legend>
+		<legend>Novo Pedido de Coleta</legend>
 			<fieldset>
 				<legend>Informações dos materiais</legend>
 					<?php
@@ -24,7 +25,7 @@
 						<?= $this->Form->button('Adicionar', [
 														    'name' => 'material_adicionar',
 														    'type' => 'button',
-														     'onclick' => 'addMaterial($(\'#material_nome\').val(), $(\'#material_nome option:selected\').text(), $(\'#material-quantidade\').val());'
+														    'onclick' => 'addMaterial($(\'#material_nome\').val(), $(\'#material_nome option:selected\').text(), $(\'#material-quantidade\').val());'
 														    ]); ?>
 					<fieldset>
 						<legend>Materiais inseridos</legend>
@@ -52,15 +53,13 @@
 
 						echo $this->Form->radio('dia_semana', ['Segunda-feira' => 'Segunda-feira','Terça-feira' => 'Terça-feira','Quarta-feira' => 'Quarta-feira','Quinta-feira' => 'Quinta-feira','Sexta-feira' => 'Sexta-feira','Sábado' => 'Sábado','Domingo' => 'Domingo'],['hiddenField' => false]);
 
-						echo $this->Form->time('horario', [ 
-															'hour' => [
-														        'id' => 'horario_hora',
-														    ],
-															'minute' => [
-														        'id' => 'horario_minuto',
-														    ],
-															 'label' => ['text' => 'Horário de Preferência'] ]);
-						
+						echo $this->Form->input('horario_intervalo', [
+															'type' => 'text',
+															'id' => 'horario_intervalo',
+														    'label' => [
+														    'text' => 'Horário disponível para coleta', 
+														    ]]);
+
 						echo $this->Form->button('Adicionar', [
 														    'name' => 'horario_adicionar',
 														    'type' => 'button',
@@ -76,9 +75,9 @@
 				<ul id='lista-dias'>
 				</ul>
 			</fieldset>	
-
+		
 		</fieldset>
-
+		
 	<?= $this->Form->label('pedido_obs', 'Observações'); ?>
 	<?= $this->Form->textarea('pedido_obs'); ?>
 
@@ -101,3 +100,11 @@
 	<?php echo $addHorarios; ?>
 
 </script>
+<?php echo $this->Html->scriptBlock(
+"
+jQuery(function($){
+		   $('#horario_intervalo').mask('De 99h99min Até 99h99min');
+		});
+"
+)
+?>

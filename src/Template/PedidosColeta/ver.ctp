@@ -11,7 +11,7 @@ else
 	Status: <?= $pedido_div['status']; ?><br/>
 	<fieldset>
 		<legend>Informações do Doador</legend>
-		Cidade/Estado: <?= $doador_endereco['doador_cidade']; ?> - <?= $doador_endereco['doador_estado']; ?><br/>
+		Cidade/Estado: <?= $doador_endereco['doador_cidade']; ?>/<?= $doador_endereco['doador_estado']; ?><br/>
 		Região: <?= $doador_endereco['doador_regiao']; ?><br/>
 		CEP: <?= $doador_endereco['doador_cep']; ?><br/>
 		Mapa do endereço aproximado: <br/>

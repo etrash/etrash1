@@ -309,9 +309,15 @@
                     $data1 = $this->mediaDoadores();
                     $data2 = $this->mediaDoadores($param1);
 
+                    if($data2[0][0] > 0)
+                        $media_doador = $data2[0][0];
+                    else
+                        $media_doador = 0;
+
+
                     $data .= "['Média dos Doadores', ".$data1[0][0]."],\n";
                   
-                    $data .= "['Sua Média', ".$data2[0][0]."]\n";
+                    $data .= "['Sua Média', ".$media_doador."]\n";
                   
                     break;
 
@@ -332,9 +338,11 @@
                 case 5:
                     
                     $dataArray = $this->coop($param1);
+                    if(!empty($dataArray))
+                        $data = ",\n";
                     
                     foreach ($dataArray as $i=>$row) 
-                    {
+                    {   
                         if($i != count($dataArray))
                             $data .= "['".$row['m']['material_nome']."', ".$row['tot_quantidade']."],\n";
                         else
@@ -344,7 +352,8 @@
                     break;
 
                 case 6:
-                    
+                    $quantidades = array();
+
                     $dataArray = $this->coletas($param1);
                     foreach ($dataArray['materiais'] as $i=>$row) 
                     {
@@ -377,10 +386,13 @@
                             $countj++;
                         }
 
+                        $datahora = Time::parse($i);
+
+
                         if($counti != count($quantidades))
-                            $data['data'] .= "['".$i."', ".$qtde_materiais."],\n";
+                            $data['data'] .= "['".$datahora->i18nFormat()."', ".$qtde_materiais."],\n";
                         else
-                            $data['data'] .= "['".$i."', ".$qtde_materiais."]\n";
+                            $data['data'] .= "['".$datahora->i18nFormat()."', ".$qtde_materiais."]\n";
 
                         $counti++;
                     }                    

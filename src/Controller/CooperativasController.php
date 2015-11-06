@@ -138,13 +138,22 @@ use Cake\Routing\Router;
 
 			$cooperativas = "";
 
-			if ($this->request->is('post')) 
+
+			if ($this->request->is('post') || ($this->request->is('get') && $this->request->query('regiao') != null)) 
 	        {
-	        	if($this->request->data('regiao') == null && $this->request->data('material') == null)
+	        	$data['regiao'] 	  = $this->request->data('regiao');
+	        	$data['material'] = $this->request->data('material');
+
+	        	if($this->request->is('get'))
+		        {
+		        	$data['regiao']  = $this->request->query('regiao');
+		        }
+
+	        	if($data['regiao'] == null && $data['material'] == null)
 		    		$this->Flash->error('É necessário preencher um filtro.');
 		    	else
 		    	{
-		    		$cooperativas = $this->Cooperativas->listaCooperativas($this->request->data());
+		    		$cooperativas = $this->Cooperativas->listaCooperativas($data);
 					$this->set('cooperativas',$cooperativas);
 		    	}
 

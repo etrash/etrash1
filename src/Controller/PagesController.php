@@ -53,6 +53,19 @@ class PagesController extends AppController
         }
         $this->set(compact('page', 'subpage'));
 
+
+        //Conta pontos de coleta
+        $this->loadModel('Cooperativas');
+        $query = $this->Cooperativas->find('all');
+        $n_cooperativas = $query->count();
+
+        //MONTA OPTIONS DO SELECT DE MATERIAIS
+        $this->loadModel('Materiais');
+        $materiais_options = $this->Materiais->montaSelect();
+        
+        $this->set('materiais_options',$materiais_options);
+        $this->set('n_cooperativas', $n_cooperativas);
+
         try {
             $this->render(implode('/', $path));
         } catch (MissingTemplateException $e) {

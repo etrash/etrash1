@@ -102,7 +102,7 @@
 	    {
 	    	$queryD = $this->find()
 		    ->hydrate(false)
-		    ->select(['doador_regiao', 'doador_cep'])
+		    ->select(['doador_regiao', 'doador_cep', 'doador_cidade', 'doador_estado'])
 		    ->where(['doador_id' => $id]);
 
 		    return $queryD->first();

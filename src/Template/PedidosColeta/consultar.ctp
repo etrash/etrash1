@@ -2,7 +2,7 @@
 	<legend>Consulta de Pedido de Coleta</legend>
 	<fieldset> 
 		<legend>Região</legend>
-		<?= $this->Form->create(null); ?>
+		<?= $this->Form->create(null,['action' => 'consultar/#pcs']); ?>
 
 		<?=  $this->Form->select(
 									    'regiao',
@@ -18,4 +18,6 @@
 	</fieldset>
 	<?= $this->Form->submit("Consultar"); ?>
 </fieldset>
+
+<a name='pcs'></a>
 <?= $pedidos_coleta; ?>

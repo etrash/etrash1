@@ -44,10 +44,22 @@
 		    $dataPC = $PCs->toArray();
 
 		    $pedidos_coleta ="";
+					
+			$this->Cooperativas = TableRegistry::get('Cooperativas');
+
 
 			foreach ($dataPC as $row) 
 			{
 				$visualizar_url  =  Router::url(array('controller'=>'pedidoscoleta', 'action'=>'visualizar')) . "/".$row['pedido_id'];
+
+				if(is_null($row['cooperativa_id']))
+					$cooperativa_nome = "";
+				else
+				{
+					$cooperativa = $this->Cooperativas->get($row['cooperativa_id']);
+					$cooperativa_nome = "<div><strong>Cooperativa: </strong>".$cooperativa->get('cooperativa_nome')."</div>";
+
+				}
 
 				if($row['status_id'] != 3)
 				{
@@ -76,17 +88,16 @@
 				}
 				
 				$this->Pedido_coleta_status = TableRegistry::get('Pedido_coleta_status');
-				//debug($row['status_id']);
-				//die;
+				
 				$status = $this->Pedido_coleta_status->get($row['status_id']);
 				
 				$pedidos_coleta .= 
 								"<fieldset class='pedido'>
 									<legend>Pedido <span class='number'>".$row['pedido_id']."</span></legend>
 									<div class='float-right btn-group'>".$confirmar.$alterar.$cancelar."</div>
-									<div>Pedido cadastrado em ".$row['pedido_datahorainclusao']."</div>
-									<div>Cooperativa: </div>
-									<div><strong>Status: ".$status['status_nome']."</strong></div>
+									<div><strong>Pedido cadastrado em </strong>".$row['pedido_datahorainclusao']."</div>
+									".$cooperativa_nome."
+									<div><strong>Status: </strong>".$status['status_nome']."</div>
 									<a href='".$visualizar_url."' class='btn btn-default btn-success btn-xs'>Ver detalhes / Coletas</a>
 								</fieldset>";
 			}
@@ -453,6 +464,10 @@
 		public function listaPedidosCoop($cooperativa_id)
 		{
 			$query = $this->find('all')
+			->select($this)
+			->hydrate(false)
+			->select($this)
+			->select(['d.doador_nome'])
             ->join(['d' => [
                             'table' => 'doadores',
                             'type' => 'INNER',

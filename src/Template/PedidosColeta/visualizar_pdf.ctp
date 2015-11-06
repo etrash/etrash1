@@ -35,6 +35,10 @@
       };
 
       var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+
+        //attach the error handler here, before draw()
+        google.visualization.events.addListener(chart, 'error', errorHandler);  
+        
       chart.draw(data, options);
     }
 
