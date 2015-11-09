@@ -93,10 +93,10 @@ use Cake\I18n\Number;
 				if($cooperativa_id > 0)
 				{
 					$alterar_url  =  Router::url(array('controller'=>'coletas', 'action'=>'alterar'));
-					$alterar  = "<div style='float:right'><a href='".$alterar_url."/".$row['coleta_id']."'>Alterar Coleta</a></div><br/>";
+					$alterar  = "<a class='btn btn-sm btn-warning' href='".$alterar_url."/".$row['coleta_id']."'>Alterar Coleta</a>";
 
 					$excluir_url  =  Router::url(array('controller'=>'coletas', 'action'=>'excluir'));
-					$excluir  = "<div style='float:right'><a href='".$excluir_url."/".$row['coleta_id']."' onclick='if (confirm(\"Voc&ecirc tem certeza que deseja excluir esta coleta?\")) {return true;} return false;' >Excluir Coleta</a></div><br/>";
+					$excluir  = "<a class='btn btn-sm btn-danger' href='".$excluir_url."/".$row['coleta_id']."' onclick='if (confirm(\"Voc&ecirc tem certeza que deseja excluir esta coleta?\")) {return true;} return false;' >Excluir Coleta</a>";
 				}
 				else
 					$alterar  = "";
@@ -116,16 +116,10 @@ use Cake\I18n\Number;
             	foreach ($materiais_coleta as $rowM) 
 	            {
 	            	$materiais_div .= "
-	            	<div class='row'>
-	            		<div class='col-md-4'>
-	            		Material: ".$materiais_options[$rowM['material_id']]."
-						</div>
-	            		<div class='col-md-4'>
-	            		Valor pago: ".Number::currency($rowM['material_valor'])." (por KG)
-						</div>
-	            		<div class='col-md-4'>
-	            		Quantidade: ".$rowM['material_quantidade']." KG
-						</div>
+	            	<div class='col-md-12'>
+	            		<strong>Material: </strong>".$materiais_options[$rowM['material_id']]."
+	            		<strong>Valor pago: </strong>".Number::currency($rowM['material_valor'])." (por KG)
+	            		<strong>Quantidade: </strong>".$rowM['material_quantidade']." KG
 	            	</div>";
 
 	            	$material_valor_total += ($rowM['material_valor'] * $rowM['material_quantidade']);
@@ -133,19 +127,19 @@ use Cake\I18n\Number;
 	            }
 						
 				if($row['coleta_obs'] != "")	
-					$obs = 	"<div class='row'>Observações: ".$row['coleta_obs']."</div>";
+					$obs = 	"<div><strong>Observações: </strong>".$row['coleta_obs']."</div>";
 				else 
 					$obs = "";
 
 				$coletas .= 
-								"<fieldset>
-									<legend>Coleta nº ".$row['coleta_id']."</legend>
-									".$alterar."
-									".$excluir."
-									<div class='row'>Coleta realizada em ".$row['coleta_datahora']."</div>
-									<div class='row'>Materiais coletados:$materiais_div</div>
-									<div class='row'>Remunetação Total de Resíduo Coletado:  ".Number::currency($material_valor_total)."</div>
-									<div class='row'>Quantidade Total Arrecadada: $material_qtde_total KG</div>
+								"<fieldset class='pedido'>
+									<legend>Coleta <span class='number'>".$row['coleta_id']."</span></legend>
+									<div class='float-right btn-group'>".$alterar.$excluir."</div>
+									<div><strong>Coleta realizada em </strong>".$row['coleta_datahora']."</div>
+									<div><strong>Materiais coletados:</strong></div>
+									<div>$materiais_div</div>
+									<div><strong>Remunetação Total de Resíduo Coletado:  </strong>".Number::currency($material_valor_total)."</div>
+									<div><strong>Quantidade Total Arrecadada: </strong>$material_qtde_total KG</div>
 									$obs
 								</fieldset>";
 			}

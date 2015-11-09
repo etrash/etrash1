@@ -244,13 +244,13 @@
 			    $regiao = $queryD->first()['doador_regiao'];
 
 				$pedidos_coleta .= 
-								"<fieldset>
-									<legend>Pedido nº ".$row['pedido_id']."</legend>
-									<div>Pedido cadastrado em ".$row['pedido_datahorainclusao']."</div><br />
-									<div>Status: ".$status['status_nome']."</div><br/>
-									<div>Materiais:<br/><ul>".$materiais_pedido."</ul></div><br/>
-									<div>Região: ".$regiao."</div><br/>
-									<a href='".$ver_url."'>Ver mais informações</a>
+								"<fieldset class='pedido'>
+									<legend>Pedido <span class='number'>".$row['pedido_id']."</span></legend>
+									<div><strong>Pedido cadastrado em </strong>".$row['pedido_datahorainclusao']."</div>
+									<div><strong>Status: </strong>".$status['status_nome']."</div>
+									<div><strong>Materiais:</strong><br/><ul>".$materiais_pedido."</ul></div>
+									<div><strong>Região: </strong>".$regiao."</div>
+									<a href='".$ver_url."' class='btn btn-default btn-success btn-xs'>Ver mais informações</a>
 								</fieldset>";
 			}
 
@@ -300,14 +300,14 @@
 
 			foreach ($dataPCM as $row) 
 			{
-				$materiais_div .= "Material: ".$materiais_options[$row['material_id']]." | Quantidade: ".$row['quantidade_material']." KG<br/>\n";
+				$materiais_div .= "<strong>Material: </strong>".$materiais_options[$row['material_id']]." | Quantidade: ".$row['quantidade_material']." KG<br/>\n";
 			}
 			
 			$row = null;
 
 			foreach ($dataPCH as $row) 
 			{
-				$horarios_div .= "Dia da semana: ".$row['dia_semana']." | ".$row['horario_intervalo']."<br/>\n";
+				$horarios_div .= "<strong>Dia da semana: </strong>".$row['dia_semana']." | ".$row['horario_intervalo']."<br/>\n";
 			}
 
 			$pedido_div['materiais_div'] = $materiais_div;
@@ -333,9 +333,9 @@
 			{
 				$cooperativa = $this->Cooperativas->get($pedido->get('cooperativa_id'));
 
-				$cooperativa_div = "Nome: " . $cooperativa->get('cooperativa_nome') . "<br/>".
-								   "E-mail: " .  $cooperativa->get('cooperativa_email') . "<br/>".
-								   "Telefone: " .  $cooperativa->get('cooperativa_telefone');
+				$cooperativa_div = "<strong>Nome: </strong>" . $cooperativa->get('cooperativa_nome') . "<br/>".
+								   "<strong>E-mail: </strong>" .  $cooperativa->get('cooperativa_email') . "<br/>".
+								   "<strong>Telefone: </strong>" .  $cooperativa->get('cooperativa_telefone');
 			}
 			else
 				$cooperativa_div = "Ainda não há uma cooperativa contratada para este pedido.";
@@ -489,7 +489,7 @@
 				{
 					$coleta_url  =  Router::url(array('controller'=>'coletas', 'action'=>'cadastrar'));;
 
-					$coleta  = "<div style='float:right'><a href='".$coleta_url."/".$row['pedido_id']."'>Cadastrar Coleta</a></div><br/>";
+					$coleta  = "<a href='".$coleta_url."/".$row['pedido_id']."' class='btn btn-sm btn-success'>Cadastrar Coleta</a>";
 				}
 				else
 				{
@@ -500,13 +500,13 @@
 				$status = $this->Pedido_coleta_status->get($row['status_id']);
 
 				$pedidos_coleta .= 
-								"<fieldset>
-									<legend>Pedido nº ".$row['pedido_id']."</legend>
-									".$coleta."
-									<div>Pedido cadastrado em ".$row['pedido_datahorainclusao']."</div><br />
-									<div>Doador: ".$row['d']['doador_nome']."</div><br />
-									<div>Status: ".$status['status_nome']."</div><br/>
-									<a href='".$visualizar_url."'>Ver detalhes / Coletas</a>
+								"<fieldset class='pedido'>
+									<legend>Pedido <span class='number'>".$row['pedido_id']."</span></legend>
+									<div class='float-right btn-group'>".$coleta."</div>
+									<div><strong>Pedido cadastrado em </strong>".$row['pedido_datahorainclusao']."</div>
+									<div><strong>Doador: </strong>".$row['d']['doador_nome']."</div>
+									<div><strong>Status: </strong>".$status['status_nome']."</div>
+									<a href='".$visualizar_url."' class='btn btn-default btn-success btn-xs'>Ver detalhes / Coletas</a>
 								</fieldset>";
 			}
 

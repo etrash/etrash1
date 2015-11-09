@@ -55,33 +55,39 @@
 
 </script>
 
+
+<div style='height:50px;width:50px;'>
+      <?php 
+    echo $this->Html->link($this->Html->image('excel-icon.png',
+                  ['alt' => 'Exportar para formato Excel',
+                  'title' => 'Exportar para formato Excel']),
+         ['action' => 'sheet', $id], ['escape' => false]);?>
+</div>
+
 <div>
-	<div>
-		<h1>Informações sobre a criação do pedido de coleta</h1><br/>
-		Pedido realizado em <?= $pedido_div['datahora_inclusao']; ?><br/>
-		Status: <?= $pedido_div['status']; ?><br/>
-	</div>
-	<div style='float:right;height:50px;width:50px;'>
-        <?php 
-			echo $this->Html->link($this->Html->image('excel-icon.png',
-        						['alt' => 'Exportar para formato Excel',
-        						'title' => 'Exportar para formato Excel']),
-    			 ['action' => 'sheet', $id], ['escape' => false]);?>
-	</div>
+	<fieldset>
+		<legend>Informações sobre a criação do pedido de coleta</legend>
+		<strong>Pedido realizado em </strong><?= $pedido_div['datahora_inclusao']; ?><br/>
+		<strong>Status: </strong><?= $pedido_div['status']; ?><br/>
+    <strong>Periodicidade: </strong><?= $pedido_div['periodicidade']; ?><br/>
+    <strong>Frequência: </strong><?= $pedido_div['frequencia']; ?><br/>
+	</fieldset>
+
 	<fieldset>
 		<legend>Materiais do pedido</legend>
 		<?= $pedido_div['materiais_div']; ?>
 	</fieldset>
-	Periodicidade: <?= $pedido_div['periodicidade']; ?><br/>
-	Frequência: <?= $pedido_div['frequencia']; ?><br/>
 	<fieldset>
 		<legend>Dias e horários de preferência</legend>
 		<?= $pedido_div['horarios_div']; ?>
 	</fieldset>
-	Observações:<br/>
-	<?= $pedido_div['observacoes']; ?><br/>
-	<?= $pedido_div['cancelamento_div']; ?><br/>
-</div>
+
+
+  <fieldset>
+    <legend>Observações:</legend>
+  	<?= $pedido_div['observacoes']; ?><br/>
+  	<?= $pedido_div['cancelamento_div']; ?><br/>
+  </fieldset>
 
 <div>
 	<h1>Gráfico de evolução</h1><br/>
@@ -93,23 +99,23 @@
 	</div>
 </div>
 
-<div>
-	<h1>Informações da Cooperativa</h1><br/>
+<fieldset>
+	<legend>Informações da Cooperativa</legend>
 	<?= $pedido_div['cooperativa_div']; ?>
-</div>
+</fieldset>
 
 <?php 
 	if(!is_null($user['cooperativa_id']))
 		echo "<div>". 
 			$this->Html->link(
 		    'Cadastrar Coleta',
-		    ['controller' => 'coletas', 'action' => 'cadastrar', $id]
+		    ['controller' => 'coletas', 'action' => 'cadastrar', $id], ['class' => 'btn btn-default btn-success btn-xs']
 		)."<div>";
 	 
 ?>
-<div>
-	<h1>Informações efetivas sobre as coletas já realizadas</h1><br/>
-	Remuneração Total: <?= $pedido_div['coletas_totalvalor']; ?><br/>
-	Quantidade Total: <?= $pedido_div['coletas_totalqtde']; ?> KG<br/>
+<fieldset>
+	<legend>Informações efetivas sobre as coletas já realizadas</legend>
+	<strong>Remuneração Total: </strong><?= $pedido_div['coletas_totalvalor']; ?><br/>
+	<strong>Quantidade Total: </strong><?= $pedido_div['coletas_totalqtde']; ?> KG<br/>
 	<?= $pedido_div['coletas']; ?>
-</div>
+</fieldset>

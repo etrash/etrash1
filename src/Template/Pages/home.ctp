@@ -153,15 +153,26 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
             </div>
         </div>
     </div>
+
     <div class="container">
-        <div class="row" style="margin-top: 15px;">
-            <div class="text-center col-xs-12 col-sm-8 col-sm-offset-2">
-                <iframe src="calc/index.php" frameborder="0" style="height: 332px;">
+
+        <div class="row">
+
+            <div class="col-xs-12 col-sm-8 col-sm-offset-2">
+
+                <h2 class="text-center">Descubra como a sua ação pode fazer a diferença!</h2>
+                <p class="text-center" style="font-size: 18px; color: #888">Preencha com material e quantidade em kilos e descubra os resultados dessa diferença!</p>
+
+                <iframe src="calc/index.php" frameborder="0" style="width: 100%">
                   <p>Seu navegador não suporta iframes.</p>
                 </iframe>
+
             </div>
+
         </div>
+
     </div>
+
 <!--
     <div class="section-list">
         <div class="container">

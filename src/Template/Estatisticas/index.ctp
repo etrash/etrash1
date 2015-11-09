@@ -1,7 +1,7 @@
 <div>
 	<fieldset>
-		<legend> Menu de Estatísticas<legend>	
-		<ul>
+		<legend> Menu de Estatísticas</legend>	
+		<ul class="inner-menu">
 			<li>
 				<?php 
 				echo $this->Html->link(

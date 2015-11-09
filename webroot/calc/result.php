@@ -3,9 +3,43 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Calculadora Sustentável</title>
+<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+<style>
+
+	* {
+		font-family: 'Roboto', sans-serif;
+	}
+
+
+	.go-back {
+		background-color: #7BAA45;
+		border: 0;
+		color: #fff;
+		padding: 10px;
+		border-radius: 3px;
+		text-transform: uppercase;
+		font-weight: bold;
+		font-size: 13px;
+		text-decoration: none;
+		margin-top: 10px;
+		display: inline-block;
+	}
+
+	#div ul {
+		padding: 0;
+		list-style-type: none;
+		margin: 10px 0;
+	}
+
+	#div ul li:before {
+		content: "- ";
+		display: inline-block;
+	}
+
+</style>
 </head>
-<body bgcolor="#FFFFF0" text="#006400">
-	<h1 align="center">Resultados</h1>
+<body>
+	<h2>Resultados</h2>
 <div id="div">
 	<?php
 		$material = $_POST["Material"];
@@ -98,12 +132,8 @@
 		}
 	?>
 </div>
-	<br />
-	<br />
 
 
-	<center>
-		<a href="index.php">Voltar</a>
-	</center>
+	<a href="index.php" class="go-back">Voltar</a>
 </body>
 </html>

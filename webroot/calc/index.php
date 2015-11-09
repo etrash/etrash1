@@ -4,44 +4,79 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <title>Calculadora Sustentável</title>
 <script src="/etrash1/js/bootstrap.min.js"></script>
-<link rel="stylesheet" href="/etrash1/css/bootstrap.min.css"/> 
+<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+<style>
 
-<style type="text/css">
+	* {
+		font-family: 'Roboto', sans-serif;
+	}
+
+	#div1 {
+		display: table;
+	}
+	
+	.select-material,
+	.field-quantidade,
+	.submit {
+		display: table-cell;
+	}
+
+	.select-material label,
+	.field-quantidade label {
+		display: block;
+		margin-bottom: 4px;
+		font-weight: bold;
+		color: #333;
+	}
+
+	.field-quantidade label:after {
+		content: "*";
+		display: inline-block;
+		color: red;
+	}
+
+	.field-quantidade label span {
+		font-size: 12px;
+		display: inline-block;
+		vertical-align: top;
+		padding-top: 2px
+	}
+
+	.select-material {
+		padding-right: 20px;
+	}
+
+	select,
+	input[type="text"] {
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		padding: 12px 18px;
+	}
+
+	select,
+	input[type="text"] {
+		width: 290px;
+	}
+
+	.submit {
+		vertical-align: middle;
+	}
+
+	input[type="submit"] {
+		background-color: #7BAA45;
+		border: 0;
+		color: #fff;
+		padding: 10px;
+		border-radius: 3px;
+		text-transform: uppercase;
+		font-weight: bold;
+		margin-top: 22px;
+		margin-left: 10px;
+	}
 
 
-#div {
-	/* ou seja ele pega 50% da largura tela e diminui  metade do valor da largura no caso 250 */
-	background-color: #4EEE94;
-	font-size: 25px;
-	border: solid 10px rgba(47, 79, 79, 0.8);
-	border-radius: 10px;
-}
-
-#div1 {
-}
-
-input[type=submit] {
-	background: #CDC9A5;
-	color: #2E8B57;
-	font-size: 25px;
-}
-
-input[type=text] {
-	font-size: 20px;
-	color: #008B45;
-}
-
-select {
-	-webkit-appearance: none;
-	font-size: 20px;
-	color: #008B45;
-}
-
-select option {
-	font-size: 20px;
-	color: #008B45;
-}
 </style>
+
 
 <script type="text/javascript">
 	function validateForm() {
@@ -54,35 +89,31 @@ select option {
 </script>
 
 </head>
-<body bgcolor="#FFFFF0" text="#FFFFF0">
-	<div class="container">
-		<div id="div" class="row">
+<body>
+		<div id="div">
 			<form method="post" action="result.php" name="Calculadora"
 				onsubmit="return validateForm()">
-				<div id="div1" class="col-md-12">
-					Descubra como a sua ação pode fazer a diferença!
-					<p>
-						Material: 
-						<select name="Material">
+				<div id="div1">
+					<div class="select-material">
+						<label>Material</label> 
+						<select name="Material" class="form-control">
 							<option value="Papel">Papel</option>
 							<option value="Aço">Aço</option>
 							<option value="Alumínio">Alumínio</option>
 							<option value="Vidro">Vidro</option>
 							<option value="Plásticos">Plásticos</option>
-						</select> <br> <br>
-						Quantidade(Kg):<font color="red">*</font> <input
-							type="text" pattern="[0-9]*" name="Quantidade"> <br>
-						<font color="red" size=1>* Digite apenas numeros no campo
-							acima</font>
-					</p>
-					<center>
-						<input type="submit" value="Calcular">
-					</center>
+						</select>
+					</div>
+					<div class="field-quantidade">
+						<label>Quantidade <span>(Kg)</span></label>
+						<input type="text" pattern="[0-9]*" name="Quantidade" class="form-control">
+					</div>
+					<div class="submit">
+						<input type="submit" value="Calcular" class="btn btn-default">
+					</div>
+				</div>
 			</form>
 		</div>
-	</div>
-
-
 
 </body>
 </html>
