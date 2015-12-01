@@ -2,7 +2,7 @@
 <?= $this->Html->script('funcoes', ['block' => true]);?>
 
 <div class="doadores form">
-	<?= $this->Form->create(null, ['id' => 'pedidoForm']); ?>
+	<?= $this->Form->create($pedidoColeta, ['id' => 'pedidoForm']); ?>
 	<fieldset>
 		<legend>Novo Pedido de Coleta</legend>
 			<fieldset>
@@ -42,7 +42,7 @@
 		<?php
 						echo  $this->Form->select(
 										    'pedido_periodicidade',
-										    ['avulsa' => 'avulsa','diária' => 'diária','bissemanal' => 'bissemanal','semanal' => 'semanal','quinzenal' => 'quinzenal','bimensal' => 'bimensal','mensal' => 'mensal','bimestral' => 'bimestral'],
+										    ['avulsa' => 'avulsa','diária' => 'diária','semanal' => 'semanal','quinzenal' => 'quinzenal','bimensal' => 'bimensal','mensal' => 'mensal','bimestral' => 'bimestral'],
 										    ['empty' => '(Escolha a periodicidade)']
 										);
 						echo  $this->Form->select(

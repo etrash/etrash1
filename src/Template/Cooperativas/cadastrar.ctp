@@ -375,6 +375,12 @@ echo $this->Html->scriptBlock(
 
         function sendForm()
         {
+           if(!validaDoc($(\"#responsavel-cpf\").val(), 1))
+           {
+              alert(\"CPF do responsável inválido\");
+              return false;
+           }
+
            if (validaDoc($(\"#cooperativa-cnpj\").val()))
            {
               document.getElementById(\"formCooperativaCadastro\").submit();

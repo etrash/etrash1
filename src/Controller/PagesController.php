@@ -53,7 +53,6 @@ class PagesController extends AppController
         }
         $this->set(compact('page', 'subpage'));
 
-
         //Conta pontos de coleta
         $this->loadModel('Cooperativas');
         $query = $this->Cooperativas->find('all');

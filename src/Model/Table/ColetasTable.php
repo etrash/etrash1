@@ -118,8 +118,8 @@ use Cake\I18n\Number;
 	            	$materiais_div .= "
 	            	<div class='col-md-12'>
 	            		<strong>Material: </strong>".$materiais_options[$rowM['material_id']]."
-	            		<strong>Valor pago: </strong>".Number::currency($rowM['material_valor'])." (por KG)
-	            		<strong>Quantidade: </strong>".$rowM['material_quantidade']." KG
+	            		<strong>Valor pago: </strong>".Number::currency($rowM['material_valor'])." (por kg)
+	            		<strong>Quantidade: </strong>".$rowM['material_quantidade']." kg
 	            	</div>";
 
 	            	$material_valor_total += ($rowM['material_valor'] * $rowM['material_quantidade']);
@@ -139,7 +139,7 @@ use Cake\I18n\Number;
 									<div><strong>Materiais coletados:</strong></div>
 									<div>$materiais_div</div>
 									<div><strong>Remunetação Total de Resíduo Coletado:  </strong>".Number::currency($material_valor_total)."</div>
-									<div><strong>Quantidade Total Arrecadada: </strong>$material_qtde_total KG</div>
+									<div><strong>Quantidade Total Arrecadada: </strong>$material_qtde_total kg</div>
 									$obs
 								</fieldset>";
 			}
@@ -178,8 +178,8 @@ use Cake\I18n\Number;
 				$materiais_trs = "
 								<tr>
 									<td><b>Materiais coletados</b></td>
-									<td><b>Valor pago (Por KG)</b></td>
-									<td><b>Quantidade (KG)</b></td>
+									<td><b>Valor pago (Por kg)</b></td>
+									<td><b>Quantidade (kg)</b></td>
 								</tr>";
 
             	foreach ($materiais_coleta as $rowM) 

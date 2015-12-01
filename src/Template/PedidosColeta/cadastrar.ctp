@@ -42,7 +42,7 @@
 		<?php
 						echo  $this->Form->select(
 										    'pedido_periodicidade',
-										    ['avulsa' => 'avulsa','diária' => 'diária','bissemanal' => 'bissemanal','semanal' => 'semanal','quinzenal' => 'quinzenal','bimensal' => 'bimensal','mensal' => 'mensal','bimestral' => 'bimestral'],
+										    ['avulsa' => 'avulsa','diária' => 'diária','semanal' => 'semanal','quinzenal' => 'quinzenal','bimensal' => 'bimensal','mensal' => 'mensal','bimestral' => 'bimestral'],
 										    ['empty' => '(Escolha a periodicidade)']
 										);
 						echo  $this->Form->select(

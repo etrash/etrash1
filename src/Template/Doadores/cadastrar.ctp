@@ -388,6 +388,12 @@ echo $this->Html->scriptBlock(
 
         function sendForm()
         {
+           if(!validaDoc($(\"#responsavel-cpf\").val(), 1))
+           {
+              alert(\"CPF do responsável inválido\");
+              return false;
+           }
+
            if (validaDoc($(\"#doador-cpfcnpj\").val(), $(\"input:radio[name=doador_tipo]:checked\").val()))
            {
               document.getElementById(\"formDoadorCadastro\").submit();

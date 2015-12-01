@@ -21,7 +21,7 @@ class PedidoscoletaCell extends Cell
 
 			//MATERIAIS DA COOPERATIVA
 			$this->Materiais = TableRegistry::get('Materiais');
-			$materiais_valor =  "<div>Valores pagos (por KG): ".
+			$materiais_valor =  "<div><strong>Valores pagos (por kg): </strong>".
 									"<ul>".
 										$this->Materiais->listaMateriaisCoop($cooperativa_id).
 									"</ul>".

@@ -174,6 +174,14 @@ class PedidoscoletaController extends AppController
 	public function sheet($id)
 	{
 		$Pedidoscoleta = $this->Pedidoscoleta->get($id);
+		
+	    //VERIFICA SE O PEDIDO PERTENCE AO USUÁRIO LOGADO
+	    if($Pedidoscoleta->get('doador_id') != $this->Auth->user('doador_id') && $Pedidoscoleta->get('cooperativa_id') != $this->Auth->user('cooperativa_id'))
+	    {
+	    	$this->Flash->error('O pedido não pertence ao seu usuário.');
+	        return $this->redirect(['action' => 'index']);
+	    }
+
         $this->loadModel('Coletas');
 
         $coletas = $this->Coletas->montaExcel($id);
@@ -445,7 +453,7 @@ class PedidoscoletaController extends AppController
 
     public function isAuthorized($user)
     {
-    	if($this->request->action === 'index' || $this->request->action === 'visualizar')
+    	if($this->request->action === 'index' || $this->request->action === 'visualizar' || $this->request->action === 'sheet')
     		return true;
 
         if($this->Auth->user('doador_id') == null && $this->request->action != 'consultar' && $this->request->action != 'ver' && $this->request->action != 'candidatar'  && $this->request->action != 'gerenciar')

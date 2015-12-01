@@ -300,7 +300,7 @@
 
 			foreach ($dataPCM as $row) 
 			{
-				$materiais_div .= "<strong>Material: </strong>".$materiais_options[$row['material_id']]." | Quantidade: ".$row['quantidade_material']." KG<br/>\n";
+				$materiais_div .= "<strong>Material: </strong>".$materiais_options[$row['material_id']]." | Quantidade: ".$row['quantidade_material']." kg<br/>\n";
 			}
 			
 			$row = null;

@@ -29,7 +29,7 @@
     <?= $this->Form->end() ?>
 </div>
 <div class="actions">
-<h3>Ou clique nos links abaixo para fazer o cadastro como:</h3>
+<h3 style='color: #15848F;font-weight:bold;'>Ou clique nos links abaixo para fazer o cadastro como:</h3>
 	<ul>
 		<li><?php echo $this->Html->link('Doador', array('controller' => 'Doadores','action' => 'cadastrar')); ?></li>
 		<li><?php echo $this->Html->link('Cooperativa', array('controller' => 'Cooperativas','action' => 'cadastrar')); ?></li>

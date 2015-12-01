@@ -127,7 +127,8 @@ function addDia()
 
  	dia = $("input[name=dia_semana]:checked").val();
 
- 	addDias(hora, dia);
+ 	if(validaIntervalo(hora))
+ 		addDias(hora, dia);
 
 }
 
@@ -207,4 +208,22 @@ function buscaCep(cep)
 		    $('#loadgif').hide();
         }
     });
+}
+
+function validaIntervalo(horas)
+{
+	var hora1 = horas.substring(3, 8);
+	var hora2 = horas.substring(16, 21);
+
+	hora1 = parseInt(hora1.replace('h',''));
+	hora2 = parseInt(hora2.replace('h',''));
+
+	if(hora1 >= hora2)
+	{
+		alert("Intervalo inválido");
+		$('#horario_intervalo').val('');
+		return false;
+	}
+	else
+		return true;
 }

@@ -68,7 +68,7 @@
 
 	    		foreach ($materiais as $rowM) 
 	    		{
-					$materiais_cooperativa .= "<li>Material: ".$rowM['material_nome']." | Valor: ".$rowM['cm']['material_valor']."</li>";
+					$materiais_cooperativa .= "<li><strong>Material: </strong>".$rowM['material_nome']." | Valor: ".$rowM['cm']['material_valor']."</li>";
 				}
 
 			return $materiais_cooperativa;

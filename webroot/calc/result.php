@@ -39,7 +39,7 @@
 </style>
 </head>
 <body>
-	<h2>Resultados</h2>
+	<h2>Resultados*</h2>
 <div id="div">
 	<?php
 		$material = $_POST["Material"];
@@ -131,6 +131,9 @@
 
 		}
 	?>
+	<div>
+		*Dados obtidos no site da organização WWF (http://www.wwf.org.br/?uNewsID=14001).
+	</div>
 </div>
 
 

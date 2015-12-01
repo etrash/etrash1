@@ -8,7 +8,7 @@
 	<?= $this->Form->create(null, ['id' => 'coletaForm']); ?>
 	<fieldset>
 		<legend>Nova Coleta</legend>
-
+				<?= $this->Form->label('coleta_datahora', 'Data e hora'); ?>
 	            <div class="form-group">
 	                <div class='input-group date' id='coleta_datahora'>
 	                    <input type='text' name="coleta_datahora" class="form-control"/>

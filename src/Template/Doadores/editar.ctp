@@ -6,15 +6,22 @@ echo $this->Html->script('funcoes', ['block' => true]);
 
 ?>
 
- <div class="doadores form">
-	<?= $this->Form->create($doador, ['id' => 'formDoadorCadastro', 'name' => 'formDoadorCadastro', 'autocomplete' => 'false']); ?>
+  <div class="doadores form">
+	<?= $this->Form->create($doador, ['id' => 'formDoadorCadastro', 'name' => 'formDoadorCadastro']); ?>
 	<fieldset>
 		<legend>Editar</legend>
+	<div class="row">
+
+		<div class="col-xs-12 col-sm-6">
 		<?php
 			echo $this->Form->input('doador_nome', ['required' => true,
 												    'label' => [
 												        'text' => 'Nome'
 												    ]]);
+		?>
+		</div>
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->label('Tipo');
 			echo $this->Form->radio(
 									    'doador_tipo',
@@ -23,18 +30,32 @@ echo $this->Html->script('funcoes', ['block' => true]);
 									        ['value' => '2', 'text' => 'Pessoa Jurídica', 'onchange' => 'mostraTipo(2);'],
 									    ]
 									);
+		?>
+		</div>
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('doador_cpfcnpj', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'CPF/CNPJ'
 													    ]
 
 													   ]);
+		?>
+		</div>
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('doador_cep', [
 														'required' => true,
 														'onBlur' => 'buscaCep(this.value)',
 													    'label' => [
 													    'text' => 'CEP'
 													   ]]);
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
 
             echo $this->Html->image('site/load.gif', ['alt' => 'load', 'id' => 'loadgif', 'style' => 'display:none;height:30px;']);
 			
@@ -46,6 +67,11 @@ echo $this->Html->script('funcoes', ['block' => true]);
 													    'label' => [
 													    'text' => 'Estado'
 													   ]]);
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			
 			echo $this->Form->input('doador_cidade', [
 														'required' => true,
@@ -54,7 +80,11 @@ echo $this->Html->script('funcoes', ['block' => true]);
 													    'label' => [
 													    'text' => 'Cidade'
 													   ]]);
+		?>
+		</div>
 
+		<div class="col-xs-12 col-sm-6">
+		<?php
 
 			echo $this->Form->input('doador_regiao', [
 														'required' => true,
@@ -63,6 +93,11 @@ echo $this->Html->script('funcoes', ['block' => true]);
 													    'label' => [
 													    'text' => 'Região'
 													   ]]);
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
 
 			echo $this->Form->input('doador_bairro', [
 														'required' => true,
@@ -71,6 +106,11 @@ echo $this->Html->script('funcoes', ['block' => true]);
 													    'label' => [
 													    'text' => 'Bairro'
 													   ]]);
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			
 			echo $this->Form->input('doador_endereco', [
 														'required' => true,
@@ -79,33 +119,67 @@ echo $this->Html->script('funcoes', ['block' => true]);
 													    'label' => [
 													    'text' => 'Logradouro'
 													   ]]);
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
 
 			echo $this->Form->input('doador_numero', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Número'
 													   ]]);
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			
 			echo $this->Form->input('doador_complemento', [
 													    'label' => [
 													    'text' => 'Complemento'
 													   ]]);
-			
+		?>
+		</div>
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('doador_telefone', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Telefone'
 													   ]]);
+		?>
+		</div>
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('doador_razaosocial', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Razão Social'
 													   ]]);
+		?>
+		</div>
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('doador_inscricaoestadual', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Inscrição Estadual'													   ]]);
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('doador_email', ['required' => true,'type' => 'email',
 													    'label' => [
 													    'text' => 'E-mail'
 													   ]]);
+		?>
+		</div>
 
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			//GAMBIARRA PARA QUESTÃO DO AUTO-PREENCHIMENTO :)
 			echo "<input type='text' name='prevent_autofill' id='prevent_autofill' value='' style='display:none;' />
 				<input type='password' name='password_fake' id='password_fake' value='' style='display:none;' />";
@@ -114,47 +188,66 @@ echo $this->Html->script('funcoes', ['block' => true]);
 													    'label' => [
 													    'text' => 'Senha'
 													   ]]);
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('responsavel_nome', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Nome do Responsável'
 													   ]]);
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('responsavel_rg', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'RG do Responsável'
 													   ]]);
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('responsavel_cpf', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'CPF do Responsável'
 													   ]
 													    ]);
-			echo $this->Form->input('responsavel_email', ['type' => 'email',
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
+			echo $this->Form->input('responsavel_email', [
+														'required' => true,
+														'type' => 'email',
 													    'label' => [
 													    'text' => 'E-mail do Responsável'
 													   ]]);
+		?>
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('responsavel_telefone', [
+														'required' => true,
 													    'label' => [
 													    'text' => 'Telefone do Responsável'
 													   ]]);
 		?>
+		</div>
+	</div>
 	</fieldset>
     <?= $this->Form->button('Gravar', ['type' => 'button', 'onclick' => 'sendForm();']) ?>
     <?= $this->Form->end() ?>
 </div>
-<!--<div class="actions">
-	<h3>Ações</h3>
-	<ul>
-		<li><?php echo $this->Html->link('Listar', array('action' => 'index')); ?></li>
-		<li>
-			<?php 
-				echo $this->Html->link(
-				    'Excluir cadastro',
-				    ['action' => 'delete'],
-				    ['confirm' => 'Você tem certeza que deseja excluir seu cadastro?']
-				);
-			 ?>
-		</li>
-	</ul>
-</div>-->
+
 <?php 
 
 echo $this->Html->scriptBlock(
@@ -300,6 +393,12 @@ echo $this->Html->scriptBlock(
 
         function sendForm()
         {
+           if(!validaDoc($(\"#responsavel-cpf\").val(), 1))
+           {
+              alert(\"CPF do responsável inválido\");
+              return false;
+           }
+
            if (validaDoc($(\"#doador-cpfcnpj\").val(), $(\"input:radio[name=doador_tipo]:checked\").val()))
            {
               document.getElementById(\"formDoadorCadastro\").submit();

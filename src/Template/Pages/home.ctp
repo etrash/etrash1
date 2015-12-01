@@ -20,9 +20,9 @@ use Cake\Network\Exception\NotFoundException;
 
 $this->layout = false;
 
-if (!Configure::read('debug')):
-    throw new NotFoundException();
-endif;
+// if (!Configure::read('debug')):
+//     throw new NotFoundException();
+// endif;
 
 $cakeDescription = 'CakePHP: the rapid development php framework';
 ?>
@@ -235,7 +235,6 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
             </div>
         </div>
     </div>
--->
     <div class="section-media text-center">
         <div class="container">
             <h2><span>E-Trash na mídia</span></h2>
@@ -249,6 +248,7 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
             </div>
         </div>
     </div>
+-->
 
     <footer>
         <div class="top">

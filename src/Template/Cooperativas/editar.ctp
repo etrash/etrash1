@@ -5,148 +5,269 @@ echo $this->Html->script('funcoes', ['block' => true]);
 
 ?>
 
- <div class="cooperativa form">
+<div class="cooperativas form">
 	<?= $this->Form->create($cooperativa, ['id' => 'formCooperativaCadastro', 'name' => 'formCooperativaCadastro']); ?>
 	<fieldset>
 		<legend>Editar</legend>
+		<div class="row">
+		<div class="col-xs-12 col-sm-6">
 		<?php
 			echo $this->Form->input('cooperativa_nome', ['required' => true,
 												    'label' => [
 												        'text' => 'Nome Fantasia'
 												    ]]);
+			?>
+		</div>
+    	<div class="col-xs-12 col-sm-6">
+    	<?php
 			echo $this->Form->input('cooperativa_razaosocial', [
 														'required' => true,
 													    'label' => [
 													    'text' => 'Razão Social'
 													   ]]);
+			?>
+		</div>
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('cooperativa_inscricaoestadual', [
-														'required' => true,
 													    'label' => [
-													    'text' => 'Inscrição Estadual'													   ]]);
+													    'text' => 'Inscrição Estadual'													   
+													    ]]);
+			?>
+		</div>
+		<div class="col-xs-12 col-sm-6">
+													    <?php
 			echo $this->Form->input('cooperativa_cnpj', [
 														'required' => true,
 													    'label' => [
 													    'text' => 'CNPJ'
-													    ]
-
-													   ]);
+													    ]]);
+			?>
+		</div>
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('cooperativa_cep', [
 														'required' => true,
+														'onBlur' => 'buscaCep(this.value)',
 													    'label' => [
 													    'text' => 'CEP'
 													   ]]);
-					
-			echo "<div class='input select required'>";
-			echo $this->Form->label('cooperativa_estado', 'Estado');
-			echo $this->Form->select('cooperativa_estado', $estados_options,
-										    ['empty' => '(Selecione o estado)']
-									);
-			echo "</div>";
+			?>
+		</div>
+		
+		<div class="col-xs-12 col-sm-6">
+		<?php
+            echo $this->Html->image('site/load.gif', ['alt' => 'load', 'id' => 'loadgif', 'style' => 'display:none;height:30px;']);
+			?>
+			
+			<?php
+			echo $this->Form->input('cooperativa_estado', [
+														'required' => true,
+														'readonly' => true,
+														'value' => 'São Paulo',
+													    'label' => [
+													    'text' => 'Estado'
+													   ]]);
+			?>
+		</div>
 
+		<div class="col-xs-12 col-sm-6">
+			
+			<?php
 			echo $this->Form->input('cooperativa_cidade', [
 														'required' => true,
+														'readonly' => true,
+														'value' => 'São Paulo',
 													    'label' => [
 													    'text' => 'Cidade'
 													   ]]);
+			?>
+		</div>
 
-			echo "<div class='input select required'>";
+		<div class="col-xs-12 col-sm-6">
 
-			echo $this->Form->label('cooperativa_regiao', 'Região');
+		<?php
+			echo $this->Form->input('cooperativa_regiao', [
+														'required' => true,
+														'readonly' => true,
+														'id' => 'regiao',
+													    'label' => [
+													    'text' => 'Região'
+													   ]]);
+			?>
+			</div>
+		<div class="col-xs-12 col-sm-6">			
 
-			echo  $this->Form->select(
-							    'cooperativa_regiao',
-							    ['Centro' => 'Centro','Norte' => 'Norte','Leste' => 'Leste','Sul' => 'Sul','Oeste' => 'Oeste'],
-							    ['empty' => '(Escolha a região)', 'id' => 'cooperativa-regiao','required' => true]
-							);
-			echo "</div>";
-			
+		<?php
 			echo $this->Form->input('cooperativa_bairro', [
 														'required' => true,
+														'readonly' => true,
+														'id' => 'bairro',
 													    'label' => [
 													    'text' => 'Bairro'
 													   ]]);
+			?>
+
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+			
+			<?php
 			echo $this->Form->input('cooperativa_endereco', [
 														'required' => true,
+														'readonly' => true,
+														'id' => 'logradouro',
 													    'label' => [
 													    'text' => 'Logradouro'
 													   ]]);
+			?>
+
+		</div>
+
+		<div class="col-xs-12 col-sm-6">
+
+		<?php
 			echo $this->Form->input('cooperativa_numero', [
 														'required' => true,
 													    'label' => [
 													    'text' => 'Número'
 													   ]]);
+			?>
+
+		</div>
+			
+		<div class="col-xs-12 col-sm-6">
+		<?php
 			echo $this->Form->input('cooperativa_complemento', [
-														'required' => true,
 													    'label' => [
 													    'text' => 'Complemento'
 													   ]]);
+			?>
+			</div>
+
+		<div class="col-xs-12 col-sm-6">
+			<?php
 			echo $this->Form->input('cooperativa_telefone', [
 														'required' => true,
 													    'label' => [
 													    'text' => 'Telefone'
 													   ]]);
+			?>
+			</div>
+
+			<div class="col-xs-12 col-sm-6">
+													   <?php
 			echo $this->Form->input('cooperativa_horario', [
 														'required' => true,
 													    'label' => [
 													    'text' => 'Horário de funcionamento (com os dias da semana)'
 													   ]]);
+			?>
+			</div>
+
+			<div class="col-xs-12 col-sm-6">
+													   <?php
 			echo $this->Form->input('cooperativa_email', ['required' => true,'type' => 'email',
 													    'label' => [
 													    'text' => 'E-mail'
 													   ]]);
+			?>
+			</div>
+			<div class="col-xs-12 col-sm-6">
+													   <?php
 			echo $this->Form->input('cooperativa_senha', ['required' => true,'type' => 'password','value' => '',
 													    'label' => [
 													    'text' => 'Senha'
 													   ]]);
+			?>
+			</div>
+
+			<div class="col-xs-12 col-sm-6">
+													   <?php
 			echo $this->Form->input('responsavel_nome', [
 														'required' => true,
 													    'label' => [
 													    'text' => 'Nome do Responsável'
 													   ]]);
+			?>
+
+			</div>
+				
+			<div class="col-xs-12 col-sm-6">
+													   <?php
 			echo $this->Form->input('responsavel_rg', [
 														'required' => true,
 													    'label' => [
 													    'text' => 'RG do Responsável'
 													   ]]);
+			?>
+			</div>
+
+			<div class="col-xs-12 col-sm-6">
+													   <?php
 			echo $this->Form->input('responsavel_cpf', [
 														'required' => true,
 													    'label' => [
 													    'text' => 'CPF do Responsável'
-													   ]
-													    ]);
+													   ]]);
+			?>
+
+			</div>
+
+			<div class="col-xs-12 col-sm-6">
+													    <?php
 			echo $this->Form->input('responsavel_email', [
 														'required' => true,
 														'type' => 'email',
 													    'label' => [
 													    'text' => 'E-mail do Responsável'
 													   ]]);
+			?>
+
+			</div>
+			<div class="col-xs-12 col-sm-6">
+													   <?php
 			echo $this->Form->input('responsavel_telefone', [
 														'required' => true,
 													    'label' => [
 													    'text' => 'Telefone do Responsável'
 													   ]]);
+			?>
+			</div>
+			
+			<div class="col-xs-12 col-sm-6">
+													   <?php
 			echo $this->Form->input('responsavel_celular', [
 														'required' => true,
 													    'label' => [
 													    'text' => 'Celular do Responsável'
 													   ]]);
-		?>
-
+			?>
+			</div>
+		</div>
+		
 		<fieldset>
 				<legend>Informações sobre a coleta</legend>
 				<?= $this->Form->label('cooperativa_doacao', 'A cooperativa realiza coletas por:') ?>
-				<?= $this->Form->radio('cooperativa_doacao', [true => 'Doação',false => 'Compra'],['hiddenField' => false]);?>
+				<?= $this->Form->radio('cooperativa_doacao', ['true' => 'Doação','false' => 'Compra'],['hiddenField' => false, 'required' => true]);?>
 
 		</fieldset>
 
 		<fieldset>
 				<legend>Materiais aceitos</legend>
+				<div class="row">
+				<div class="col-xs-12 col-sm-6">
+					<label for="">Escolha o tipo de material</label>
 					<?php
 						echo  $this->Form->select(
 										    'material_nome',
 										    $materiais_options,
 										    ['empty' => '(Escolha o tipo de material)', 'id' => 'material_nome']
 										);
+					?>
+				</div>
+				<div class="col-xs-12 col-sm-6">
+					<?php 
 						echo $this->Form->input('material_valor', [
 																	'id' => 'material_valor',
 																    'label' => [
@@ -154,6 +275,8 @@ echo $this->Html->script('funcoes', ['block' => true]);
 																   ]]);
 
 					?>
+				</div>
+				</div>
 						<?= $this->Form->button('Adicionar', [
 														    'name' => 'material_adicionar',
 														    'type' => 'button',
@@ -257,6 +380,12 @@ echo $this->Html->scriptBlock(
 
         function sendForm()
         {
+           if(!validaDoc($(\"#responsavel-cpf\").val(), 1))
+           {
+              alert(\"CPF do responsável inválido\");
+              return false;
+           }
+
            if (validaDoc($(\"#cooperativa-cnpj\").val()))
            {
               document.getElementById(\"formCooperativaCadastro\").submit();
